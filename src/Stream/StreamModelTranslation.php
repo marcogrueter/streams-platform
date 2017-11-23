@@ -5,10 +5,9 @@ use Anomaly\Streams\Platform\Model\EloquentModel;
 /**
  * Class StreamModelTranslation
  *
- * @link    http://anomaly.is/streams-platform
- * @author  AnomalyLabs, Inc. <hello@anomaly.is>
- * @author  Ryan Thompson <ryan@anomaly.is>
- * @package Anomaly\Streams\Platform\Stream
+ * @link    http://pyrocms.com/
+ * @author  PyroCMS, Inc. <support@pyrocms.com>
+ * @author  Ryan Thompson <ryan@pyrocms.com>
  */
 class StreamModelTranslation extends EloquentModel
 {
@@ -33,5 +32,4 @@ class StreamModelTranslation extends EloquentModel
      * @var string
      */
     protected $table = 'streams_streams_translations';
-
 }

@@ -3,10 +3,9 @@
 /**
  * Interface ColumnInterface
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Ui\Table\Component\Column\Contract
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
 interface ColumnInterface
 {
@@ -57,19 +56,19 @@ interface ColumnInterface
     public function getClass();
 
     /**
-     * Set the column header.
-     *
-     * @param $header
-     * @return $this
-     */
-    public function setHeader($header);
-
-    /**
-     * Get the column header.
+     * Get the column heading.
      *
      * @return null|string
      */
-    public function getHeader();
+    public function getHeading();
+
+    /**
+     * Set the column heading.
+     *
+     * @param $heading
+     * @return $this
+     */
+    public function setHeading($heading);
 
     /**
      * Set the column value.
@@ -100,4 +99,18 @@ interface ColumnInterface
      * @return $this
      */
     public function setEntry($entry);
+
+    /**
+     * Get the attributes.
+     *
+     * @return array
+     */
+    public function getAttributes();
+
+    /**
+     * Get the attributes.
+     *
+     * @return array
+     */
+    public function setAttributes(array $attributes);
 }

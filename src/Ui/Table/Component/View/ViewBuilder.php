@@ -5,10 +5,9 @@ use Anomaly\Streams\Platform\Ui\Table\TableBuilder;
 /**
  * Class ViewBuilder
  *
- * @link    http://anomaly.is/streams-platform
- * @author  AnomalyLabs, Inc. <hello@anomaly.is>
- * @author  Ryan Thompson <ryan@anomaly.is>
- * @package Anomaly\Streams\Platform\Ui\Table\Component\View
+ * @link    http://pyrocms.com/
+ * @author  PyroCMS, Inc. <support@pyrocms.com>
+ * @author  Ryan Thompson <ryan@pyrocms.com>
  */
 class ViewBuilder
 {
@@ -49,6 +48,10 @@ class ViewBuilder
         $table = $builder->getTable();
 
         $this->input->read($builder);
+
+        if ($builder->getTableOption('enable_views') === false) {
+            return;
+        }
 
         foreach ($builder->getViews() as $view) {
             if (array_get($view, 'enabled', true)) {

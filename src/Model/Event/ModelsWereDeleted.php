@@ -5,10 +5,9 @@ use Anomaly\Streams\Platform\Model\EloquentModel;
 /**
  * Class ModelsWereDeleted
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Model\Event
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
 class ModelsWereDeleted
 {
@@ -25,7 +24,7 @@ class ModelsWereDeleted
      *
      * @param EloquentModel $model
      */
-    function __construct(EloquentModel $model)
+    public function __construct(EloquentModel $model)
     {
         $this->model = $model;
     }

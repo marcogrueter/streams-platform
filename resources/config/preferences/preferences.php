@@ -1,58 +1,78 @@
 <?php
 
 return [
-    'timezone'      => [
+    'per_page'    => [
+        'env'      => 'RESULTS_PER_PAGE',
+        'bind'     => 'streams::system.per_page',
         'type'     => 'anomaly.field_type.select',
         'required' => true,
         'config'   => [
+            'default_value' => 15,
+            'options'       => [
+                5   => 5,
+                10  => 10,
+                15  => 15,
+                25  => 25,
+                50  => 50,
+                75  => 75,
+                100 => 100,
+                150 => 150,
+            ],
+        ],
+    ],
+    'timezone'    => [
+        'env'    => 'APP_TIMEZONE',
+        'bind'   => 'app.timezone',
+        'type'   => 'anomaly.field_type.select',
+        'config' => [
+            'handler'       => 'timezones',
             'default_value' => config('app.timezone'),
-            'options'       => function () {
-                return array_combine(timezone_identifiers_list(), timezone_identifiers_list());
-            }
         ],
     ],
-    'date_format'   => [
-        'type'     => 'anomaly.field_type.select',
-        'required' => true,
-        'config'   => [
-            'default_value' => config('streams::datetime.date_format'),
-            'options'       => [
-                'Y/n/j'     => date('Y/n/j'),
-                'n/j/Y'     => date('n/j/Y'),
-                'M j, Y'    => date('M j, Y'),
-                'D M j, Y'  => date('D M j, Y'),
-                'F jS, Y'   => date('F jS, Y'),
-                'l F jS, Y' => date('l F jS, Y'),
-            ]
-        ],
-    ],
-    'time_format'   => [
-        'type'     => 'anomaly.field_type.select',
-        'required' => true,
-        'config'   => [
-            'default_value' => config('streams::datetime.time_format'),
-            'options'       => [
-                'g:i A' => date('g:i A'),
-                'G:i A' => date('G:i A') . ' (24 hr)'
-            ]
-        ],
-    ],
-    'admin_locale'  => [
-        'type'        => 'anomaly.field_type.language',
-        'required'    => true,
+    'date_format' => [
+        'env'         => 'DATE_FORMAT',
+        'bind'        => 'streams::datetime.date_format',
+        'type'        => 'anomaly.field_type.select',
         'placeholder' => false,
-        'config'      => [
-            'default_value'     => config('app.locale'),
-            'available_locales' => true
-        ]
-    ],
-    'public_locale' => [
-        'type'        => 'anomaly.field_type.language',
         'required'    => true,
-        'placeholder' => false,
         'config'      => [
-            'default_value'     => config('app.locale'),
-            'available_locales' => true
-        ]
-    ]
+            'options' => [
+                'j F, Y' => function () {
+                    return date('j F, Y'); // 10 July, 2015
+                },
+                'j M, y' => function () {
+                    return date('j M, y'); // 10 Jul, 15
+                },
+                'm/d/Y'  => function () {
+                    return date('m/d/Y'); // 07/10/2015
+                },
+                'd/m/Y'  => function () {
+                    return date('d/m/Y'); // 10/07/2015
+                },
+                'Y-m-d'  => function () {
+                    return date('Y-m-d'); // 2015-07-10
+                },
+            ],
+        ],
+    ],
+    'time_format' => [
+        'env'         => 'TIME_FORMAT',
+        'bind'        => 'streams::datetime.time_format',
+        'type'        => 'anomaly.field_type.select',
+        'placeholder' => false,
+        'required'    => true,
+        'config'      => [
+            'options' => [
+                'g:i A' => function () {
+                    return date('g:i A'); // 4:00 PM
+                },
+                'g:i a' => function () {
+                    return date('g:i a'); // 4:00 pm
+                },
+                'H:i'   => function () {
+                    return date('H:i'); // 16:00
+                },
+            ],
+        ],
+    ],
 ];

@@ -6,10 +6,9 @@ use Anomaly\Streams\Platform\Stream\Contract\StreamInterface;
 /**
  * Class EntryRelationsParser
  *
- * @link    http://anomaly.is/streams-platform
- * @author  AnomalyLabs, Inc. <hello@anomaly.is>
- * @author  Ryan Thompson <ryan@anomaly.is>
- * @package Anomaly\Streams\Platform\Entry\Parser
+ * @link    http://pyrocms.com/
+ * @author  PyroCMS, Inc. <support@pyrocms.com>
+ * @author  Ryan Thompson <ryan@pyrocms.com>
  */
 class EntryRelationsParser
 {
@@ -41,22 +40,10 @@ class EntryRelationsParser
      */
     protected function parseAssignment(AssignmentInterface $assignment, &$string)
     {
-        $fieldSlug = $assignment->getFieldSlug();
+        $fieldType = $assignment->getFieldType();
 
-        $method = camel_case($fieldSlug);
+        $parser = $fieldType->getParser();
 
-        $relationString = '';
-
-        $relationString .= "\npublic function {$method}()";
-
-        $relationString .= "\n{";
-
-        $relationString .= "\n\nreturn \$this->getFieldType('{$fieldSlug}')->getRelation();";
-
-        $relationString .= "\n}";
-
-        $relationString .= "\n";
-
-        $string .= $relationString;
+        $string .= $parser->relation($assignment);
     }
 }

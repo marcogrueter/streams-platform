@@ -8,10 +8,9 @@ use Anomaly\Streams\Platform\Stream\Contract\StreamInterface;
 /**
  * Class EntryStreamParser
  *
- * @link    http://anomaly.is/streams-platform
- * @author  AnomalyLabs, Inc. <hello@anomaly.is>
- * @author  Ryan Thompson <ryan@anomaly.is>
- * @package Anomaly\Streams\Platform\Entry\Parser
+ * @link    http://pyrocms.com/
+ * @author  PyroCMS, Inc. <support@pyrocms.com>
+ * @author  Ryan Thompson <ryan@pyrocms.com>
  */
 class EntryStreamParser
 {
@@ -44,6 +43,9 @@ class EntryStreamParser
     protected function parseStream(StreamInterface $stream, &$string)
     {
         foreach ($stream->getAttributes() as $key => $value) {
+            $key = addcslashes($key, "'");
+            $value = addcslashes($value, "'");
+
             $string .= "\n'{$key}' => '{$value}',";
         }
     }
@@ -77,12 +79,24 @@ class EntryStreamParser
 
         foreach ($assignment->getAttributes() as $key => $value) {
             $value = $assignment->getAttribute($key);
+            $key = addcslashes($key, "'");
 
+            // Serialize arrays.
             if (is_array($value)) {
                 $value = serialize($value);
             }
 
-            $string .= "\n'{$key}' => '{$value}',";
+            // Cast objects to strings.
+            if(is_object($value)){
+                $value = (string)$value;
+            }
+
+            // Quote and escape non numeric values.
+            if(!is_numeric($value)){
+                $value = "'" . addcslashes($value, "'") . "'";
+            }
+
+            $string .= "\n'{$key}' => {$value},";
         }
 
         // Parse this assignment field.
@@ -110,6 +124,9 @@ class EntryStreamParser
             if (is_array($value)) {
                 $value = serialize($value);
             }
+
+            $key = addcslashes($key, "'");
+            $value = addcslashes($value, "'");
 
             $string .= "\n'{$key}' => '{$value}',";
         }
@@ -149,8 +166,24 @@ class EntryStreamParser
 
         foreach ($translation->getAttributes() as $key => $value) {
             $value = $translation->getAttribute($key);
+            $key = addcslashes($key, "'");
 
-            $string .= "\n'{$key}' => '{$value}',";
+            // Serialize arrays.
+            if (is_array($value)) {
+                $value = serialize($value);
+            }
+
+            // Cast objects to strings.
+            if(is_object($value)){
+                $value = (string)$value;
+            }
+
+            // Quote and escape non numeric values.
+            if(!is_numeric($value)){
+                $value = "'" . addcslashes($value, "'") . "'";
+            }
+
+            $string .= "\n'{$key}' => {$value},";
         }
 
         $string .= "\n],";

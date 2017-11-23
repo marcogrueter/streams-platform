@@ -8,13 +8,26 @@ use Illuminate\Support\Collection;
 /**
  * Class Row
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Ui\Table\Component\Row
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
 class Row implements RowInterface
 {
+
+    /**
+     * The row key.
+     *
+     * @var null
+     */
+    protected $key = null;
+
+    /**
+     * The row class.
+     *
+     * @var null|string
+     */
+    protected $class = null;
 
     /**
      * The row entry.
@@ -45,6 +58,52 @@ class Row implements RowInterface
     protected $buttons;
 
     /**
+     * Get the key.
+     *
+     * @return null
+     */
+    public function getKey()
+    {
+        return $this->key;
+    }
+
+    /**
+     * Set the key.
+     *
+     * @param $key
+     * @return $this
+     */
+    public function setKey($key)
+    {
+        $this->key = $key;
+
+        return $this;
+    }
+
+    /**
+     * Get the class.
+     *
+     * @return null
+     */
+    public function getClass()
+    {
+        return $this->class;
+    }
+
+    /**
+     * Set the class.
+     *
+     * @param $class
+     * @return $this
+     */
+    public function setClass($class)
+    {
+        $this->class = $class;
+
+        return $this;
+    }
+
+    /**
      * Set the row buttons.
      *
      * @param $buttons
@@ -70,7 +129,7 @@ class Row implements RowInterface
     /**
      * Set the row columns.
      *
-     * @param Collection $columns
+     * @param  Collection $columns
      * @return $this
      */
     public function setColumns(Collection $columns)
@@ -103,7 +162,7 @@ class Row implements RowInterface
     /**
      * Set the table.
      *
-     * @param Table $table
+     * @param  Table $table
      * @return $this
      */
     public function setTable(Table $table)

@@ -2,17 +2,15 @@
 
 use Anomaly\Streams\Platform\Ui\Table\Component\Row\RowBuilder;
 use Anomaly\Streams\Platform\Ui\Table\TableBuilder;
-use Illuminate\Contracts\Bus\SelfHandling;
 
 /**
  * Class BuildRows
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Ui\Table\Component\Row\Command
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
-class BuildRows implements SelfHandling
+class BuildRows
 {
 
     /**

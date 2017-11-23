@@ -7,10 +7,9 @@ use Anomaly\Streams\Platform\Stream\Contract\StreamInterface;
 /**
  * Class FieldCollection
  *
- * @link    http://anomaly.is/streams-platform
- * @author  AnomalyLabs, Inc. <hello@anomaly.is>
- * @author  Ryan Thompson <ryan@anomaly.is>
- * @package Anomaly\Streams\Platform\Field
+ * @link    http://pyrocms.com/
+ * @author  PyroCMS, Inc. <support@pyrocms.com>
+ * @author  Ryan Thompson <ryan@pyrocms.com>
  */
 class FieldCollection extends EloquentCollection
 {
@@ -24,14 +23,18 @@ class FieldCollection extends EloquentCollection
     {
         /* @var FieldInterface $item */
         foreach ($items as $item) {
-            $this->items[$item->getSlug()] = $item;
+            if (is_object($item)) {
+                $this->items[$item->getSlug()] = $item;
+            } else {
+                $this->items[] = $item;
+            }
         }
     }
 
     /**
      * Return only unassigned fields.
      *
-     * @return static|FieldCollection
+     * @return FieldCollection
      */
     public function unassigned()
     {
@@ -51,8 +54,8 @@ class FieldCollection extends EloquentCollection
      * Return fields only assigned
      * to the provided stream.
      *
-     * @param StreamInterface $stream
-     * @return static
+     * @param  StreamInterface $stream
+     * @return FieldCollection
      */
     public function assignedTo(StreamInterface $stream)
     {
@@ -72,8 +75,8 @@ class FieldCollection extends EloquentCollection
      * Return fields only NOT assigned
      * to the provided stream.
      *
-     * @param StreamInterface $stream
-     * @return static
+     * @param  StreamInterface $stream
+     * @return FieldCollection
      */
     public function notAssignedTo(StreamInterface $stream)
     {
@@ -92,7 +95,7 @@ class FieldCollection extends EloquentCollection
     /**
      * Return only unlocked fields.
      *
-     * @return static|FieldCollection
+     * @return FieldCollection
      */
     public function unlocked()
     {

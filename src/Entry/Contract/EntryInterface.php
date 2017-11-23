@@ -2,20 +2,22 @@
 
 use Anomaly\Streams\Platform\Addon\FieldType\FieldType;
 use Anomaly\Streams\Platform\Addon\FieldType\FieldTypePresenter;
+use Anomaly\Streams\Platform\Addon\FieldType\FieldTypeQuery;
 use Anomaly\Streams\Platform\Assignment\AssignmentCollection;
 use Anomaly\Streams\Platform\Assignment\Contract\AssignmentInterface;
 use Anomaly\Streams\Platform\Entry\EntryPresenter;
+use Anomaly\Streams\Platform\Entry\EntryRouter;
 use Anomaly\Streams\Platform\Field\Contract\FieldInterface;
+use Anomaly\Streams\Platform\Model\EloquentCollection;
 use Anomaly\Streams\Platform\Stream\Contract\StreamInterface;
 use Carbon\Carbon;
 
 /**
  * Interface EntryInterface
  *
- * @link    http://anomaly.is/streams-platform
- * @author  AnomalyLabs, Inc. <hello@anomaly.is>
- * @author  Ryan Thompson <ryan@anomaly.is>
- * @package Anomaly\Streams\Platform\Entry\Contract
+ * @link    http://pyrocms.com/
+ * @author  PyroCMS, Inc. <support@pyrocms.com>
+ * @author  Ryan Thompson <ryan@pyrocms.com>
  */
 interface EntryInterface
 {
@@ -42,11 +44,39 @@ interface EntryInterface
     public function getEntryTitle();
 
     /**
+     * Get the model's bound name.
+     *
+     * @return string
+     */
+    public function getBoundModelName();
+
+    /**
+     * Get the model's bound namespace.
+     *
+     * @return string
+     */
+    public function getBoundModelNamespace();
+
+    /**
+     * Get the sort order.
+     *
+     * @return int
+     */
+    public function getSortOrder();
+
+    /**
      * Get the title.
      *
      * @return mixed
      */
     public function getTitle();
+
+    /**
+     * Get the title key.
+     *
+     * @return string
+     */
+    public function getTitleName();
 
     /**
      * Get the stream.
@@ -70,6 +100,13 @@ interface EntryInterface
     public function getStreamSlug();
 
     /**
+     * Get the entry's stream name.
+     *
+     * @return string
+     */
+    public function getStreamName();
+
+    /**
      * Get the entry's stream prefix.
      *
      * @return string
@@ -84,11 +121,25 @@ interface EntryInterface
     public function getTableName();
 
     /**
+     * Get related translations.
+     *
+     * @return EloquentCollection
+     */
+    public function getTranslations();
+
+    /**
      * Get the translations table name.
      *
      * @return string
      */
     public function getTranslationsTableName();
+
+    /**
+     * Get the translated attributes.
+     *
+     * @return array
+     */
+    public function getTranslatedAttributes();
 
     /**
      * Get a field by it's slug.
@@ -110,8 +161,8 @@ interface EntryInterface
     /**
      * Get a field value.
      *
-     * @param      $fieldSlug
-     * @param null $locale
+     * @param        $fieldSlug
+     * @param  null  $locale
      * @return mixed
      */
     public function getFieldValue($fieldSlug, $locale = null);
@@ -119,11 +170,37 @@ interface EntryInterface
     /**
      * Set a field value.
      *
-     * @param $fieldSlug
-     * @param $value
-     * @return mixed
+     * @param        $fieldSlug
+     * @param        $value
+     * @param  null  $locale
+     * @return $this
      */
-    public function setFieldValue($fieldSlug, $value);
+    public function setFieldValue($fieldSlug, $value, $locale = null);
+
+    /**
+     * Fill the model attributes.
+     *
+     * @param  array $attributes
+     * @return $this
+     */
+    public function fill(array $attributes);
+
+    /**
+     * Determine if the model or given
+     * attribute(s) have been modified.
+     *
+     * @param  array|string|null $attributes
+     * @return bool
+     */
+    public function isDirty($attributes = null);
+
+    /**
+     * Get the attributes that have
+     * been changed since last sync.
+     *
+     * @return array
+     */
+    public function getDirty();
 
     /**
      * Get a field's type by the field's slug.
@@ -132,6 +209,14 @@ interface EntryInterface
      * @return FieldType
      */
     public function getFieldType($fieldSlug);
+
+    /**
+     * Get the field type query.
+     *
+     * @param $fieldSlug
+     * @return FieldTypeQuery
+     */
+    public function getFieldTypeQuery($fieldSlug);
 
     /**
      * Get the field type presenter.
@@ -147,6 +232,23 @@ interface EntryInterface
      * @return AssignmentCollection
      */
     public function getAssignments();
+
+    /**
+     * Get the field slugs for assigned fields.
+     *
+     * @param  null $prefix
+     * @return array
+     */
+    public function getAssignmentFieldSlugs($prefix = null);
+
+    /**
+     * Get all assignments of the
+     * provided field type namespace.
+     *
+     * @param $fieldType
+     * @return AssignmentCollection
+     */
+    public function getAssignmentsByFieldType($fieldType);
 
     /**
      * Get an assignment by field slug.
@@ -171,12 +273,34 @@ interface EntryInterface
     public function getRelationshipAssignments();
 
     /**
+     * Return required assignments.
+     *
+     * @return AssignmentCollection
+     */
+    public function getRequiredAssignments();
+
+    /**
+     * Return searchable assignments.
+     *
+     * @return AssignmentCollection
+     */
+    public function getSearchableAssignments();
+
+    /**
      * Get a specified relationship.
      *
      * @param  string $relation
      * @return mixed
      */
     public function getRelation($relation);
+
+    /**
+     * Eager load relations on the model.
+     *
+     * @param  $relations
+     * @return $this
+     */
+    public function load($relations);
 
     /**
      * Get the translatable flag.
@@ -193,11 +317,40 @@ interface EntryInterface
     public function isDeletable();
 
     /**
+     * Return if the model is restorable or not.
+     *
+     * @return bool
+     */
+    public function isRestorable();
+
+    /**
+     * Return whether the entry is trashable or not.
+     *
+     * @return bool
+     */
+    public function isTrashable();
+
+    /**
+     * Return whether the model is being
+     * force deleted or not.
+     *
+     * @return bool
+     */
+    public function isForceDeleting();
+
+    /**
      * Return the last modified datetime.
      *
      * @return Carbon
      */
     public function lastModified();
+
+    /**
+     * Return if the entry is trashed or not.
+     *
+     * @return bool
+     */
+    public function trashed();
 
     /**
      * Return the object's ETag fingerprint.
@@ -212,6 +365,34 @@ interface EntryInterface
      * @return EntryPresenter
      */
     public function newPresenter();
+
+    /**
+     * Return a model route.
+     *
+     * @return string
+     */
+    public function route($route, array $parameters = []);
+
+    /**
+     * Return a new router instance.
+     *
+     * @return EntryRouter
+     */
+    public function newRouter();
+
+    /**
+     * Get the router.
+     *
+     * @return EntryRouter
+     */
+    public function getRouter();
+
+    /**
+     * Get the router name.
+     *
+     * @return string
+     */
+    public function getRouterName();
 
     /**
      * Return whether the title column is
@@ -244,7 +425,7 @@ interface EntryInterface
      *
      * @param  $key
      * @param  $value
-     * @return mixed
+     * @return $this
      */
     public function setAttribute($key, $value);
 
@@ -259,10 +440,11 @@ interface EntryInterface
     /**
      * Get a raw unmodified attribute.
      *
-     * @param $key
+     * @param             $key
+     * @param  bool       $process
      * @return mixed|null
      */
-    public function getRawAttribute($key);
+    public function getRawAttribute($key, $process = true);
 
     /**
      * Set a raw unmodified attribute.
@@ -272,13 +454,24 @@ interface EntryInterface
      * @return $this
      */
     public function setRawAttribute($key, $value);
-    
+
     /**
      * Get the entry attributes.
      *
      * @return array
      */
     public function getAttributes();
+
+    /**
+     * Cache a value in the
+     * model's cache collection.
+     *
+     * @param $key
+     * @param $ttl
+     * @param $value
+     * @return mixed
+     */
+    public function cache($key, $ttl, $value);
 
     /**
      * Flush the entry model's cache.
@@ -288,10 +481,47 @@ interface EntryInterface
     public function flushCache();
 
     /**
+     * Return the entry as an array.
+     *
+     * @return array
+     */
+    public function toArray();
+
+    /**
+     * Return the searchable array.
+     *
+     * @return array
+     */
+    public function toSearchableArray();
+
+    /**
+     * Return the routable array.
+     *
+     * @return array
+     */
+    public function toRoutableArray();
+
+    /**
      * Fire field type events.
      *
      * @param       $trigger
      * @param array $payload
      */
     public function fireFieldTypeEvents($trigger, $payload = []);
+
+    /**
+     * Get the cascading actions.
+     *
+     * @return array
+     */
+    public function getCascades();
+
+    /**
+     * Call a hook.
+     *
+     * @param        $hook
+     * @param  array $parameters
+     * @return mixed
+     */
+    public function call($hook, array $parameters = []);
 }

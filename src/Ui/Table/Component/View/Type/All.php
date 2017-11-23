@@ -1,14 +1,14 @@
 <?php namespace Anomaly\Streams\Platform\Ui\Table\Component\View\Type;
 
+use Anomaly\Streams\Platform\Ui\Table\Component\View\Query\AllQuery;
 use Anomaly\Streams\Platform\Ui\Table\Component\View\View;
 
 /**
  * Class All
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Ui\Table\Component\View\Type
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
 class All extends View
 {
@@ -19,5 +19,4 @@ class All extends View
      * @var string
      */
     protected $query = AllQuery::class;
-
 }

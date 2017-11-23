@@ -1,20 +1,10 @@
 <?php namespace Anomaly\Streams\Platform\Entry\Command;
 
-use Anomaly\Streams\Platform\Entry\EntryTranslationsModel;
 use Anomaly\Streams\Platform\Model\EloquentModel;
-use Illuminate\Auth\Guard;
-use Illuminate\Contracts\Bus\SelfHandling;
+use Illuminate\Contracts\Auth\Guard;
 use Illuminate\Database\Query\Builder;
 
-/**
- * Class SetMetaInformation
- *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Entry\Command
- */
-class SetMetaInformation implements SelfHandling
+class SetMetaInformation
 {
 
     /**
@@ -41,28 +31,22 @@ class SetMetaInformation implements SelfHandling
      */
     public function handle(Guard $auth)
     {
-        /* @var Builder $query */
-        $query = $this->entry->newQuery();
+        if ($this->entry->created_at) {
+            $this->entry->updated_at    = time();
+            $this->entry->updated_by_id = $auth->id();
+        }
 
-        if (!$this->entry->getKey()) {
+        if (!$this->entry->created_at) {
+            $this->entry->created_at    = time();
+            $this->entry->created_by_id = $auth->id();
+        }
 
-            $this->entry->updated_at = null;
-            $this->entry->created_at = time();
-            $this->entry->created_by = $auth->id();
+        if (!$this->entry->sort_order) {
 
-            if (!$this->entry instanceof EntryTranslationsModel) {
-                $this->entry->sort_order = $query->count('id') + 1;
-            }
-        } else {
+            /* @var Builder $query */
+            $query = $this->entry->newQuery();
 
-            // In case it's being imported with an ID.
-            if (!$this->entry->created_at) {
-                $this->entry->created_at = time();
-                $this->entry->created_by = $auth->id();
-            }
-
-            $this->entry->updated_at = time();
-            $this->entry->updated_by = $auth->id();
+            $this->entry->sort_order = $query->count('id') + 1;
         }
     }
 }

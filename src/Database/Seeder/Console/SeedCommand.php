@@ -1,16 +1,15 @@
 <?php namespace Anomaly\Streams\Platform\Database\Seeder\Console;
 
-use Anomaly\Streams\Platform\Database\Seeder\Command\Seed;
+use Anomaly\Streams\Platform\Database\Seeder\Console\Command\SetAddonSeederClass;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Symfony\Component\Console\Input\InputOption;
 
 /**
  * Class SeedCommand
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Database\Seeder\Console
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
 class SeedCommand extends \Illuminate\Database\Console\Seeds\SeedCommand
 {
@@ -19,24 +18,26 @@ class SeedCommand extends \Illuminate\Database\Console\Seeds\SeedCommand
 
     /**
      * Execute the console command.
-     *
-     * @return void
      */
-    public function fire()
+    public function handle()
     {
-        if (!$this->confirmToProceed()) {
+        $this->dispatch(
+            new SetAddonSeederClass(
+                $this,
+                $this->input
+            )
+        );
+
+        $path = $this->input->getOption('class');
+
+        if ($path && !class_exists($path)) {
+
+            $this->info('Nothing to seed.');
+
             return;
         }
 
-        $this->resolver->setDefaultConnection($this->getDatabase());
-
-        $this->dispatch(
-            new Seed(
-                $this->input->getOption('addon'),
-                $this->input->getOption('class'),
-                $this
-            )
-        );
+        parent::handle();
     }
 
     /**
@@ -49,7 +50,7 @@ class SeedCommand extends \Illuminate\Database\Console\Seeds\SeedCommand
         return array_merge(
             parent::getOptions(),
             [
-                ['addon', null, InputOption::VALUE_OPTIONAL, 'The addon to seed.']
+                ['addon', null, InputOption::VALUE_OPTIONAL, 'The addon to seed.'],
             ]
         );
     }

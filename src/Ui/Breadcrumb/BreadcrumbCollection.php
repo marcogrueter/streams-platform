@@ -1,38 +1,16 @@
 <?php namespace Anomaly\Streams\Platform\Ui\Breadcrumb;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Collection;
+use Anomaly\Streams\Platform\Support\Collection;
 
 /**
  * Class BreadcrumbCollection
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Ui\Breadcrumb
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
 class BreadcrumbCollection extends Collection
 {
-
-    /**
-     * The request object.
-     *
-     * @var Request
-     */
-    protected $request;
-
-    /**
-     * Create a new BreadcrumbCollection instance.
-     *
-     * @param Request $request
-     * @param array   $items
-     */
-    public function __construct(Request $request, $items = [])
-    {
-        $this->request = $request;
-
-        parent::__construct($items);
-    }
 
     /**
      * Add a breadcrumb.
@@ -42,10 +20,6 @@ class BreadcrumbCollection extends Collection
      */
     public function add($key, $url = null)
     {
-        if (!$url) {
-            $url = $this->request->fullUrl();
-        }
-
         $this->put($key, $url);
     }
 
@@ -55,12 +29,26 @@ class BreadcrumbCollection extends Collection
      * @param string $key
      * @param string $value
      */
-    public function put($key, $value)
+    public function put($key, $value = null)
     {
+        if (!$value) {
+            $value = url()->current();
+        }
+
         if (!starts_with($value, 'http')) {
             $value = url($value);
         }
 
         parent::put($key, $value);
+    }
+
+    /**
+     * Return the breadcrumb.
+     *
+     * @return string
+     */
+    public function __toString()
+    {
+        return view('streams::partials/breadcrumb')->render();
     }
 }

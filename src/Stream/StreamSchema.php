@@ -7,10 +7,9 @@ use Illuminate\Database\Schema\Builder;
 /**
  * Class StreamSchema
  *
- * @link    http://anomaly.is/streams-platform
- * @author  AnomalyLabs, Inc. <hello@anomaly.is>
- * @author  Ryan Thompson <ryan@anomaly.is>
- * @package Anomaly\Streams\Platform\Stream
+ * @link    http://pyrocms.com/
+ * @author  PyroCMS, Inc. <support@pyrocms.com>
+ * @author  Ryan Thompson <ryan@pyrocms.com>
  */
 class StreamSchema
 {
@@ -45,12 +44,14 @@ class StreamSchema
             $table,
             function (Blueprint $table) use ($stream) {
 
+                $table->engine = $stream->getConfig('database.engine');
+
                 $table->increments('id');
                 $table->integer('sort_order')->nullable();
                 $table->datetime('created_at');
-                $table->integer('created_by')->nullable();
+                $table->integer('created_by_id')->nullable();
                 $table->datetime('updated_at')->nullable();
-                $table->integer('updated_by')->nullable();
+                $table->integer('updated_by_id')->nullable();
 
                 if ($stream->isTrashable()) {
                     $table->datetime('deleted_at')->nullable();
@@ -62,26 +63,57 @@ class StreamSchema
     /**
      * Create translations table.
      *
-     * @param $table
-     * @param $foreignKey
+     * @param StreamInterface $stream
      */
-    public function createTranslationsTable($table)
+    public function createTranslationsTable(StreamInterface $stream)
     {
-        $this->schema->dropIfExists($table);
+        $this->schema->dropIfExists($stream->getEntryTranslationsTableName());
 
         $this->schema->create(
-            $table,
-            function (Blueprint $table) {
+            $stream->getEntryTranslationsTableName(),
+            function (Blueprint $table) use ($stream) {
+
+                $table->engine = $stream->getConfig('database.engine');
 
                 $table->increments('id');
                 $table->integer('entry_id');
                 $table->datetime('created_at');
-                $table->integer('created_by')->nullable();
+                $table->integer('created_by_id')->nullable();
                 $table->datetime('updated_at')->nullable();
-                $table->integer('updated_by')->nullable();
+                $table->integer('updated_by_id')->nullable();
                 $table->string('locale')->index();
             }
         );
+    }
+
+    /**
+     * Rename a table.
+     *
+     * @param StreamInterface $from
+     * @param StreamInterface $to
+     */
+    public function renameTable(StreamInterface $from, StreamInterface $to)
+    {
+        if ($from->getEntryTableName() === $to->getEntryTableName()) {
+            return;
+        }
+
+        $this->schema->rename($from->getEntryTableName(), $to->getEntryTableName());
+    }
+
+    /**
+     * Rename a translations table.
+     *
+     * @param StreamInterface $from
+     * @param StreamInterface $to
+     */
+    public function renameTranslationsTable(StreamInterface $from, StreamInterface $to)
+    {
+        if ($from->getEntryTranslationsTableName() === $to->getEntryTranslationsTableName()) {
+            return;
+        }
+
+        $this->schema->rename($from->getEntryTranslationsTableName(), $to->getEntryTranslationsTableName());
     }
 
     /**

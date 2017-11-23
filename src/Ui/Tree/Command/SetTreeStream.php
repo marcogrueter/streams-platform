@@ -2,17 +2,15 @@
 
 use Anomaly\Streams\Platform\Entry\Contract\EntryInterface;
 use Anomaly\Streams\Platform\Ui\Tree\TreeBuilder;
-use Illuminate\Contracts\Bus\SelfHandling;
 
 /**
  * Class SetTreeStream
  *
- * @link    http://anomaly.is/streams-platform
- * @author  AnomalyLabs, Inc. <hello@anomaly.is>
- * @author  Ryan Thompson <ryan@anomaly.is>
- * @package Anomaly\Streams\Platform\Ui\Tree\Command
+ * @link    http://pyrocms.com/
+ * @author  PyroCMS, Inc. <support@pyrocms.com>
+ * @author  Ryan Thompson <ryan@pyrocms.com>
  */
-class SetTreeStream implements SelfHandling
+class SetTreeStream
 {
 
     /**
@@ -23,7 +21,7 @@ class SetTreeStream implements SelfHandling
     protected $builder;
 
     /**
-     * Create a new BuildTreeColumnsCommand instance.
+     * Create a new BuildTreeSegmentsCommand instance.
      *
      * @param TreeBuilder $builder
      */

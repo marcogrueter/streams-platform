@@ -5,10 +5,9 @@ use Anomaly\Streams\Platform\Addon\AddonCollection;
 /**
  * Class FieldTypeCollection
  *
- * @link    http://anomaly.is/streams-platform
- * @author  AnomalyLabs, Inc. <hello@anomaly.is>
- * @author  Ryan Thompson <ryan@anomaly.is>
- * @package Anomaly\Streams\Platform\Addon\FieldType
+ * @link    http://pyrocms.com/
+ * @author  PyroCMS, Inc. <support@pyrocms.com>
+ * @author  Ryan Thompson <ryan@pyrocms.com>
  */
 class FieldTypeCollection extends AddonCollection
 {
@@ -30,5 +29,24 @@ class FieldTypeCollection extends AddonCollection
         }
 
         return clone($type);
+    }
+
+    /**
+     * Find an addon by it's slug.
+     *
+     * @param  $slug
+     *
+     * @return null|FieldType
+     */
+    public function findBySlug($slug)
+    {
+        /* @var FieldType $item */
+        foreach ($this->items as $item) {
+            if ($item->getSlug() == $slug) {
+                return clone($item);
+            }
+        }
+
+        return null;
     }
 }

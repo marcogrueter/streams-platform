@@ -1,15 +1,14 @@
 <?php namespace Anomaly\Streams\Platform\Ui\Button;
 
+use Anomaly\Streams\Platform\Support\Collection;
 use Anomaly\Streams\Platform\Ui\Button\Contract\ButtonInterface;
-use Illuminate\Support\Collection;
 
 /**
  * Class ButtonCollection
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Ui\Button
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
 class ButtonCollection extends Collection
 {
@@ -21,14 +20,20 @@ class ButtonCollection extends Collection
      */
     public function enabled()
     {
-        $enabled = [];
-
-        foreach ($this->items as $item) {
-            if ($item instanceof ButtonInterface && $item->isEnabled()) {
-                $enabled[] = $item;
+        return $this->filter(
+            function (ButtonInterface $button) {
+                return $button->isEnabled();
             }
-        }
+        );
+    }
 
-        return new static($enabled);
+    /**
+     * Render the actions.
+     *
+     * @return string
+     */
+    public function __toString()
+    {
+        return view('streams::buttons/buttons', ['buttons' => $this->items])->render();
     }
 }

@@ -2,17 +2,15 @@
 
 use Anomaly\Streams\Platform\Entry\EntryUtility;
 use Anomaly\Streams\Platform\Stream\Contract\StreamInterface;
-use Illuminate\Contracts\Bus\SelfHandling;
 
 /**
  * Class CompileStream
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Stream\Command
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
-class CompileStream implements SelfHandling
+class CompileStream
 {
 
     /**

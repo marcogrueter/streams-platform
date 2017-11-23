@@ -3,17 +3,15 @@
 use Anomaly\Streams\Platform\Ui\Table\Component\View\Contract\ViewInterface;
 use Anomaly\Streams\Platform\Ui\Table\Component\View\Contract\ViewQueryInterface;
 use Anomaly\Streams\Platform\Ui\Table\TableBuilder;
-use Illuminate\Container\Container;
-use Illuminate\Contracts\Bus\SelfHandling;
+use Illuminate\Contracts\Container\Container;
 use Illuminate\Database\Eloquent\Builder;
 
 /**
  * Class ViewQuery
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Ui\Table\Component\View
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
 class ViewQuery
 {
@@ -38,24 +36,26 @@ class ViewQuery
     /**
      * Handle the view query.
      *
-     * @param TableBuilder  $builder
-     * @param Builder       $query
-     * @param ViewInterface $view
+     * @param  TableBuilder  $builder
+     * @param  Builder       $query
+     * @param  ViewInterface $view
      * @return mixed
      * @throws \Exception
      */
     public function handle(TableBuilder $builder, Builder $query, ViewInterface $view)
     {
+        $view->fire('querying', compact('builder', 'query'));
+
         if (!$handler = $view->getQuery()) {
             return;
         }
 
         // Self handling implies @handle
-        if (is_string($handler) && !str_contains($handler, '@') && class_implements($handler, SelfHandling::class)) {
+        if (is_string($handler) && !str_contains($handler, '@')) {
             $handler .= '@handle';
         }
 
-        /**
+        /*
          * If the handler is a callable string or Closure
          * then call it using the IoC container.
          */
@@ -63,7 +63,7 @@ class ViewQuery
             $this->container->call($handler, compact('builder', 'query'));
         }
 
-        /**
+        /*
          * If the handle is an instance of ViewQueryInterface
          * simply call the handle method on it.
          */

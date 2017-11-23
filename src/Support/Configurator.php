@@ -4,14 +4,6 @@ use Illuminate\Contracts\Config\Repository;
 use Illuminate\Filesystem\Filesystem;
 use SplFileInfo;
 
-/**
- * Class Configurator
- *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Support
- */
 class Configurator
 {
 
@@ -35,7 +27,7 @@ class Configurator
      * @param Filesystem $files
      * @param Repository $config
      */
-    function __construct(Filesystem $files, Repository $config)
+    public function __construct(Filesystem $files, Repository $config)
     {
         $this->files  = $files;
         $this->config = $config;
@@ -55,27 +47,29 @@ class Configurator
 
         /* @var SplFileInfo $file */
         foreach ($this->files->allFiles($directory) as $file) {
-
-            $key = ltrim(
+            $key = trim(
                 str_replace(
                     $directory,
                     '',
                     $file->getPath()
-                ) . '/' . $file->getBaseName('.php'),
-                '/'
+                ) . DIRECTORY_SEPARATOR . $file->getBaseName('.php'),
+                DIRECTORY_SEPARATOR
             );
+
+            // Normalize key slashes.
+            $key = str_replace('\\', '/', $key);
 
             $this->config->set($namespace . '::' . $key, $this->files->getRequire($file->getPathname()));
         }
     }
 
     /**
-     * Merge a namespace to configuration.
+     * Add namespace overrides to configuration.
      *
      * @param $namespace
      * @param $directory
      */
-    public function mergeNamespace($namespace, $directory)
+    public function addNamespaceOverrides($namespace, $directory)
     {
         if (!$this->files->isDirectory($directory)) {
             return;
@@ -83,15 +77,17 @@ class Configurator
 
         /* @var SplFileInfo $file */
         foreach ($this->files->allFiles($directory) as $file) {
-
-            $key = ltrim(
+            $key = trim(
                 str_replace(
                     $directory,
                     '',
                     $file->getPath()
-                ) . '/' . $file->getBaseName('.php'),
-                '/'
+                ) . DIRECTORY_SEPARATOR . $file->getBaseName('.php'),
+                DIRECTORY_SEPARATOR
             );
+
+            // Normalize key slashes.
+            $key = str_replace('\\', '/', $key);
 
             $this->config->set(
                 $namespace . '::' . $key,

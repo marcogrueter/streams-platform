@@ -5,10 +5,9 @@ use Anomaly\Streams\Platform\Ui\Grid\GridBuilder;
 /**
  * Class ButtonInput
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Ui\Grid\Component\Button
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
 class ButtonInput
 {

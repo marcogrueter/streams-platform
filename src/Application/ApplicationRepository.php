@@ -1,14 +1,15 @@
 <?php namespace Anomaly\Streams\Platform\Application;
 
+use Anomaly\Streams\Platform\Model\EloquentRepository;
+
 /**
  * Class ApplicationRepository
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Application
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
-class ApplicationRepository
+class ApplicationRepository extends EloquentRepository
 {
 
     /**
@@ -36,6 +37,8 @@ class ApplicationRepository
      */
     public function findByDomain($domain)
     {
+        $domain = trim(str_replace(['http://', 'https://'], '', $domain), '/');
+
         return $this->model
             ->leftJoin('applications_domains', 'applications.id', '=', 'applications_domains.application_id')
             ->where('applications.domain', $domain)
@@ -44,12 +47,12 @@ class ApplicationRepository
     }
 
     /**
-     * Create a new Application.
+     * Find an application by it's reference.
      *
-     * @param array $attributes
+     * @param $reference
      */
-    public function create(array $attributes)
+    public function findByReference($reference)
     {
-        return $this->model->create($attributes);
+        return $this->model->where('reference', $reference)->first();
     }
 }

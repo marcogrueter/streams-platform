@@ -1,6 +1,7 @@
 <?php namespace Anomaly\Streams\Platform\Entry;
 
 use Anomaly\Streams\Platform\Entry\Command\GenerateEntryModel;
+use Anomaly\Streams\Platform\Entry\Command\GenerateEntryModelClassmap;
 use Anomaly\Streams\Platform\Entry\Command\GenerateEntryTranslationsModel;
 use Anomaly\Streams\Platform\Stream\Contract\StreamInterface;
 use Illuminate\Foundation\Bus\DispatchesJobs;
@@ -8,10 +9,9 @@ use Illuminate\Foundation\Bus\DispatchesJobs;
 /**
  * Class EntryUtility
  *
- * @link    http://anomaly.is/streams-platform
- * @author  AnomalyLabs, Inc. <hello@anomaly.is>
- * @author  Ryan Thompson <ryan@anomaly.is>
- * @package Anomaly\Streams\Platform\Entry
+ * @link    http://pyrocms.com/
+ * @author  PyroCMS, Inc. <support@pyrocms.com>
+ * @author  Ryan Thompson <ryan@pyrocms.com>
  */
 class EntryUtility
 {
@@ -28,12 +28,14 @@ class EntryUtility
         // Generate the base model.
         $this->dispatch(new GenerateEntryModel($stream));
 
-        /**
+        /*
          * If the stream is translatable generate
          * the translations model too.
          */
         if ($stream->isTranslatable()) {
             $this->dispatch(new GenerateEntryTranslationsModel($stream));
         }
+
+        $this->dispatch(new GenerateEntryModelClassmap());
     }
 }

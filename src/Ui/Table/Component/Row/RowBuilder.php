@@ -4,14 +4,14 @@ use Anomaly\Streams\Platform\Support\Evaluator;
 use Anomaly\Streams\Platform\Ui\Table\Component\Button\ButtonBuilder;
 use Anomaly\Streams\Platform\Ui\Table\Component\Column\ColumnBuilder;
 use Anomaly\Streams\Platform\Ui\Table\TableBuilder;
+use Illuminate\Database\Eloquent\Model;
 
 /**
  * Class RowBuilder
  *
- * @link    http://anomaly.is/streams-platform
- * @author  AnomalyLabs, Inc. <hello@anomaly.is>
- * @author  Ryan Thompson <ryan@anomaly.is>
- * @package Anomaly\Streams\Platform\Ui\Table\Component\Row
+ * @link    http://pyrocms.com/
+ * @author  PyroCMS, Inc. <support@pyrocms.com>
+ * @author  Ryan Thompson <ryan@pyrocms.com>
  */
 class RowBuilder
 {
@@ -78,7 +78,13 @@ class RowBuilder
 
             $buttons = $buttons->enabled();
 
-            $row = compact('columns', 'buttons', 'entry');
+            $class = $builder->getOption('row_class');
+
+            $row = compact('columns', 'buttons', 'entry', 'class');
+
+            if ($entry instanceof Model) {
+                $row['key'] = $entry->getKey();
+            }
 
             $row['table'] = $builder->getTable();
 

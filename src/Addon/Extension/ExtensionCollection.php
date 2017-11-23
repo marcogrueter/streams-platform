@@ -5,10 +5,9 @@ use Anomaly\Streams\Platform\Addon\AddonCollection;
 /**
  * Class ExtensionCollection
  *
- * @link    http://anomaly.is/streams-platform
- * @author  AnomalyLabs, Inc. <hello@anomaly.is>
- * @author  Ryan Thompson <ryan@anomaly.is>
- * @package Anomaly\Streams\Platform\Addon\Extension
+ * @link    http://pyrocms.com/
+ * @author  PyroCMS, Inc. <support@pyrocms.com>
+ * @author  Ryan Thompson <ryan@pyrocms.com>
  */
 class ExtensionCollection extends AddonCollection
 {
@@ -16,8 +15,8 @@ class ExtensionCollection extends AddonCollection
     /**
      * Search for and return matching extensions.
      *
-     * @param mixed $pattern
-     * @param bool  $strict
+     * @param  mixed               $pattern
+     * @param  bool                $strict
      * @return ExtensionCollection
      */
     public function search($pattern, $strict = false)
@@ -25,7 +24,9 @@ class ExtensionCollection extends AddonCollection
         $matches = [];
 
         foreach ($this->items as $item) {
-            if ($item instanceof Extension && str_is($pattern, $item->getProvides())) {
+
+            /* @var Extension $item */
+            if (str_is($pattern, $item->getProvides())) {
                 $matches[] = $item;
             }
         }
@@ -38,13 +39,15 @@ class ExtensionCollection extends AddonCollection
      *
      * Example: extension.users::authenticator.default
      *
-     * @param  mixed $key
+     * @param  mixed          $key
      * @return null|Extension
      */
     public function find($key)
     {
         foreach ($this->items as $item) {
-            if ($item instanceof Extension && $item->getProvides() == $key) {
+
+            /* @var Extension $item */
+            if ($item->getProvides() == $key) {
                 return $item;
             }
         }
@@ -60,7 +63,9 @@ class ExtensionCollection extends AddonCollection
     public function active()
     {
         foreach ($this->items as $item) {
-            if ($item instanceof Extension && $item->isActive()) {
+
+            /* @var Extension $item */
+            if ($item->isActive()) {
                 return $item;
             }
         }
@@ -78,7 +83,9 @@ class ExtensionCollection extends AddonCollection
         $installed = [];
 
         foreach ($this->items as $item) {
-            if ($item instanceof Extension && $item->isInstalled()) {
+
+            /* @var Extension $item */
+            if ($item->isInstalled()) {
                 $installed[] = $item;
             }
         }
@@ -96,7 +103,9 @@ class ExtensionCollection extends AddonCollection
         $installed = [];
 
         foreach ($this->items as $item) {
-            if ($item instanceof Extension && !$item->isInstalled()) {
+
+            /* @var Extension $item */
+            if (!$item->isInstalled()) {
                 $installed[] = $item;
             }
         }
@@ -114,7 +123,9 @@ class ExtensionCollection extends AddonCollection
         $enabled = [];
 
         foreach ($this->items as $item) {
-            if ($item instanceof Extension && $item->isEnabled()) {
+
+            /* @var Extension $item */
+            if ($item->isEnabled()) {
                 $enabled[] = $item;
             }
         }
@@ -134,9 +145,10 @@ class ExtensionCollection extends AddonCollection
             return false;
         }
 
+        /* @var Extension $item */
         $item = $this->items[$slug];
 
-        if ($item instanceof Extension) {
+        if ($item) {
             return $item->isInstalled();
         }
 

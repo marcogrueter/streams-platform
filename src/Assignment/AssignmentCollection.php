@@ -2,16 +2,14 @@
 
 use Anomaly\Streams\Platform\Addon\FieldType\FieldType;
 use Anomaly\Streams\Platform\Assignment\Contract\AssignmentInterface;
-use Anomaly\Streams\Platform\Field\Contract\FieldInterface;
 use Anomaly\Streams\Platform\Model\EloquentCollection;
 
 /**
  * Class AssignmentCollection
  *
- * @link    http://anomaly.is/streams-platform
- * @author  AnomalyLabs, Inc. <hello@anomaly.is>
- * @author  Ryan Thompson <ryan@anomaly.is>
- * @package Anomaly\Streams\Platform\Assignment
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
 class AssignmentCollection extends EloquentCollection
 {
@@ -20,12 +18,13 @@ class AssignmentCollection extends EloquentCollection
      * Find an assignment by it's field slug.
      *
      * @param  $slug
-     * @return FieldInterface
+     * @return AssignmentInterface
      */
     public function findByFieldSlug($slug)
     {
         foreach ($this->items as $item) {
-            if ($item instanceof AssignmentInterface && $item->getFieldSlug() == $slug) {
+            /* @var AssignmentInterface $item */
+            if ($item->getFieldSlug() == $slug) {
                 return $item;
             }
         }
@@ -33,10 +32,30 @@ class AssignmentCollection extends EloquentCollection
         return null;
     }
 
+
+    /**
+     * Find all fields using
+     * the provided field type.
+     *
+     * @param $namespace
+     * @return static
+     */
+    public function findAllByFieldType($namespace)
+    {
+        return new static(
+            array_filter(
+                $this->items,
+                function (AssignmentInterface $assignment) use ($namespace) {
+                    return $assignment->getFieldTypeValue() == $namespace;
+                }
+            )
+        );
+    }
+
     /**
      * Return assignments only included the provided fields.
      *
-     * @param array $fields
+     * @param  array $fields
      * @return AssignmentCollection
      */
     public function withFields(array $fields)
@@ -56,7 +75,7 @@ class AssignmentCollection extends EloquentCollection
     /**
      * Return assignments not included the provided fields.
      *
-     * @param array $fields
+     * @param  array $fields
      * @return AssignmentCollection
      */
     public function withoutFields(array $fields)
@@ -85,7 +104,6 @@ class AssignmentCollection extends EloquentCollection
         /* @var AssignmentInterface $item */
         /* @var FieldType $type */
         foreach ($this->items as $item) {
-
             $type = $item->getFieldType();
 
             if (method_exists($type, 'getRelation')) {
@@ -97,26 +115,61 @@ class AssignmentCollection extends EloquentCollection
     }
 
     /**
+     * Return only searchable assignments.
+     *
+     * @return AssignmentCollection
+     */
+    public function searchable()
+    {
+        return $this->filter(
+            function (AssignmentInterface $assignment) {
+                return $assignment->isSearchable();
+            }
+        );
+    }
+
+    /**
      * Return only assignments that have date fields.
      *
      * @return AssignmentCollection
      */
     public function dates()
     {
-        $dates = [];
+        return $this->filter(
+            function (AssignmentInterface $assignment) {
+                $type = $assignment->getFieldType();
 
-        /* @var AssignmentInterface $item */
-        /* @var FieldType $type */
-        foreach ($this->items as $item) {
-
-            $type = $item->getFieldType();
-
-            if (in_array($type->getColumnType(), ['date', 'datetime'])) {
-                $dates[] = $item;
+                return in_array($type->getColumnType(), ['date', 'datetime']);
             }
-        }
+        );
+    }
 
-        return self::make($dates);
+    /**
+     * Return only assignments that are unique.
+     *
+     * @return AssignmentCollection
+     */
+    public function indexed()
+    {
+        return $this->filter(
+            function (AssignmentInterface $assignment) {
+                return $assignment->isUnique();
+            }
+        );
+    }
+
+    /**
+     * Return only assignments that are required.
+     *
+     * @return AssignmentCollection
+     */
+    public function required()
+    {
+        return $this->filter(
+            function (AssignmentInterface $assignment) {
+                return $assignment->isRequired();
+            }
+        );
     }
 
     /**
@@ -126,16 +179,11 @@ class AssignmentCollection extends EloquentCollection
      */
     public function translatable()
     {
-        $translatable = [];
-
-        /* @var AssignmentInterface $item */
-        foreach ($this->items as $item) {
-            if ($item->isTranslatable()) {
-                $translatable[] = $item;
+        return $this->filter(
+            function (AssignmentInterface $assignment) {
+                return $assignment->isTranslatable();
             }
-        }
-
-        return self::make($translatable);
+        );
     }
 
     /**
@@ -145,30 +193,26 @@ class AssignmentCollection extends EloquentCollection
      */
     public function notTranslatable()
     {
-        $translatable = [];
-
-        /* @var AssignmentInterface $item */
-        foreach ($this->items as $item) {
-            if (!$item->isTranslatable()) {
-                $translatable[] = $item;
+        return $this->filter(
+            function (AssignmentInterface $assignment) {
+                return !$assignment->isTranslatable();
             }
-        }
-
-        return self::make($translatable);
+        );
     }
 
     /**
      * Return an array of field slugs.
      *
+     * @param  null $prefix
      * @return array
      */
-    public function fieldSlugs()
+    public function fieldSlugs($prefix = null)
     {
         $slugs = [];
 
         /* @var AssignmentInterface $item */
         foreach ($this->items as $item) {
-            $slugs[] = $item->getFieldSlug();
+            $slugs[] = $prefix . $item->getFieldSlug();
         }
 
         return $slugs;
@@ -213,5 +257,35 @@ class AssignmentCollection extends EloquentCollection
         }
 
         return new static($items);
+    }
+
+    /**
+     * An alias for notLocked();
+     *
+     * @return AssignmentCollection
+     */
+    public function unlocked()
+    {
+        return $this->notLocked();
+    }
+
+    /**
+     * Return the assignment
+     * with column type.
+     *
+     * @param $type
+     * @return AssignmentCollection
+     */
+    public function column($type)
+    {
+        return $this->filter(
+            function ($item) use ($type) {
+
+                /* @var AssignmentInterface $item */
+                $fieldType = $item->getFieldType();
+
+                return $fieldType->getColumnType() == $type;
+            }
+        );
     }
 }

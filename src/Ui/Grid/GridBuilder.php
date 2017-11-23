@@ -18,14 +18,12 @@ use Illuminate\Support\Collection;
 /**
  * Class GridBuilder
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Ui\Grid
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
 class GridBuilder
 {
-
     use FiresCallbacks;
     use DispatchesJobs;
 
@@ -65,9 +63,11 @@ class GridBuilder
     protected $grid;
 
     /**
+     * Create a new GridBuilder instance.
+     *
      * @param Grid $grid
      */
-    function __construct(Grid $grid)
+    public function __construct(Grid $grid)
     {
         $this->grid = $grid;
     }
@@ -127,7 +127,7 @@ class GridBuilder
     /**
      * Set the grid model.
      *
-     * @param string $model
+     * @param  string $model
      * @return $this
      */
     public function setModel($model)
@@ -183,12 +183,12 @@ class GridBuilder
     /**
      * Set the options.
      *
-     * @param array $options
+     * @param  array $options
      * @return $this
      */
     public function setOptions(array $options)
     {
-        $this->options = $options;
+        $this->options = array_merge($this->options, $options);
 
         return $this;
     }
@@ -196,8 +196,8 @@ class GridBuilder
     /**
      * Get an option value.
      *
-     * @param      $key
-     * @param null $default
+     * @param        $key
+     * @param  null  $default
      * @return mixed
      */
     public function getOption($key, $default = null)
@@ -283,8 +283,8 @@ class GridBuilder
     /**
      * Get a grid option value.
      *
-     * @param      $key
-     * @param null $default
+     * @param        $key
+     * @param  null  $default
      * @return mixed
      */
     public function getGridOption($key, $default = null)
@@ -319,7 +319,7 @@ class GridBuilder
     /**
      * Set the grid entries.
      *
-     * @param Collection $entries
+     * @param  Collection $entries
      * @return $this
      */
     public function setGridEntries(Collection $entries)
@@ -342,7 +342,7 @@ class GridBuilder
     /**
      * Add a grid item to the collection.
      *
-     * @param ItemInterface $item
+     * @param  ItemInterface $item
      * @return $this
      */
     public function addGridItem(ItemInterface $item)
@@ -385,8 +385,8 @@ class GridBuilder
     /**
      * Get a request value.
      *
-     * @param      $key
-     * @param null $default
+     * @param        $key
+     * @param  null  $default
      * @return mixed
      */
     public function getRequestValue($key, $default = null)

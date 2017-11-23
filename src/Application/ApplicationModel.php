@@ -1,16 +1,15 @@
 <?php namespace Anomaly\Streams\Platform\Application;
 
-use Illuminate\Database\Eloquent\Model;
+use Anomaly\Streams\Platform\Model\EloquentModel;
 
 /**
  * Class ApplicationModel
  *
- * @link    http://anomaly.is/streams-platform
- * @author  AnomalyLabs, Inc. <hello@anomaly.is>
- * @author  Ryan Thompson <ryan@anomaly.is>
- * @package Anomaly\Streams\Platform\Application
+ * @link    http://pyrocms.com/
+ * @author  PyroCMS, Inc. <support@pyrocms.com>
+ * @author  Ryan Thompson <ryan@pyrocms.com>
  */
-class ApplicationModel extends Model
+class ApplicationModel extends EloquentModel
 {
 
     /**
@@ -43,7 +42,16 @@ class ApplicationModel extends Model
         'name',
         'domain',
         'enabled',
-        'reference'
+        'reference',
     ];
 
+    /**
+     * The attribute castings.
+     *
+     * @var array
+     */
+    protected $casts = [
+        'enabled'   => 'boolean',
+        'installed' => 'boolean',
+    ];
 }

@@ -6,10 +6,9 @@ use Anomaly\Streams\Platform\Ui\Table\TableBuilder;
 /**
  * Class TextGuesser
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Ui\Table\Component\Button\Guesser
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
 class TextGuesser
 {
@@ -44,11 +43,11 @@ class TextGuesser
             return;
         }
 
-        foreach ($buttons as $key => &$button) {
+        foreach ($buttons as &$button) {
 
             // Skip if set already.
-            if (!isset($button['text']) && !is_numeric($key)) {
-                $button['text'] = $module->getNamespace('button.' . $key);
+            if (!isset($button['text']) && isset($button['slug'])) {
+                $button['text'] = $module->getNamespace('button.' . $button['slug']);
             }
         }
 

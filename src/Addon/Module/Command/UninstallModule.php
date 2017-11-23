@@ -1,20 +1,19 @@
 <?php namespace Anomaly\Streams\Platform\Addon\Module\Command;
 
+use Anomaly\Streams\Platform\Addon\Module\Contract\ModuleRepositoryInterface;
 use Anomaly\Streams\Platform\Addon\Module\Event\ModuleWasUninstalled;
 use Anomaly\Streams\Platform\Addon\Module\Module;
-use App\Console\Kernel;
-use Illuminate\Contracts\Bus\SelfHandling;
-use Illuminate\Events\Dispatcher;
+use Anomaly\Streams\Platform\Console\Kernel;
+use Illuminate\Contracts\Events\Dispatcher;
 
 /**
  * Class UninstallModule
  *
- * @link    http://anomaly.is/streams-platform
- * @author  AnomalyLabs, Inc. <hello@anomaly.is>
- * @author  Ryan Thompson <ryan@anomaly.is>
- * @package Anomaly\Streams\Platform\Addon\Module\Command
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
-class UninstallModule implements SelfHandling
+class UninstallModule
 {
 
     /**
@@ -40,14 +39,22 @@ class UninstallModule implements SelfHandling
      * @param Kernel     $console
      * @param Dispatcher $events
      */
-    public function handle(Kernel $console, Dispatcher $events)
+    public function handle(Kernel $console, Dispatcher $events, ModuleRepositoryInterface $modules)
     {
+        $this->module->fire('uninstalling');
+
         $options = [
-            '--addon' => $this->module->getNamespace()
+            '--addon' => $this->module->getNamespace(),
+            '--force' => true
         ];
 
         $console->call('migrate:reset', $options);
+        $console->call('streams:destroy', ['namespace' => $this->module->getSlug()]);
         $console->call('streams:cleanup');
+
+        $modules->uninstall($this->module);
+
+        $this->module->fire('uninstalled');
 
         $events->fire(new ModuleWasUninstalled($this->module));
     }

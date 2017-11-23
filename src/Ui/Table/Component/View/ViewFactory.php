@@ -2,15 +2,14 @@
 
 use Anomaly\Streams\Platform\Support\Hydrator;
 use Anomaly\Streams\Platform\Ui\Table\Component\View\Contract\ViewInterface;
-use Illuminate\Container\Container;
+use Illuminate\Contracts\Container\Container;
 
 /**
  * Class ViewFactory
  *
- * @link    http://anomaly.is/streams-platform
- * @author  AnomalyLabs, Inc. <hello@anomaly.is>
- * @author  Ryan Thompson <ryan@anomaly.is>
- * @package Anomaly\Streams\Platform\Ui\Table\Component\View
+ * @link    http://pyrocms.com/
+ * @author  PyroCMS, Inc. <support@pyrocms.com>
+ * @author  Ryan Thompson <ryan@pyrocms.com>
  */
 class ViewFactory
 {
@@ -51,7 +50,7 @@ class ViewFactory
     /**
      * Make a view.
      *
-     * @param  array $parameters
+     * @param  array         $parameters
      * @return ViewInterface
      */
     public function make(array $parameters)

@@ -7,10 +7,9 @@ use Anomaly\Streams\Platform\Ui\Table\TableBuilder;
 /**
  * Class PermissionGuesser
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Ui\Table\Component\Action\Guesser
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
 class PermissionGuesser
 {
@@ -55,18 +54,18 @@ class PermissionGuesser
             return;
         }
 
-        $section = $this->controlPanel->getActiveSection();
+        $section = $this->controlPanel->getControlPanelActiveSection();
 
         foreach ($actions as &$action) {
 
-            /**
+            /*
              * Nothing to do if set already.
              */
             if (isset($action['permission'])) {
                 continue;
             }
 
-            /**
+            /*
              * Try and guess the permission.
              */
             if ($stream) {

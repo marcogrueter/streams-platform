@@ -1,14 +1,16 @@
 <?php namespace Anomaly\Streams\Platform;
 
+use Anomaly\Streams\Platform\Artisan\ArtisanServiceProvider;
+use Anomaly\Streams\Platform\Database\Migration\MigrationServiceProvider;
+use Illuminate\Foundation\Providers\ComposerServiceProvider;
 use Illuminate\Foundation\Providers\ConsoleSupportServiceProvider;
 
 /**
  * Class StreamsConsoleProvider
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
 class StreamsConsoleProvider extends ConsoleSupportServiceProvider
 {
@@ -19,13 +21,8 @@ class StreamsConsoleProvider extends ConsoleSupportServiceProvider
      * @var array
      */
     protected $providers = [
-        'Illuminate\Auth\GeneratorServiceProvider',
-        'Illuminate\Console\ScheduleServiceProvider',
-        'Anomaly\Streams\Platform\Database\DatabaseServiceProvider',
-        'Illuminate\Foundation\Providers\ComposerServiceProvider',
-        'Illuminate\Queue\ConsoleServiceProvider',
-        'Illuminate\Routing\GeneratorServiceProvider',
-        'Illuminate\Session\CommandsServiceProvider',
+        ArtisanServiceProvider::class,
+        MigrationServiceProvider::class,
+        ComposerServiceProvider::class,
     ];
-
 }

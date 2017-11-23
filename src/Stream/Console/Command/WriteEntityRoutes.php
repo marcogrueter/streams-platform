@@ -2,18 +2,16 @@
 
 use Anomaly\Streams\Platform\Addon\Addon;
 use Anomaly\Streams\Platform\Support\Parser;
-use Illuminate\Contracts\Bus\SelfHandling;
 use Illuminate\Filesystem\Filesystem;
 
 /**
  * Class WriteEntityRoutes
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Stream\Console\Command
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
-class WriteEntityRoutes implements SelfHandling
+class WriteEntityRoutes
 {
 
     /**
@@ -21,21 +19,21 @@ class WriteEntityRoutes implements SelfHandling
      *
      * @var string
      */
-    private $slug;
+    protected $slug;
 
     /**
      * The addon instance.
      *
      * @var Addon
      */
-    private $addon;
+    protected $addon;
 
     /**
      * The entity stream namespace.
      *
      * @var string
      */
-    private $namespace;
+    protected $namespace;
 
 
     /**
@@ -60,10 +58,12 @@ class WriteEntityRoutes implements SelfHandling
      */
     public function handle(Parser $parser, Filesystem $filesystem)
     {
-        $suffix = ucfirst(camel_case($this->slug));
+        $suffix = ucfirst(studly_case($this->slug));
 
-        $segment    = $this->slug;
+        $first = count($filesystem->files($this->addon->getPath("migrations"))) == 1;
+
         $addon      = $this->addon->getSlug();
+        $segment    = $first ? '' : '/' . $this->slug;
         $controller = $this->addon->getTransformedClass("Http\\Controller\\Admin\\{$suffix}Controller");
 
         $path = $this->addon->getPath("resources/routes/{$this->slug}.php");

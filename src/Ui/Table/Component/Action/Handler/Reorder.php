@@ -3,18 +3,16 @@
 use Anomaly\Streams\Platform\Model\EloquentModel;
 use Anomaly\Streams\Platform\Ui\Table\Component\Action\ActionHandler;
 use Anomaly\Streams\Platform\Ui\Table\TableBuilder;
-use Illuminate\Contracts\Bus\SelfHandling;
 use Illuminate\Http\Request;
 
 /**
  * Class ReorderActionHandler
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Ui\Table\Component\Action\Handler
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
-class Reorder extends ActionHandler implements SelfHandling
+class Reorder extends ActionHandler
 {
 
     /**
@@ -32,9 +30,11 @@ class Reorder extends ActionHandler implements SelfHandling
         /* @var EloquentModel $entry */
         foreach ($request->get($builder->getTableOption('prefix') . 'order', []) as $k => $id) {
             if ($entry = $model->find($id)) {
-                if (($entry->sort_order = $k + 1) && $entry->save()) {
-                    $count++;
-                }
+                $entry->sort_order = $k + 1;
+
+                $entry->save();
+
+                $count++;
             }
         }
 

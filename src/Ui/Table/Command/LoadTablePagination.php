@@ -2,17 +2,15 @@
 
 use Anomaly\Streams\Platform\Ui\Table\Table;
 use Anomaly\Streams\Platform\Ui\Table\TablePagination;
-use Illuminate\Contracts\Bus\SelfHandling;
 
 /**
  * Class LoadTablePagination
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Ui\Table\Command
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
-class LoadTablePagination implements SelfHandling
+class LoadTablePagination
 {
 
     /**
@@ -39,6 +37,10 @@ class LoadTablePagination implements SelfHandling
      */
     public function handle(TablePagination $pagination)
     {
+        if ($this->table->getOption('enable_pagination') === false) {
+            return;
+        }
+
         $data = $this->table->getData();
 
         $pagination = $pagination->make($this->table);

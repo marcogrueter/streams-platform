@@ -6,10 +6,9 @@ use Illuminate\Http\Request;
 /**
  * Class EnabledGuesser
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Ui\ControlPanel\Component\Button\Guesser
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
 class EnabledGuesser
 {
@@ -41,7 +40,6 @@ class EnabledGuesser
         $buttons = $builder->getButtons();
 
         foreach ($buttons as &$button) {
-
             if (!isset($button['enabled']) || is_bool($button['enabled'])) {
                 continue;
             }

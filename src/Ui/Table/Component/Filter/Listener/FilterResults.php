@@ -6,10 +6,9 @@ use Anomaly\Streams\Platform\Ui\Table\Event\TableIsQuerying;
 /**
  * Class FilterResults
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Ui\Table\Listener
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
 class FilterResults
 {
@@ -34,7 +33,7 @@ class FilterResults
     /**
      * Handle the event.
      *
-     * @param TableIsQuerying $event
+     * @param  TableIsQuerying $event
      * @throws \Exception
      */
     public function handle(TableIsQuerying $event)

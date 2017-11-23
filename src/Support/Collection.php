@@ -3,40 +3,33 @@
 /**
  * Class Collection
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Support
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
 class Collection extends \Illuminate\Support\Collection
 {
 
     /**
-     * Return shuffled items.
+     * Alias for pluck.
      *
-     * @param int $amount
-     * @return static
+     * @deprecated in 3.1. Will remove in 3.2
+     *
+     * @param string $value
+     * @param string $key
+     *
+     * @return $this
      */
-    public function shuffle()
+    public function lists($value, $key = null)
     {
-        $shuffled = [];
-
-        $keys = array_keys($this->items);
-
-        shuffle($keys);
-
-        foreach ($keys as $key) {
-            $shuffled[$key] = $this->items[$key];
-        }
-
-        return new static($shuffled);
+        return self::pluck($value, $key);
     }
 
     /**
      * Pad to the specified size with a value.
      *
-     * @param       $size
-     * @param null  $value
+     * @param        $size
+     * @param  null  $value
      * @return $this
      */
     public function pad($size, $value = null)
@@ -45,25 +38,53 @@ class Collection extends \Illuminate\Support\Collection
             return $this;
         }
 
-        if ($value) {
-            return new static(array_pad($this->items, $size, $value));
-        }
-
-        while ($this->count() < $size) {
-            $this->items = array_merge($this->items, $this->items);
-        }
-
-        return new static($this->items);
+        return new static(array_pad($this->items, $size, $value));
     }
 
     /**
-     * Return only the provided keys.
+     * An alias for slice.
      *
-     * @param array $keys
-     * @return array
+     * @param $offset
+     * @return $this
      */
-    public function only(array $keys)
+    public function skip($offset)
     {
-        return array_intersect_key($this->items, $keys);
+        return $this->slice($offset, null, true);
+    }
+
+    /**
+     * Return undecorated items.
+     *
+     * @return static|$this
+     */
+    public function undecorate()
+    {
+        return new static((new Decorator())->undecorate($this->items));
+    }
+
+    /**
+     * Map to get.
+     *
+     * @param $name
+     * @return mixed
+     */
+    public function __get($name)
+    {
+        if ($this->has($name)) {
+            return $this->get($name);
+        }
+
+        return call_user_func([$this, camel_case($name)]);
+    }
+
+    /**
+     * Map to get.
+     *
+     * @param string $method
+     * @param array  $parameters
+     */
+    public function __call($method, $parameters)
+    {
+        return $this->get($method);
     }
 }

@@ -1,18 +1,16 @@
 <?php namespace Anomaly\Streams\Platform\Addon\Console\Command;
 
 use Anomaly\Streams\Platform\Support\Parser;
-use Illuminate\Contracts\Bus\SelfHandling;
 use Illuminate\Filesystem\Filesystem;
 
 /**
  * Class WriteAddonComposer
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Addon\Console\Command
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
-class WriteAddonComposer implements SelfHandling
+class WriteAddonComposer
 {
 
     /**
@@ -72,10 +70,9 @@ class WriteAddonComposer implements SelfHandling
         $slug   = $this->slug;
         $type   = $this->type;
         $vendor = $this->vendor;
+        $addon  = ucfirst(camel_case($slug)) . ucfirst(camel_case($type));
 
-        $prefix = ucfirst(camel_case($vendor)) . '\\\\' . ucfirst(camel_case($slug)) . ucfirst(
-                camel_case($type)
-            ) . '\\\\';
+        $prefix = ucfirst(camel_case($vendor)) . '\\\\' . $addon . '\\\\';
 
         $template = $filesystem->get(
             base_path('vendor/anomaly/streams-platform/resources/stubs/addons/composer.stub')
@@ -83,6 +80,6 @@ class WriteAddonComposer implements SelfHandling
 
         $filesystem->makeDirectory(dirname($path), 0755, true, true);
 
-        $filesystem->put($path, $parser->parse($template, compact('vendor', 'slug', 'type', 'prefix')));
+        $filesystem->put($path, $parser->parse($template, compact('vendor', 'slug', 'type', 'prefix', 'addon')));
     }
 }

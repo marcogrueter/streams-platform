@@ -5,10 +5,9 @@ use Anomaly\Streams\Platform\Ui\Table\Component\Column\Contract\ColumnInterface;
 /**
  * Class Column
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Ui\Table\Component\Column
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
 class Column implements ColumnInterface
 {
@@ -42,11 +41,11 @@ class Column implements ColumnInterface
     protected $class = null;
 
     /**
-     * The column header.
+     * The column heading.
      *
      * @var null|string
      */
-    protected $header = null;
+    protected $heading = null;
 
     /**
      * The column entry.
@@ -54,6 +53,13 @@ class Column implements ColumnInterface
      * @var null|mixed
      */
     protected $entry = null;
+
+    /**
+     * The column attributes.
+     *
+     * @var array
+     */
+    protected $attributes = [];
 
     /**
      * Get the wrapper.
@@ -125,24 +131,24 @@ class Column implements ColumnInterface
     }
 
     /**
-     * Get the column header.
+     * Get the column heading.
      *
      * @return null|string
      */
-    public function getHeader()
+    public function getHeading()
     {
-        return $this->header;
+        return $this->heading;
     }
 
     /**
-     * Set the column header.
+     * Set the column heading.
      *
-     * @param $header
+     * @param $heading
      * @return $this
      */
-    public function setHeader($header)
+    public function setHeading($heading)
     {
-        $this->header = $header;
+        $this->heading = $heading;
 
         return $this;
     }
@@ -189,6 +195,29 @@ class Column implements ColumnInterface
     public function setEntry($entry)
     {
         $this->entry = $entry;
+
+        return $this;
+    }
+
+    /**
+     * Get the attributes.
+     *
+     * @return array
+     */
+    public function getAttributes()
+    {
+        return $this->attributes;
+    }
+
+    /**
+     * Get the attributes.
+     *
+     * @param array $attributes
+     * @return $this
+     */
+    public function setAttributes(array $attributes)
+    {
+        $this->attributes = $attributes;
 
         return $this;
     }

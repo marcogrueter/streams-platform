@@ -2,17 +2,15 @@
 
 use Anomaly\Streams\Platform\Assignment\Contract\AssignmentRepositoryInterface;
 use Anomaly\Streams\Platform\Field\Form\FieldFormBuilder;
-use Illuminate\Contracts\Bus\SelfHandling;
 
 /**
  * Class AutoAssignField
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Field\Form\Command
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
-class AutoAssignField implements SelfHandling
+class AutoAssignField
 {
 
     /**
@@ -40,14 +38,13 @@ class AutoAssignField implements SelfHandling
     public function handle(AssignmentRepositoryInterface $assignments)
     {
         if ($this->builder->getFormOption('auto_assign') === true && $this->builder->getFormMode() === 'create') {
-
             $field  = $this->builder->getFormEntry();
             $stream = $this->builder->getStream();
 
             $assignments->create(
                 [
                     'stream_id' => $stream->getId(),
-                    'field_id'  => $field->getId()
+                    'field_id'  => $field->getId(),
                 ]
             );
         }

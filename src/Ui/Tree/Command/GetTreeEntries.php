@@ -2,17 +2,15 @@
 
 use Anomaly\Streams\Platform\Ui\Tree\Contract\TreeRepositoryInterface;
 use Anomaly\Streams\Platform\Ui\Tree\TreeBuilder;
-use Illuminate\Contracts\Bus\SelfHandling;
 
 /**
  * Class GetTreeEntries
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Ui\Tree\Command
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
-class GetTreeEntries implements SelfHandling
+class GetTreeEntries
 {
 
     /**
@@ -23,7 +21,7 @@ class GetTreeEntries implements SelfHandling
     protected $builder;
 
     /**
-     * Create a new BuildTreeColumnsCommand instance.
+     * Create a new BuildTreeSegmentsCommand instance.
      *
      * @param TreeBuilder $builder
      */
@@ -37,24 +35,22 @@ class GetTreeEntries implements SelfHandling
      */
     public function handle()
     {
-        $tree  = $this->builder->getTree();
         $model = $this->builder->getModel();
 
-        /**
+        /*
          * If the builder has an entries handler
          * then call it through the container and
          * let it load the entries itself.
          */
-        if ($handler = $tree->getOption('entries')) {
-
+        if ($handler = $this->builder->getTreeOption('entries')) {
             app()->call($handler, ['builder' => $this->builder]);
 
             return;
         }
 
-        $entries = $tree->getEntries();
+        $entries = $this->builder->getTreeEntries();
 
-        /**
+        /*
          * If the entries have already been set on the
          * tree then return. Nothing to do here.
          *
@@ -65,17 +61,17 @@ class GetTreeEntries implements SelfHandling
             return;
         }
 
-        /**
+        /*
          * Resolve the model out of the container.
          */
-        $repository = $tree->getRepository();
+        $repository = $this->builder->getTreeRepository();
 
-        /**
+        /*
          * If the repository is an instance of
          * TreeRepositoryInterface use it.
          */
         if ($repository instanceof TreeRepositoryInterface) {
-            $tree->setEntries($repository->get($this->builder));
+            $this->builder->setTreeEntries($repository->get($this->builder));
         }
     }
 }

@@ -1,5 +1,7 @@
 <?php namespace Anomaly\Streams\Platform\Assignment\Form;
 
+use Anomaly\Streams\Platform\Assignment\AssignmentModel;
+use Anomaly\Streams\Platform\Assignment\Contract\AssignmentInterface;
 use Anomaly\Streams\Platform\Field\Contract\FieldInterface;
 use Anomaly\Streams\Platform\Stream\Contract\StreamInterface;
 use Anomaly\Streams\Platform\Ui\Form\FormBuilder;
@@ -7,10 +9,9 @@ use Anomaly\Streams\Platform\Ui\Form\FormBuilder;
 /**
  * Class AssignmentFormBuilder
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Assignment\Form
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
 class AssignmentFormBuilder extends FormBuilder
 {
@@ -30,11 +31,43 @@ class AssignmentFormBuilder extends FormBuilder
     protected $stream = null;
 
     /**
+     * The form model.
+     *
+     * @var string
+     */
+    protected $model = AssignmentModel::class;
+
+    /**
      * The form fields.
      *
      * @var string
      */
-    protected $fields = 'Anomaly\Streams\Platform\Assignment\Form\AssignmentFormFields@handle';
+    protected $fields = AssignmentFormFields::class;
+
+    protected $sections = [
+        'general' => [
+            'tabs' => [
+                'assignment' => [
+                    'title'  => 'streams::form.tab.display',
+                    'fields' => [
+                        'label',
+                        'placeholder',
+                        'instructions',
+                        'warning',
+                    ],
+                ],
+                'options'    => [
+                    'title'  => 'streams::form.tab.options',
+                    'fields' => [
+                        'required',
+                        'unique',
+                        'searchable',
+                        'translatable',
+                    ],
+                ],
+            ],
+        ],
+    ];
 
     /**
      * Fired when the builder is ready to build.
@@ -71,6 +104,23 @@ class AssignmentFormBuilder extends FormBuilder
     }
 
     /**
+     * Get the field's type.
+     *
+     * @return \Anomaly\Streams\Platform\Addon\FieldType\FieldType
+     */
+    public function getFieldType()
+    {
+        if ($field = $this->getField()) {
+            return $field->getType();
+        }
+
+        /* @var AssignmentInterface $entry */
+        $entry = $this->getFormEntry();
+
+        return $entry->getFieldType();
+    }
+
+    /**
      * Get the field.
      *
      * @return FieldInterface|null
@@ -81,7 +131,7 @@ class AssignmentFormBuilder extends FormBuilder
     }
 
     /**
-     * @param FieldInterface $field
+     * @param  FieldInterface $field
      * @return $this
      */
     public function setField(FieldInterface $field)
@@ -98,13 +148,17 @@ class AssignmentFormBuilder extends FormBuilder
      */
     public function getStream()
     {
+        if (!$this->stream && $entry = $this->getFormEntry()) {
+            return $entry->getStream();
+        }
+
         return $this->stream;
     }
 
     /**
      * Set the stream.
      *
-     * @param StreamInterface $stream
+     * @param  StreamInterface $stream
      * @return $this
      */
     public function setStream(StreamInterface $stream)

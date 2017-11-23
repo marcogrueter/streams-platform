@@ -1,56 +1,48 @@
 <?php namespace Anomaly\Streams\Platform\Database\Seeder;
 
-use Illuminate\Database\Seeder as BaseSeeder;
+use Anomaly\Streams\Platform\Field\Contract\FieldRepositoryInterface;
+use Anomaly\Streams\Platform\Stream\Contract\StreamRepositoryInterface;
+use Anomaly\Streams\Platform\Assignment\Contract\AssignmentRepositoryInterface;
 
-/**
- * Class Seeder
- *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Database\Seeder
- */
-class Seeder extends BaseSeeder
+class Seeder extends \Illuminate\Database\Seeder
 {
 
     /**
-     * The environment this seeder
-     * applies too if any.
+     * The field repository.
      *
-     * @var string
+     * @var FieldRepositoryInterface $fields
      */
-    protected $env = null;
+    protected $fields;
 
     /**
-     * Seed the given connection from the given path.
+     * The stream repository.
      *
-     * @param  string $class
-     *
-     * @return void
+     * @var StreamRepositoryInterface $streams
      */
-    public function call($class)
+    protected $streams;
+
+    /**
+     * The assignment repository.
+     *
+     * @var AssignmentRepositoryInterface $assignments
+     */
+    protected $assignments;
+
+    /**
+     * Create a new Seeder instance.
+     */
+    public function __construct()
     {
-        /** @var Seeder $seeder */
-        $seeder = $this->resolve($class);
-        $env    = method_exists($seeder, 'isEnvironment') ? $seeder->isEnvironment() : null;
-
-        $seeder->setCommand($this->command);
-
-        if ($env !== false) {
-            $seeder->run();
-        }
-
-        $this->command->getOutput()->writeln("<info>Seeded:</info> $class");
+        $this->fields      = app(FieldRepositoryInterface::class);
+        $this->streams     = app(StreamRepositoryInterface::class);
+        $this->assignments = app(AssignmentRepositoryInterface::class);
     }
 
     /**
-     * Return whether the seeder applies to
-     * the current environment or not.
-     *
-     * @return bool|null
+     * Run the seeder.
      */
-    public function isEnvironment()
+    public function run()
     {
-        return $this->env ? ($this->env === env('APP_ENV')) : null;
+        # code...
     }
 }

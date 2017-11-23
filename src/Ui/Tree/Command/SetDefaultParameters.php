@@ -1,17 +1,15 @@
 <?php namespace Anomaly\Streams\Platform\Ui\Tree\Command;
 
 use Anomaly\Streams\Platform\Ui\Tree\TreeBuilder;
-use Illuminate\Contracts\Bus\SelfHandling;
 
 /**
  * Class SetDefaultParameters
  *
- * @link    http://anomaly.is/streams-platform
- * @author  AnomalyLabs, Inc. <hello@anomaly.is>
- * @author  Ryan Thompson <ryan@anomaly.is>
- * @package Anomaly\Streams\Platform\Ui\Tree\Command
+ * @link    http://pyrocms.com/
+ * @author  PyroCMS, Inc. <support@pyrocms.com>
+ * @author  Ryan Thompson <ryan@pyrocms.com>
  */
-class SetDefaultParameters implements SelfHandling
+class SetDefaultParameters
 {
 
     /**
@@ -36,17 +34,29 @@ class SetDefaultParameters implements SelfHandling
      */
     public function handle()
     {
-        /**
+        /*
          * Set the default buttons handler based
          * on the builder class. Defaulting to
          * no handler.
          */
         if (!$this->builder->getButtons()) {
-
             $buttons = str_replace('TreeBuilder', 'TreeButtons', get_class($this->builder));
 
             if (class_exists($buttons)) {
                 $this->builder->setButtons($buttons . '@handle');
+            }
+        }
+
+        /*
+         * Set the default segments handler based
+         * on the builder class. Defaulting to
+         * no handler.
+         */
+        if (!$this->builder->getSegments()) {
+            $segments = str_replace('TreeBuilder', 'TreeSegments', get_class($this->builder));
+
+            if (class_exists($segments)) {
+                $this->builder->setSegments($segments . '@handle');
             }
         }
     }

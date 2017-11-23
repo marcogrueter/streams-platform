@@ -2,15 +2,15 @@
 
 use Anomaly\Streams\Platform\Addon\FieldType\FieldType;
 use Anomaly\Streams\Platform\Field\Contract\FieldInterface;
+use Anomaly\Streams\Platform\Model\EloquentCollection;
 use Anomaly\Streams\Platform\Stream\Contract\StreamInterface;
 
 /**
  * Interface AssignmentInterface
  *
- * @link    http://anomaly.is/streams-platform
- * @author  AnomalyLabs, Inc. <hello@anomaly.is>
- * @author  Ryan Thompson <ryan@anomaly.is>
- * @package Anomaly\Streams\Platform\Assignment\Contract
+ * @link    http://pyrocms.com/
+ * @author  PyroCMS, Inc. <support@pyrocms.com>
+ * @author  Ryan Thompson <ryan@pyrocms.com>
  */
 interface AssignmentInterface
 {
@@ -65,6 +65,13 @@ interface AssignmentInterface
     public function getLabel();
 
     /**
+     * Get the warning.
+     *
+     * @return string
+     */
+    public function getWarning();
+
+    /**
      * Get the instructions.
      *
      * @return string
@@ -93,6 +100,13 @@ interface AssignmentInterface
     public function isRequired();
 
     /**
+     * Get the searchable flag.
+     *
+     * @return bool
+     */
+    public function isSearchable();
+
+    /**
      * Get the translatable flag.
      *
      * @return bool
@@ -109,9 +123,19 @@ interface AssignmentInterface
     /**
      * Get the assignment's field's type.
      *
+     * @param  bool $fresh
      * @return FieldType
      */
-    public function getFieldType();
+    public function getFieldType($fresh = false);
+
+    /**
+     * Get the field type value. This helps
+     * avoid spinning up a type instance
+     * if you don't really need it.
+     *
+     * @return string
+     */
+    public function getFieldTypeValue();
 
     /**
      * Get the assignment's field's name.
@@ -157,6 +181,13 @@ interface AssignmentInterface
     public function getAttribute($key);
 
     /**
+     * Get related translations.
+     *
+     * @return EloquentCollection
+     */
+    public function getTranslations();
+
+    /**
      * Flush the entry model's cache.
      *
      * @return AssignmentInterface
@@ -169,4 +200,5 @@ interface AssignmentInterface
      * @return AssignmentInterface
      */
     public function compileStream();
+
 }

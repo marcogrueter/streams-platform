@@ -4,18 +4,16 @@ use Anomaly\Streams\Platform\Support\Authorizer;
 use Anomaly\Streams\Platform\Ui\Breadcrumb\BreadcrumbCollection;
 use Anomaly\Streams\Platform\Ui\ControlPanel\Component\Section\Contract\SectionInterface;
 use Anomaly\Streams\Platform\Ui\ControlPanel\ControlPanelBuilder;
-use Illuminate\Contracts\Bus\SelfHandling;
 use Illuminate\Http\Request;
 
 /**
  * Class SetActiveSection
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Ui\ControlPanel\Component\Section\Command
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
-class SetActiveSection implements SelfHandling
+class SetActiveSection
 {
 
     /**
@@ -47,7 +45,7 @@ class SetActiveSection implements SelfHandling
         $controlPanel = $this->builder->getControlPanel();
         $sections     = $controlPanel->getSections();
 
-        /**
+        /*
          * If we already have an active section
          * then we don't need to do this.
          */
@@ -55,20 +53,25 @@ class SetActiveSection implements SelfHandling
             return;
         }
 
+        /* @var SectionInterface $section */
         foreach ($sections as $section) {
 
-            /**
+            if (($matcher = $section->getMatcher()) && str_is($matcher, $request->path())) {
+                $active = $section;
+            }
+
+            /*
              * Get the HREF for both the active
              * and loop iteration section.
              */
-            $href       = array_get($section->getAttributes(), 'href');
+            $href       = $section->getPermalink() ?: array_get($section->getAttributes(), 'href');
             $activeHref = '';
 
             if ($active && $active instanceof SectionInterface) {
-                $activeHref = array_get($active->getAttributes(), 'href');
+                $activeHref = $active->getPermalink() ?: array_get($active->getAttributes(), 'href');
             }
 
-            /**
+            /*
              * If the request URL does not even
              * contain the HREF then skip it.
              */
@@ -76,7 +79,7 @@ class SetActiveSection implements SelfHandling
                 continue;
             }
 
-            /**
+            /*
              * Compare the length of the active HREF
              * and loop iteration HREF. The longer the
              * HREF the more detailed and exact it is and
@@ -94,11 +97,24 @@ class SetActiveSection implements SelfHandling
         /**
          * If we have an active section determined
          * then mark it as such.
+         *
+         * @var SectionInterface $active
+         * @var SectionInterface $section
          */
-        if ($active && $active instanceof SectionInterface) {
-            $active->setActive(true);
+        if ($active) {
+            if ($active->getParent()) {
+                $active->setActive(true);
+
+                $section = $sections->get($active->getParent(), $sections->first());
+
+                $section->setHighlighted(true);
+
+                $breadcrumbs->put($section->getBreadcrumb() ?: $section->getTitle(), $section->getHref());
+            } else {
+                $active->setActive(true)->setHighlighted(true);
+            }
         } elseif ($active = $sections->first()) {
-            $active->setActive(true);
+            $active->setActive(true)->setHighlighted(true);
         }
 
         // No active section!
@@ -113,7 +129,7 @@ class SetActiveSection implements SelfHandling
 
         // Add the bread crumb.
         if (($breadcrumb = $active->getBreadcrumb()) !== false) {
-            $breadcrumbs->put($breadcrumb ?: $active->getText(), $active->getHref());
+            $breadcrumbs->put($breadcrumb ?: $active->getTitle(), $active->getHref());
         }
     }
 }

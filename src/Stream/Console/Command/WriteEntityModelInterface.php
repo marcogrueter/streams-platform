@@ -2,18 +2,16 @@
 
 use Anomaly\Streams\Platform\Addon\Addon;
 use Anomaly\Streams\Platform\Support\Parser;
-use Illuminate\Contracts\Bus\SelfHandling;
 use Illuminate\Filesystem\Filesystem;
 
 /**
  * Class WriteEntityModelInterface
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Stream\Console\Command
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
-class WriteEntityModelInterface implements SelfHandling
+class WriteEntityModelInterface
 {
 
     /**
@@ -21,21 +19,21 @@ class WriteEntityModelInterface implements SelfHandling
      *
      * @var string
      */
-    private $slug;
+    protected $slug;
 
     /**
      * The addon instance.
      *
      * @var Addon
      */
-    private $addon;
+    protected $addon;
 
     /**
      * The entity stream namespace.
      *
      * @var string
      */
-    private $namespace;
+    protected $namespace;
 
 
     /**

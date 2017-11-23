@@ -1,32 +1,52 @@
 <?php namespace Anomaly\Streams\Platform\Database\Migration;
 
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Migrations\DatabaseMigrationRepository;
 
 /**
  * Class MigrationRepository
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Database\Migration
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
 class MigrationRepository extends DatabaseMigrationRepository
 {
 
     /**
-     * Find many migrations by an addon namespace.
+     * The migrator instance.
      *
-     * @param        $namespace
-     * @param string $order
-     * @return array|Collection
+     * @var Migrator
      */
-    public function findManyByNamespace($namespace, $order = 'desc')
+    protected $migrator = null;
+
+    /**
+     * Get ran migrations.
+     *
+     * @return array
+     */
+    public function getRan($namespace = null)
     {
-        return $this
-            ->table()
-            ->where('migration', 'like', "%_{$namespace}_%")
-            ->orderBy('migration', $order)
-            ->get();
+        if ($addon = $this->migrator->getAddon()) {
+            return $this->table()
+                ->orderBy('batch', 'asc')
+                ->orderBy('migration', 'asc')
+                ->where('migration', 'LIKE', '%' . $addon->getNamespace() . '%')
+                ->pluck('migration')->all();
+        }
+
+        return parent::getRan();
+    }
+
+    /**
+     * Set the migrator.
+     *
+     * @param Migrator $migrator
+     * @return $this
+     */
+    public function setMigrator(Migrator $migrator)
+    {
+        $this->migrator = $migrator;
+
+        return $this;
     }
 }

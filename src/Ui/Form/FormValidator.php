@@ -2,19 +2,20 @@
 
 use Anomaly\Streams\Platform\Ui\Form\Command\RepopulateFields;
 use Anomaly\Streams\Platform\Ui\Form\Command\SetErrorMessages;
-use Illuminate\Contracts\Bus\SelfHandling;
+use Anomaly\Streams\Platform\Ui\Form\Event\FormWasValidated;
+use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Foundation\Bus\DispatchesJobs;
+use Illuminate\Support\MessageBag;
 use Illuminate\Validation\Validator;
 
 /**
  * Class FormValidator
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Ui\Form
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
-class FormValidator implements SelfHandling
+class FormValidator
 {
 
     use DispatchesJobs;
@@ -32,6 +33,13 @@ class FormValidator implements SelfHandling
      * @var FormInput
      */
     protected $input;
+
+    /**
+     * The event dispatcher.
+     *
+     * @var Dispatcher
+     */
+    protected $events;
 
     /**
      * The extender utility.
@@ -59,6 +67,7 @@ class FormValidator implements SelfHandling
      *
      * @param FormRules      $rules
      * @param FormInput      $input
+     * @param Dispatcher     $events
      * @param FormExtender   $extender
      * @param FormMessages   $messages
      * @param FormAttributes $attributes
@@ -66,12 +75,14 @@ class FormValidator implements SelfHandling
     public function __construct(
         FormRules $rules,
         FormInput $input,
+        Dispatcher $events,
         FormExtender $extender,
         FormMessages $messages,
         FormAttributes $attributes
     ) {
         $this->rules      = $rules;
         $this->input      = $input;
+        $this->events     = $events;
         $this->extender   = $extender;
         $this->messages   = $messages;
         $this->attributes = $attributes;
@@ -85,6 +96,8 @@ class FormValidator implements SelfHandling
     public function handle(FormBuilder $builder)
     {
         $factory = app('validator');
+
+        $builder->setFormErrors(new MessageBag());
 
         $this->extender->extend($factory, $builder);
 
@@ -100,6 +113,8 @@ class FormValidator implements SelfHandling
         $validator->setAttributeNames($attributes);
 
         $this->setResponse($validator, $builder);
+
+        $this->events->fire(new FormWasValidated($builder));
     }
 
     /**
@@ -112,9 +127,15 @@ class FormValidator implements SelfHandling
     {
         if (!$validator->passes()) {
 
-            $builder
-                ->setSave(false)
-                ->setFormErrors($validator->getMessageBag());
+            $builder->setSave(false);
+
+            $bag = $validator->getMessageBag();
+
+            foreach ($bag->getMessages() as $field => $messages) {
+                foreach ($messages as $message) {
+                    $builder->addFormError($field, $message);
+                }
+            }
 
             $this->dispatch(new SetErrorMessages($builder));
         }

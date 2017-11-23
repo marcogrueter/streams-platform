@@ -1,7 +1,6 @@
 <?php namespace Anomaly\Streams\Platform\Support;
 
-use Illuminate\Container\Container;
-use Illuminate\Contracts\Bus\SelfHandling;
+use Illuminate\Contracts\Container\Container;
 
 /**
  * Class Resolver
@@ -11,10 +10,9 @@ use Illuminate\Contracts\Bus\SelfHandling;
  *
  * $someArrayConfig = 'MyCallableClass@handle'
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Support
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
 class Resolver
 {
@@ -22,7 +20,7 @@ class Resolver
     /**
      * The IoC container.
      *
-     * @var \Illuminate\Container\Container
+     * @var \Illuminate\Contracts\Container\Container
      */
     protected $container;
 
@@ -40,16 +38,18 @@ class Resolver
      * Resolve the target.
      *
      * @param        $target
-     * @param array  $arguments
-     * @param string $method
+     * @param  array $arguments
+     * @param  array $options
      * @return mixed
      */
-    public function resolve($target, array $arguments = [], $method = 'handle')
+    public function resolve($target, array $arguments = [], array $options = [])
     {
-        if (is_string($target) && str_contains($target, '@')) {
-            return $this->container->call($target, $arguments);
-        } elseif (is_string($target) && class_implements($target, SelfHandling::class)) {
-            return $this->container->call($target . '@' . $method, $arguments);
+        $method = array_get($options, 'method', 'handle');
+
+        if ((is_string($target) && str_contains($target, '@')) || is_callable($target)) {
+            $target = $this->container->call($target, $arguments);
+        } elseif (is_string($target) && class_exists($target) && method_exists($target, $method)) {
+            $target = $this->container->call($target . '@' . $method, $arguments);
         }
 
         return $target;

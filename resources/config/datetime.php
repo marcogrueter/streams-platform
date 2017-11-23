@@ -9,25 +9,23 @@ return [
     |
     | This is the default format of dates and times displayed.
     |
-    | NOTE: This configuration may be overridden by the Settings module.
-    |
     */
 
-    'date_format' => 'j F, Y',
-    'time_format' => 'g:i A',
+    'date_format' => env('DATE_FORMAT', 'm/d/Y'),
+    'time_format' => env('TIME_FORMAT', 'g:i A'),
 
     /*
     |--------------------------------------------------------------------------
-    | Timezone
+    | Timezones
     |--------------------------------------------------------------------------
     |
-    | This is the timezone used for display purposes only. It is suggested
-    | to keep the system timezone (app.timezone) as UTC.
+    | Configure the various timezones used.
     |
-    | NOTE: This configuration may be overridden by the Settings module.
+    | Default: The default timezone for the application when none is set.
+    | Database: The timezone of the database.
     |
     */
 
-    'timezone'         => env('TIMEZONE', 'UTC'),
-    'default_timezone' => env('DEFAULT_TIMEZONE', 'UTC')
+    'default_timezone'  => env('DEFAULT_TIMEZONE', date_default_timezone_get()),
+    'database_timezone' => env('DATABASE_TIMEZONE', date_default_timezone_get()),
 ];

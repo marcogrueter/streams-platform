@@ -1,17 +1,18 @@
 <?php namespace Anomaly\Streams\Platform\Addon\Module\Console;
 
+use Anomaly\Streams\Platform\Addon\Module\Module;
 use Anomaly\Streams\Platform\Addon\Module\ModuleCollection;
 use Anomaly\Streams\Platform\Addon\Module\ModuleManager;
 use Illuminate\Console\Command;
 use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputOption;
 
 /**
  * Class Install
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Stream\Console
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
 class Install extends Command
 {
@@ -35,10 +36,18 @@ class Install extends Command
      *
      * @param ModuleManager    $manager
      * @param ModuleCollection $modules
+     * @throws \Exception
      */
-    public function fire(ModuleManager $manager, ModuleCollection $modules)
+    public function handle(ModuleManager $manager, ModuleCollection $modules)
     {
-        $manager->install($module = $modules->get($this->argument('module')));
+        /* @var Module $module */
+        $module = $modules->get($this->argument('module'));
+
+        if (!$module) {
+            throw new \Exception('Module [' . $this->argument('module') . '] does not exist.');
+        }
+
+        $manager->install($module, $this->option('seed'));
 
         $this->info(trans($module->getName()) . ' installed successfully!');
     }
@@ -52,6 +61,18 @@ class Install extends Command
     {
         return [
             ['module', InputArgument::REQUIRED, 'The module\'s dot namespace.'],
+        ];
+    }
+
+    /**
+     * Get the console command options.
+     *
+     * @return array
+     */
+    protected function getOptions()
+    {
+        return [
+            ['seed', null, InputOption::VALUE_NONE, 'Seed the module after installing?'],
         ];
     }
 }

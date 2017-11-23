@@ -5,10 +5,9 @@ use Anomaly\Streams\Platform\Ui\Button\Contract\ButtonInterface;
 /**
  * Class Button
  *
- * @link    http://anomaly.is/streams-platform
- * @author  AnomalyLabs, Inc. <hello@anomaly.is>
- * @author  Ryan Thompson <ryan@anomaly.is>
- * @package Anomaly\Streams\Platform\Ui\Button
+ * @link    http://pyrocms.com/
+ * @author  PyroCMS, Inc. <support@pyrocms.com>
+ * @author  Ryan Thompson <ryan@pyrocms.com>
  */
 class Button implements ButtonInterface
 {
@@ -56,6 +55,13 @@ class Button implements ButtonInterface
     protected $size = 'md';
 
     /**
+     * The required permission.
+     *
+     * @var null|string
+     */
+    protected $permission = null;
+
+    /**
      * The disabled flag.
      *
      * @var bool
@@ -82,6 +88,27 @@ class Button implements ButtonInterface
      * @var array
      */
     protected $dropdown = [];
+
+    /**
+     * The dropup flag.
+     *
+     * @var string
+     */
+    protected $dropup = false;
+
+    /**
+     * The dropdown position.
+     *
+     * @var string
+     */
+    protected $position = 'left';
+
+    /**
+     * The parent dropdown.
+     *
+     * @var null|string
+     */
+    protected $parent = null;
 
     /**
      * The entry object.
@@ -113,12 +140,81 @@ class Button implements ButtonInterface
     /**
      * Set the dropdown.
      *
-     * @param array $dropdown
+     * @param  array $dropdown
      * @return $this
      */
     public function setDropdown(array $dropdown)
     {
         $this->dropdown = $dropdown;
+
+        return $this;
+    }
+
+    /**
+     * Return whether the button is a dropup or not.
+     *
+     * @return bool
+     */
+    public function isDropup()
+    {
+        return $this->dropup;
+    }
+
+    /**
+     * Set dropup flag.
+     *
+     * @param  $dropup
+     * @return $this
+     */
+    public function setDropup($dropup)
+    {
+        $this->dropup = $dropup;
+
+        return $this;
+    }
+
+    /**
+     * Get the dropdown position.
+     *
+     * @return array
+     */
+    public function getPosition()
+    {
+        return $this->position;
+    }
+
+    /**
+     * Set the dropdown position.
+     *
+     * @param  array $position
+     * @return $this
+     */
+    public function setPosition($position)
+    {
+        $this->position = $position;
+
+        return $this;
+    }
+
+    /**
+     * Get the parent.
+     *
+     * @return string|null
+     */
+    public function getParent()
+    {
+        return $this->parent;
+    }
+
+    /**
+     * Set the parent.
+     *
+     * @param $parent
+     * @return $this
+     */
+    public function setParent($parent)
+    {
+        $this->parent = $parent;
 
         return $this;
     }
@@ -136,7 +232,7 @@ class Button implements ButtonInterface
     /**
      * Set the attributes.
      *
-     * @param array $attributes
+     * @param  array $attributes
      * @return $this
      */
     public function setAttributes(array $attributes)
@@ -228,7 +324,7 @@ class Button implements ButtonInterface
     /**
      * Set the icon.
      *
-     * @param string $icon
+     * @param  string $icon
      * @return $this
      */
     public function setIcon($icon)
@@ -285,6 +381,29 @@ class Button implements ButtonInterface
     }
 
     /**
+     * Get the permission.
+     *
+     * @return null|string
+     */
+    public function getPermission()
+    {
+        return $this->permission;
+    }
+
+    /**
+     * Set the permission.
+     *
+     * @param $permission
+     * @return $this
+     */
+    public function setPermission($permission)
+    {
+        $this->permission = $permission;
+
+        return $this;
+    }
+
+    /**
      * Get the button type.
      *
      * @return null|string
@@ -297,7 +416,7 @@ class Button implements ButtonInterface
     /**
      * Set the button type.
      *
-     * @param string $type
+     * @param  string $type
      * @return $this
      */
     public function setType($type)
@@ -320,7 +439,7 @@ class Button implements ButtonInterface
     /**
      * Set the button text.
      *
-     * @param string $text
+     * @param  string $text
      * @return $this
      */
     public function setText($text)

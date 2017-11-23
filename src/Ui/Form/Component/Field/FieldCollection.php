@@ -1,16 +1,14 @@
 <?php namespace Anomaly\Streams\Platform\Ui\Form\Component\Field;
 
 use Anomaly\Streams\Platform\Addon\FieldType\FieldType;
-use Illuminate\Contracts\Bus\SelfHandling;
-use Illuminate\Support\Collection;
+use Anomaly\Streams\Platform\Support\Collection;
 
 /**
  * Class FieldCollection
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Ui\Form\Component\Field
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
 class FieldCollection extends Collection
 {
@@ -25,11 +23,13 @@ class FieldCollection extends Collection
     {
         $fields = [];
 
+        $locale = config('streams::locales.default');
+
         /* @var FieldType $item */
         foreach ($this->items as $item) {
 
             // If it's the base local then add it.
-            if ($item->getLocale() == config('app.fallback_locale')) {
+            if ($item->getLocale() == $locale) {
                 $fields[] = $item;
             }
 
@@ -65,15 +65,15 @@ class FieldCollection extends Collection
     /**
      * Get a field.
      *
-     * @param mixed $key
-     * @param null  $default
+     * @param  mixed $key
+     * @param  null $default
      * @return FieldType
      */
     public function get($key, $default = null)
     {
         /* @var FieldType $item */
         foreach ($this->items as $item) {
-            if ($item->getInputName() == $key) {
+            if ($item->getField() == $key) {
                 return $item;
             }
         }
@@ -162,7 +162,7 @@ class FieldCollection extends Collection
     }
 
     /**
-     * Return non-SelfHandling fields.
+     * Return non-self handling fields.
      *
      * @return FieldCollection
      */
@@ -172,7 +172,7 @@ class FieldCollection extends Collection
 
         /* @var FieldType $item */
         foreach ($this->items as $item) {
-            if (!$item->isDisabled() && !$item instanceof SelfHandling) {
+            if (!$item->isDisabled() && !method_exists($item, 'handle')) {
                 $allowed[] = $item;
             }
         }
@@ -181,7 +181,7 @@ class FieldCollection extends Collection
     }
 
     /**
-     * Return SelfHandling fields.
+     * Return self handling fields.
      *
      * @return FieldCollection
      */
@@ -191,7 +191,7 @@ class FieldCollection extends Collection
 
         /* @var FieldType $item */
         foreach ($this->items as $item) {
-            if ($item instanceof SelfHandling) {
+            if (method_exists($item, 'handle')) {
                 $selfHandling[] = $item;
             }
         }
@@ -209,7 +209,6 @@ class FieldCollection extends Collection
         /* @var FieldType $item */
         foreach ($this->items as $index => $item) {
             if ($item->getField() == $key) {
-
                 unset($this->items[$index]);
 
                 break;
@@ -218,18 +217,20 @@ class FieldCollection extends Collection
     }
 
     /**
-     * Return an array of field slugs
+     * Return a unique array of field slugs
      * for all the fields in the collection.
      *
      * @return array
      */
     public function fieldSlugs()
     {
-        return array_map(
-            function (FieldType $field) {
-                return $field->getField();
-            },
-            $this->all()
+        return array_unique(
+            array_map(
+                function (FieldType $field) {
+                    return $field->getField();
+                },
+                $this->all()
+            )
         );
     }
 
@@ -247,28 +248,5 @@ class FieldCollection extends Collection
             },
             $this->all()
         );
-    }
-
-    /**
-     * Get a field with the __get accessor.
-     *
-     * @param $name
-     * @return FieldType
-     */
-    public function __get($name)
-    {
-        return $this->get($name);
-    }
-
-    /**
-     * Get a field with the __call accessor.
-     *
-     * @param $name
-     * @param $arguments
-     * @return FieldType
-     */
-    function __call($name, $arguments)
-    {
-        return $this->get($name);
     }
 }

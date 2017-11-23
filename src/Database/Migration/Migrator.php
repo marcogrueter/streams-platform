@@ -1,18 +1,16 @@
 <?php namespace Anomaly\Streams\Platform\Database\Migration;
 
-use Anomaly\Streams\Platform\Addon\AddonCollection;
+use Anomaly\Streams\Platform\Addon\Addon;
 use Anomaly\Streams\Platform\Database\Migration\Command\Migrate;
-use Anomaly\Streams\Platform\Database\Migration\Command\Rollback;
-use Anomaly\Streams\Platform\Database\Migration\Command\TransformMigrationNameToClass;
+use Anomaly\Streams\Platform\Database\Migration\Command\Reset;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 
 /**
  * Class Migrator
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Database\Migration
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
 class Migrator extends \Illuminate\Database\Migrations\Migrator
 {
@@ -20,11 +18,11 @@ class Migrator extends \Illuminate\Database\Migrations\Migrator
     use DispatchesJobs;
 
     /**
-     * The migration namespace.
+     * The addon instance.
      *
-     * @var string|null
+     * @var Addon
      */
-    protected $namespace;
+    protected $addon = null;
 
     /**
      * The migration repository.
@@ -34,45 +32,85 @@ class Migrator extends \Illuminate\Database\Migrations\Migrator
     protected $repository;
 
     /**
-     * @param $namespace
+     * Run the migrations.
      *
-     * @return $this
+     * @param array $paths
+     * @param array $options
+     * @return array
      */
-    public function setNamespace($namespace)
+    public function run($paths = [], array $options = [])
     {
-        $this->namespace = $namespace;
+        $this->repository->setMigrator($this);
 
-        return $this;
+        return parent::run($paths, $options);
     }
 
     /**
-     * Run an array of migrations.
+     * Rolls all of the currently applied migrations back.
      *
-     * @param  array $migrations
-     * @param  bool  $pretend
+     * This is a carbon copy of the Laravel method
+     * except in the "!isset($files[$migration])" part.
      *
-     * @return void
+     * @param  array|string $paths
+     * @param  bool         $pretend
+     * @return array
      */
-    public function runMigrationList($migrations, $pretend = false)
+    public function reset($paths = [], $pretend = false)
     {
-        // First we will just make sure that there are any migrations to run. If there
-        // aren't, we will just make a note of it to the developer so they're aware
-        // that all of the migrations have been run against this database system.
-        if (count($migrations) == 0) {
+        $this->repository->setMigrator($this);
 
-            $this->note("<info>Nothing to migrate: {$this->namespace}</info>");
+        $this->notes = [];
 
-            return;
+        $rolledBack = [];
+
+        $files = $this->getMigrationFiles($paths);
+
+        // Next, we will reverse the migration list so we can run them back in the
+        // correct order for resetting this database. This will allow us to get
+        // the database back into its "empty" state ready for the migrations.
+        $migrations = array_reverse($this->repository->getRan());
+
+        $count = count($migrations);
+
+        if ($count === 0) {
+            $this->note('<info>Nothing to rollback.</info>');
+        } else {
+            $this->requireFiles($files);
+
+            // Next we will run through all of the migrations and call the "down" method
+            // which will reverse each migration in order. This will get the database
+            // back to its original "empty" state and will be ready for migrations.
+            foreach ($migrations as $migration) {
+
+                /**
+                 * This is the only adjustment to
+                 * Laravel's method..
+                 */
+                if (!isset($files[$migration])) {
+                    continue;
+                }
+
+                $rolledBack[] = $files[$migration];
+
+                $this->runDown($files[$migration], (object)['migration' => $migration], $pretend);
+            }
         }
 
-        $batch = $this->repository->getNextBatchNumber();
+        return $rolledBack;
+    }
 
-        // Once we have the array of migrations, we will spin through them and run the
-        // migrations "up" so the changes are made to the databases. We'll then log
-        // that the migration was run so we don't repeat it next time we execute.
-        foreach ($migrations as $file) {
-            $this->runUp($file, $batch, $pretend);
-        }
+    /**
+     * Rollback the last migration operation.
+     *
+     * @param  array|string $paths
+     * @param  array        $options
+     * @return array
+     */
+    public function rollback($paths = [], array $options = [])
+    {
+        $this->repository->setMigrator($this);
+
+        return parent::rollback($paths, $options);
     }
 
     /**
@@ -81,15 +119,29 @@ class Migrator extends \Illuminate\Database\Migrations\Migrator
      * @param  string $file
      * @param  int    $batch
      * @param  bool   $pretend
-     *
      * @return void
      */
     protected function runUp($file, $batch, $pretend)
     {
-        $instance = $this->resolve($file);
+        /**
+         * Run our migrations first.
+         *
+         * @var Migration $migration
+         */
+        $migration = $this->resolve($file);
 
-        if ($instance instanceof Migration) {
-            $this->dispatch(new Migrate($instance));
+        /**
+         * Set the addon if there is
+         * one contextually available.
+         *
+         * @var Addon $addon
+         */
+        if ($addon = $this->getAddon()) {
+            $migration->setAddon($addon);
+        }
+
+        if ($migration instanceof Migration) {
+            $this->dispatch(new Migrate($migration));
         }
 
         parent::runUp($file, $batch, $pretend);
@@ -98,114 +150,83 @@ class Migrator extends \Illuminate\Database\Migrations\Migrator
     /**
      * Run "down" a migration instance.
      *
+     * @param  string $file
      * @param  object $migration
      * @param  bool   $pretend
-     *
      * @return void
      */
-    protected function runDown($migration, $pretend)
+    protected function runDown($file, $migration, $pretend)
     {
-        $instance = $this->resolve($migration->migration);
+        /**
+         * Run our migrations first.
+         *
+         * @var Migration $migration
+         */
+        $migration = $this->resolve($file);
 
-        if ($instance instanceof Migration) {
-            $this->dispatch(new Rollback($instance));
+        /**
+         * Set the addon if there is
+         * one contextually available.
+         *
+         * @var Addon $addon
+         */
+        if ($addon = $this->getAddon()) {
+            $migration->setAddon($addon);
         }
 
-        parent::runDown($migration, $pretend);
-    }
-
-    /**
-     * Require a given migration file.
-     *
-     * @param $file
-     */
-    protected function requireOnce($file)
-    {
-        $namespace = $this->getNamespaceFromMigrationFile($file);
-
-        $addons = (new AddonCollection())->merged();
-
-        if ($addon = $addons->get($namespace)) {
-            $path = $addon->getPath('migrations/') . $file . '.php';
-        } else {
-            $path = base_path('database/migrations/') . $file . '.php';
+        if ($migration instanceof Migration) {
+            $this->dispatch(new Reset($migration));
         }
 
-        if (is_file($path)) {
-            $this->files->requireOnce($path);
-        }
+        parent::runDown($file, $migration, $pretend);
     }
 
     /**
      * Resolve a migration instance from a file.
      *
      * @param  string $file
-     *
-     * @return Migration
+     * @return object
      */
     public function resolve($file)
     {
-        $this->requireOnce($file);
+        $migration = app((new MigrationName($file))->className());
 
-        return app($this->dispatch(new TransformMigrationNameToClass($this->removeDatePrefix($file))));
+        $migration->migration = (new MigrationName($file))->migration();
+
+        return $migration;
     }
 
     /**
-     * Remove the date prefix from
-     * a given migration file.
+     * Set the addon.
      *
-     * @param $file
-     * @return string
+     * @param Addon $addon
      */
-    public function removeDatePrefix($file)
+    public function setAddon(Addon $addon)
     {
-        return implode('_', array_slice(explode('_', $file), 4));
+        $this->addon = $addon;
+
+        return $this;
     }
 
     /**
-     * Get the namespace from a
-     * given migration file.
+     * Clear the addon.
      *
-     * @param $file
-     * @return string
+     * @param Addon $addon
      */
-    public function getNamespaceFromMigrationFile($file)
+    public function clearAddon()
     {
-        $segments = explode('__', $this->removeDatePrefix($file));
+        $this->addon = null;
 
-        return $segments[0];
+        return $this;
     }
 
     /**
-     * Rollback the last migration operation.
+     * Get the addon.
      *
-     * @param       $namespace
-     * @param  bool $pretend
-     * @return int
+     * @return Addon
      */
-    public function rollbackNamespace($namespace, $pretend = false)
+    public function getAddon()
     {
-        $this->notes = [];
-
-        // We want to pull in the last batch of migrations that ran on the previous
-        // migration operation. We'll then reverse those migrations and run each
-        // of them "down" to reverse the last migration "operation" which ran.
-        $migrations = $this->repository->findManyByNamespace($namespace);
-
-        if (count($migrations) == 0) {
-
-            $this->note("<info>Nothing to rollback: {$namespace}</info>");
-
-            return count($migrations);
-        }
-
-        // We need to reverse these migrations so that they are "downed" in reverse
-        // to what they run on "up". It lets us backtrack through the migrations
-        // and properly reverse the entire database schema operation that ran.
-        foreach ($migrations as $migration) {
-            $this->runDown((object)$migration, $pretend);
-        }
-
-        return count($migrations);
+        return $this->addon;
     }
 }

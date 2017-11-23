@@ -3,14 +3,14 @@
 use Anomaly\Streams\Platform\Entry\Contract\EntryInterface;
 use Anomaly\Streams\Platform\Model\EloquentModel;
 use Anomaly\Streams\Platform\Model\EloquentPresenter;
+use Anomaly\Streams\Platform\Support\Value;
 
 /**
  * Class EntryPresenter
  *
- * @link    http://anomaly.is/streams-platform
- * @author  AnomalyLabs, Inc. <hello@anomaly.is>
- * @author  Ryan Thompson <ryan@anomaly.is>
- * @package Anomaly\Streams\Platform\Entry
+ * @link    http://pyrocms.com/
+ * @author  PyroCMS, Inc. <support@pyrocms.com>
+ * @author  Ryan Thompson <ryan@pyrocms.com>
  */
 class EntryPresenter extends EloquentPresenter
 {
@@ -32,7 +32,7 @@ class EntryPresenter extends EloquentPresenter
     {
         return $this->object->created_at
             ->setTimezone(config('app.timezone'))
-            ->format(config('streams.date_format'));
+            ->format(config('streams::datetime.date_format'));
     }
 
     /**
@@ -44,7 +44,7 @@ class EntryPresenter extends EloquentPresenter
     {
         return $this->object->created_at
             ->setTimezone(config('app.timezone'))
-            ->format(config('streams.date_format') . ' ' . config('streams.time_format'));
+            ->format(config('streams::datetime.date_format') . ' ' . config('streams::datetime.time_format'));
     }
 
     /**
@@ -56,7 +56,7 @@ class EntryPresenter extends EloquentPresenter
     {
         return $this->object->updated_at
             ->setTimezone(config('app.timezone'))
-            ->format(config('streams.date_format'));
+            ->format(config('streams::datetime.date_format'));
     }
 
     /**
@@ -68,17 +68,51 @@ class EntryPresenter extends EloquentPresenter
     {
         return $this->object->updated_at
             ->setTimezone(config('app.timezone'))
-            ->format(config('streams.date_format') . ' ' . config('streams.time_format'));
+            ->format(config('streams:datetime.date_format') . ' ' . config('streams:datetime.time_format'));
     }
 
     /**
-     * Return the edit link.
+     * Return a label.
+     *
+     * @param         $text
+     * @param  string $context
+     * @param  string $size
+     * @return string
+     */
+    public function label($text = null, $context = null, $size = null)
+    {
+        if (!$text) {
+            $text = $this->object->getTitleName();
+        }
+
+        if (!$context) {
+            $context = 'default';
+        }
+
+        if (!$size) {
+            $size = 'sm';
+        }
+
+        /* @var Value $value */
+        $value = app(Value::class);
+
+        $text = $value->make($text, $this->object);
+
+        if (trans()->has($text) && is_string(trans($text))) {
+            $text = trans($text);
+        }
+
+        return '<span class="tag tag-' . $context . ' tag-' . $size . '">' . $text . '</span>';
+    }
+
+    /**
+     * Return the edit URL.
      *
      * @return string
      */
-    public function editLink()
+    public function editUrl()
     {
-        return app('html')->link(
+        return url(
             implode(
                 '/',
                 array_unique(
@@ -88,12 +122,46 @@ class EntryPresenter extends EloquentPresenter
                             $this->object->getStreamNamespace(),
                             $this->object->getStreamSlug(),
                             'edit',
-                            $this->object->getId()
+                            $this->object->getId(),
                         ]
                     )
                 )
-            ),
-            $this->object->getTitle()
+            )
+        );
+    }
+
+    /**
+     * Return the edit link.
+     *
+     * @return string
+     */
+    public function editLink()
+    {
+        return app('html')->link($this->editUrl(), $this->object->{$this->object->getTitleName()});
+    }
+
+    /**
+     * Return the view URL.
+     *
+     * @return string
+     */
+    public function viewUrl()
+    {
+        return url(
+            implode(
+                '/',
+                array_unique(
+                    array_filter(
+                        [
+                            'admin',
+                            $this->object->getStreamNamespace(),
+                            $this->object->getStreamSlug(),
+                            'view',
+                            $this->object->getId(),
+                        ]
+                    )
+                )
+            )
         );
     }
 
@@ -104,23 +172,7 @@ class EntryPresenter extends EloquentPresenter
      */
     public function viewLink()
     {
-        return app('html')->link(
-            implode(
-                '/',
-                array_unique(
-                    array_filter(
-                        [
-                            'admin',
-                            $this->object->getStreamNamespace(),
-                            $this->object->getStreamSlug(),
-                            'show',
-                            $this->object->getId()
-                        ]
-                    )
-                )
-            ),
-            $this->object->getTitle()
-        );
+        return app('html')->link($this->viewUrl(), $this->object->{$this->object->getTitleName()});
     }
 
     /**
@@ -135,11 +187,9 @@ class EntryPresenter extends EloquentPresenter
     public function __get($key)
     {
         if ($assignment = $this->object->getAssignment($key)) {
-
-            $type = $assignment->getFieldType($this);
+            $type = $assignment->getFieldType();
 
             if ($assignment->isTranslatable() && $locale = config('app.locale')) {
-
                 $entry = $this->object->translateOrDefault($locale);
 
                 $type->setLocale($locale);
@@ -147,17 +197,17 @@ class EntryPresenter extends EloquentPresenter
                 $entry = $this->object;
             }
 
-            $type
-                ->setEntry($entry)
-                ->setValue($entry->getFieldValue($key));
+            $type->setEntry($entry);
 
             if (method_exists($type, 'getRelation')) {
-                return $this->__getDecorator()->decorate($entry->{$key});
+                return $type->decorate($entry->getRelationValue(camel_case($key)));
             }
+
+            $type->setValue($entry->getFieldValue($key));
 
             return $type->getPresenter();
         }
 
-        return parent::__get($key);
+        return $this->__getDecorator()->decorate(parent::__get($key));
     }
 }

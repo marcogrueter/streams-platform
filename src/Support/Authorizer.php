@@ -1,16 +1,18 @@
 <?php namespace Anomaly\Streams\Platform\Support;
 
+use Anomaly\Streams\Platform\Model\EloquentCollection;
+use Anomaly\UsersModule\Role\Contract\RoleInterface;
 use Anomaly\UsersModule\User\Contract\UserInterface;
-use Illuminate\Auth\Guard;
-use Illuminate\Config\Repository;
+use Illuminate\Contracts\Auth\Guard;
+use Illuminate\Contracts\Config\Repository;
+use Illuminate\Http\Request;
 
 /**
  * Class Authorizer
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Support
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
 class Authorizer
 {
@@ -18,9 +20,16 @@ class Authorizer
     /**
      * The auth utility.
      *
-     * @var Guard
+     * @var null|Guard
      */
-    protected $guard;
+    protected $guard = null;
+
+    /**
+     * The guest role.
+     *
+     * @var RoleInterface
+     */
+    protected $guest;
 
     /**
      * The config repository.
@@ -30,22 +39,31 @@ class Authorizer
     protected $config;
 
     /**
+     * The request object.
+     *
+     * @var Request
+     */
+    protected $request;
+
+    /**
      * Create a new Authorizer instance.
      *
      * @param Guard      $guard
      * @param Repository $config
+     * @param Request    $request
      */
-    function __construct(Guard $guard, Repository $config)
+    public function __construct(Guard $guard, Repository $config, Request $request)
     {
-        $this->guard  = $guard;
-        $this->config = $config;
+        $this->guard   = $guard;
+        $this->config  = $config;
+        $this->request = $request;
     }
 
     /**
-     * Authorize the active user against a permission.
+     * Authorize a user against a permission.
      *
-     * @param               $permission
-     * @param UserInterface $user
+     * @param                $permission
+     * @param  UserInterface $user
      * @return bool
      */
     public function authorize($permission, UserInterface $user = null)
@@ -54,19 +72,96 @@ class Authorizer
             $user = $this->guard->user();
         }
 
-        /**
+        if (!$user) {
+            $user = $this->request->user();
+        }
+
+        if (!$user && $guest = $this->getGuest()) {
+            return $guest->hasPermission($permission);
+        }
+
+        if (!$user) {
+            return false;
+        }
+
+        return $this->checkPermission($permission, $user);
+    }
+
+    /**
+     * Authorize a user against any permission.
+     *
+     * @param  array         $permissions
+     * @param  UserInterface $user
+     * @param  bool          $strict
+     * @return bool
+     */
+    public function authorizeAny(array $permissions, UserInterface $user = null, $strict = false)
+    {
+        if (!$user) {
+            $user = $this->guard->user();
+        }
+
+        if (!$user) {
+            return !$strict;
+        }
+
+        foreach ($permissions as $permission) {
+            if ($this->checkPermission($permission, $user)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Authorize a user against all permission.
+     *
+     * @param  array         $permissions
+     * @param  UserInterface $user
+     * @param  bool          $strict
+     * @return bool
+     */
+    public function authorizeAll(array $permissions, UserInterface $user = null, $strict = false)
+    {
+        if (!$user) {
+            $user = $this->guard->user();
+        }
+
+        if (!$user) {
+            return !$strict;
+        }
+
+        foreach ($permissions as $permission) {
+            if (!$this->checkPermission($permission, $user)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Return a user's permission.
+     *
+     * @param                $permission
+     * @param  UserInterface $user
+     * @return bool
+     */
+    protected function checkPermission($permission, UserInterface $user)
+    {
+        /*
          * No permission, let it proceed.
          */
         if (!$permission) {
             return true;
         }
 
-        /**
+        /*
          * If the permission does not actually exist
          * then we cant really do anything with it.
          */
         if (str_is('*::*.*', $permission) && !ends_with($permission, '*')) {
-
             $parts = explode('.', str_replace('::', '.', $permission));
             $end   = array_pop($parts);
             $group = array_pop($parts);
@@ -77,17 +172,15 @@ class Authorizer
                 return true;
             }
         } elseif (ends_with($permission, '*')) {
-
             $parts = explode('::', $permission);
 
             $addon = array_shift($parts);
 
-            /**
+            /*
              * Check vendor.module.slug::group.*
              * then check vendor.module.slug::*
              */
             if (str_is('*.*.*::*.*.*', $permission)) {
-
                 $end = trim(substr($permission, strpos($permission, '::') + 2), '.*');
 
                 if (!$permissions = $this->config->get($addon . '::permissions.' . $end)) {
@@ -96,13 +189,11 @@ class Authorizer
                     return $user->hasAnyPermission($permissions);
                 }
             } elseif (str_is('*.*.*::*.*', $permission)) {
-
                 $end = trim(substr($permission, strpos($permission, '::') + 2), '.*');
 
                 if (!$permissions = $this->config->get($addon . '::permissions.' . $end)) {
                     return true;
                 } else {
-
                     $check = [];
 
                     foreach ($permissions as &$permission) {
@@ -115,7 +206,6 @@ class Authorizer
                 if (!$permissions = $this->config->get($addon . '::permissions')) {
                     return true;
                 } else {
-
                     $check = [];
 
                     foreach ($permissions as $group => &$permission) {
@@ -128,7 +218,6 @@ class Authorizer
                 }
             }
         } else {
-
             $parts = explode('::', $permission);
 
             $end = array_pop($parts);
@@ -144,5 +233,98 @@ class Authorizer
         }
 
         return true;
+    }
+
+    /**
+     * Authorize a user against a role.
+     *
+     * @param RoleInterface  $role
+     * @param  UserInterface $user
+     * @return bool
+     */
+    public function authorizeRole(RoleInterface $role, UserInterface $user = null)
+    {
+        if (!$user) {
+            $user = $this->guard->user();
+        }
+
+        if (!$user) {
+            $user = $this->request->user();
+        }
+
+        if ($this->isGuest($role)) {
+            return $user ? false : true;
+        }
+
+        if (!$user) {
+            return false;
+        }
+
+        return $user->hasRole($role);
+    }
+
+    /**
+     * Authorize a user against any role.
+     *
+     * @param EloquentCollection $roles
+     * @param  UserInterface     $user
+     * @return bool
+     */
+    public function authorizeAnyRole(EloquentCollection $roles, UserInterface $user = null)
+    {
+        if ($roles->isEmpty()) {
+            return true;
+        }
+        
+        if (!$user) {
+            $user = $this->guard->user();
+        }
+
+        if (!$user) {
+            $user = $this->request->user();
+        }
+
+        if (!$user) {
+            return false;
+        }
+
+        return $user->hasAnyRole($roles);
+    }
+
+    /**
+     * Get the guest role.
+     *
+     * @return RoleInterface
+     */
+    public function getGuest()
+    {
+        return $this->guest;
+    }
+
+    /**
+     * Set the guest role.
+     *
+     * @param  RoleInterface $guest
+     * @return $this
+     */
+    public function setGuest(RoleInterface $guest)
+    {
+        $this->guest = $guest;
+
+        return $this;
+    }
+
+    /**
+     * Return whether a role is
+     * the guest role or not.
+     *
+     * @param RoleInterface $role
+     * @return bool
+     */
+    public function isGuest(RoleInterface $role)
+    {
+        $guest = $this->getGuest();
+
+        return $guest->getSlug() === $role->getSlug();
     }
 }

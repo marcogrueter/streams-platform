@@ -6,10 +6,9 @@ use Anomaly\Streams\Platform\Ui\Table\Component\Column\Contract\ColumnInterface;
 /**
  * Class ColumnFactory
  *
- * @link    http://anomaly.is/streams-platform
- * @author  AnomalyLabs, Inc. <hello@anomaly.is>
- * @author  Ryan Thompson <ryan@anomaly.is>
- * @package Anomaly\Streams\Platform\Ui\Table\Component\Column
+ * @link    http://pyrocms.com/
+ * @author  PyroCMS, Inc. <support@pyrocms.com>
+ * @author  Ryan Thompson <ryan@pyrocms.com>
  */
 class ColumnFactory
 {
@@ -41,7 +40,7 @@ class ColumnFactory
     /**
      * Make a column.
      *
-     * @param  array $parameters
+     * @param  array           $parameters
      * @return ColumnInterface
      */
     public function make(array $parameters)

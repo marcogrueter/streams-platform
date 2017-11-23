@@ -2,14 +2,14 @@
 
 use Anomaly\Streams\Platform\Model\Contract\EloquentRepositoryInterface;
 use Anomaly\Streams\Platform\Model\EloquentCollection;
+use Anomaly\Streams\Platform\Stream\StreamCollection;
 
 /**
  * Interface StreamRepositoryInterface
  *
- * @link    http://anomaly.is/streams-platform
- * @author  AnomalyLabs, Inc. <hello@anomaly.is>
- * @author  Ryan Thompson <ryan@anomaly.is>
- * @package Anomaly\Streams\Platform\Stream\Contract
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
 interface StreamRepositoryInterface extends EloquentRepositoryInterface
 {
@@ -22,6 +22,14 @@ interface StreamRepositoryInterface extends EloquentRepositoryInterface
      * @return null|StreamInterface
      */
     public function findBySlugAndNamespace($slug, $namespace);
+
+    /**
+     * Find all streams by their searchable flag.
+     *
+     * @param $searchable
+     * @return StreamCollection
+     */
+    public function findAllBySearchable($searchable);
 
     /**
      * Find all streams in a namespace.
@@ -37,6 +45,21 @@ interface StreamRepositoryInterface extends EloquentRepositoryInterface
      * @param $namespace
      */
     public function destroy($namespace);
+
+    /**
+     * Return streams that are/not hidden.
+     *
+     * @param $hidden
+     * @return StreamCollection
+     */
+    public function hidden($hidden = true);
+
+    /**
+     * Return only visible streams.
+     *
+     * @return StreamCollection
+     */
+    public function visible();
 
     /**
      * Clean up abandoned streams.

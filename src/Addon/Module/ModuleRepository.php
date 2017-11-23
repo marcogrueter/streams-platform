@@ -5,10 +5,9 @@ use Anomaly\Streams\Platform\Addon\Module\Contract\ModuleRepositoryInterface;
 /**
  * Class ModuleRepository
  *
- * @link    http://anomaly.is/streams-platform
- * @author  AnomalyLabs, Inc. <hello@anomaly.is>
- * @author  Ryan Thompson <ryan@anomaly.is>
- * @package Anomaly\Streams\Platform\Addon\Module
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
 class ModuleRepository implements ModuleRepositoryInterface
 {
@@ -43,7 +42,7 @@ class ModuleRepository implements ModuleRepositoryInterface
     /**
      * Create a module record.
      *
-     * @param Module $module
+     * @param  Module $module
      * @return bool
      */
     public function create(Module $module)
@@ -60,7 +59,7 @@ class ModuleRepository implements ModuleRepositoryInterface
     /**
      * Delete a module record.
      *
-     * @param  Module $module
+     * @param  Module      $module
      * @return ModuleModel
      */
     public function delete(Module $module)
@@ -82,7 +81,9 @@ class ModuleRepository implements ModuleRepositoryInterface
      */
     public function install(Module $module)
     {
-        $module = $this->model->findByNamespaceOrNew($module->getNamespace());
+        if (!$module = $this->model->findByNamespaceOrNew($module->getNamespace())) {
+            return false;
+        }
 
         $module->installed = true;
         $module->enabled   = true;
@@ -98,7 +99,9 @@ class ModuleRepository implements ModuleRepositoryInterface
      */
     public function uninstall(Module $module)
     {
-        $module = $this->model->findByNamespace($module->getNamespace());
+        if (!$module = $this->model->findByNamespace($module->getNamespace())) {
+            return false;
+        }
 
         $module->installed = false;
         $module->enabled   = false;
@@ -109,7 +112,7 @@ class ModuleRepository implements ModuleRepositoryInterface
     /**
      * Mark a module as disabled.
      *
-     * @param Module $module
+     * @param  Module $module
      * @return bool
      */
     public function disable(Module $module)
@@ -124,7 +127,7 @@ class ModuleRepository implements ModuleRepositoryInterface
     /**
      * Mark a module as enabled.
      *
-     * @param Module $module
+     * @param  Module $module
      * @return bool
      */
     public function enabled(Module $module)

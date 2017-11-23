@@ -1,23 +1,33 @@
 <?php namespace Anomaly\Streams\Platform\Field;
 
-use Anomaly\Streams\Platform\Addon\FieldType\Command\BuildFieldType;
 use Anomaly\Streams\Platform\Addon\FieldType\FieldType;
+use Anomaly\Streams\Platform\Addon\FieldType\FieldTypeBuilder;
 use Anomaly\Streams\Platform\Assignment\AssignmentCollection;
+use Anomaly\Streams\Platform\Assignment\AssignmentModel;
 use Anomaly\Streams\Platform\Assignment\Contract\AssignmentInterface;
 use Anomaly\Streams\Platform\Field\Contract\FieldInterface;
 use Anomaly\Streams\Platform\Model\EloquentModel;
+use Anomaly\Streams\Platform\Stream\Contract\StreamInterface;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * Class FieldModel
  *
- * @link    http://anomaly.is/streams-platform
- * @author  AnomalyLabs, Inc. <hello@anomaly.is>
- * @author  Ryan Thompson <ryan@anomaly.is>
- * @package Anomaly\Streams\Platform\Field
+ * @link    http://pyrocms.com/
+ * @author  PyroCMS, Inc. <support@pyrocms.com>
+ * @author  Ryan Thompson <ryan@pyrocms.com>
  */
 class FieldModel extends EloquentModel implements FieldInterface
 {
+
+    /**
+     * Eager loaded relations.
+     *
+     * @var array
+     */
+    protected $with = [
+        'translations',
+    ];
 
     /**
      * Do not use timestamps.
@@ -32,7 +42,7 @@ class FieldModel extends EloquentModel implements FieldInterface
      * @var array
      */
     protected $attributes = [
-        'config' => 'a:0:{}'
+        'config' => 'a:0:{}',
     ];
 
     /**
@@ -55,7 +65,10 @@ class FieldModel extends EloquentModel implements FieldInterface
      * @var array
      */
     protected $translatedAttributes = [
-        'name'
+        'name',
+        'warning',
+        'placeholder',
+        'instructions',
     ];
 
     /**
@@ -73,11 +86,18 @@ class FieldModel extends EloquentModel implements FieldInterface
     protected $table = 'streams_fields';
 
     /**
+     * The field type builder.
+     *
+     * @var FieldTypeBuilder
+     */
+    protected static $builder;
+
+    /**
      * Boot the model.
      */
     protected static function boot()
     {
-        self::observe(app(substr(__CLASS__, 0, -5) . 'Observer'));
+        self::$builder = app(FieldTypeBuilder::class);
 
         parent::boot();
     }
@@ -95,12 +115,42 @@ class FieldModel extends EloquentModel implements FieldInterface
     /**
      * Get the name.
      *
-     * @param null|string $locale
+     * @param  null|string $locale
      * @return string
      */
     public function getName()
     {
         return $this->name;
+    }
+
+    /**
+     * Get the warning.
+     *
+     * @return string
+     */
+    public function getWarning()
+    {
+        return $this->warning;
+    }
+
+    /**
+     * Get the instructions.
+     *
+     * @return string
+     */
+    public function getInstructions()
+    {
+        return $this->instructions;
+    }
+
+    /**
+     * Get the placeholder.
+     *
+     * @return string
+     */
+    public function getPlaceholder()
+    {
+        return $this->placeholder;
     }
 
     /**
@@ -110,7 +160,7 @@ class FieldModel extends EloquentModel implements FieldInterface
      */
     public function getSlug()
     {
-        return $this->slug;
+        return $this->getAttributeFromArray('slug');
     }
 
     /**
@@ -136,20 +186,36 @@ class FieldModel extends EloquentModel implements FieldInterface
     /**
      * Get the field type.
      *
-     * @return null|FieldType
+     * @param  bool $fresh
+     * @return FieldType|null
+     * @throws \Exception
      */
-    public function getType()
+    public function getType($fresh = false)
     {
+        if ($fresh === false && isset($this->cache['type'])) {
+            return $this->cache['type'];
+        }
+
         $type   = $this->type;
         $field  = $this->slug;
         $label  = $this->name;
         $config = $this->config;
 
         if (!$type) {
-            return null;
+            return $this->cache['type'] = null;
         }
 
-        return $this->dispatch(new BuildFieldType(compact('type', 'field', 'label', 'config')));
+        return $this->cache['type'] = self::$builder->build(compact('type', 'field', 'label', 'config'));
+    }
+
+    /**
+     * Get the field type value.
+     *
+     * @return string
+     */
+    public function getTypeValue()
+    {
+        return $this->getAttributeFromArray('type');
     }
 
     /**
@@ -228,6 +294,37 @@ class FieldModel extends EloquentModel implements FieldInterface
     }
 
     /**
+     * Set rules attribute.
+     *
+     * @param array $rules
+     */
+    public function setRulesAttribute($rules)
+    {
+        $this->attributes['rules'] = serialize((array)$rules);
+    }
+
+    /**
+     * Return the decoded rules attribute.
+     *
+     * @param  $rules
+     * @return mixed
+     */
+    public function getRulesAttribute($rules)
+    {
+        return (array)unserialize($rules);
+    }
+
+    /**
+     * Set the stream namespace.
+     *
+     * @param StreamInterface $stream
+     */
+    public function setStreamAttribute(StreamInterface $stream)
+    {
+        $this->attributes['namespace'] = $stream->getNamespace();
+    }
+
+    /**
      * Compile the fields's stream.
      *
      * @return FieldInterface
@@ -243,27 +340,14 @@ class FieldModel extends EloquentModel implements FieldInterface
     }
 
     /**
-     * Delete related assignments.
-     *
-     * @return FieldInterface
-     */
-    public function deleteAssignments()
-    {
-        /* @var AssignmentInterface|EloquentModel $assignment */
-        foreach ($this->getAssignments() as $assignment) {
-            $assignment->delete();
-        }
-
-        return $this;
-    }
-
-    /**
      * Return the assignments relation.
      *
      * @return HasMany
      */
     public function assignments()
     {
-        return $this->hasMany('Anomaly\Streams\Platform\Assignment\AssignmentModel', 'field_id')->orderBy('sort_order');
+        return $this
+            ->hasMany(AssignmentModel::class, 'field_id')
+            ->orderBy('sort_order');
     }
 }

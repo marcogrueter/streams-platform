@@ -3,20 +3,19 @@
 use Anomaly\Streams\Platform\Addon\Module\Command\DisableModule;
 use Anomaly\Streams\Platform\Addon\Module\Command\EnableModule;
 use Anomaly\Streams\Platform\Addon\Module\Command\InstallModule;
+use Anomaly\Streams\Platform\Addon\Module\Command\MigrateModule;
 use Anomaly\Streams\Platform\Addon\Module\Command\UninstallModule;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 
 /**
  * Class ModuleManager
  *
- * @link    http://anomaly.is/streams-platform
- * @author  AnomalyLabs, Inc. <hello@anomaly.is>
- * @author  Ryan Thompson <ryan@anomaly.is>
- * @package Anomaly\Streams\Platform\Addon\Module
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
 class ModuleManager
 {
-
     use DispatchesJobs;
 
     /**
@@ -59,5 +58,16 @@ class ModuleManager
     public function disable(Module $module)
     {
         $this->dispatch(new DisableModule($module));
+    }
+
+    /**
+     * Migrate a module.
+     *
+     * @param Module $module
+     * @param bool   $seed
+     */
+    public function migrate(Module $module, $seed = false)
+    {
+        $this->dispatch(new MigrateModule($module, $seed));
     }
 }

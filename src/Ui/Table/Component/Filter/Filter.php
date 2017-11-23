@@ -1,5 +1,6 @@
 <?php namespace Anomaly\Streams\Platform\Ui\Table\Component\Filter;
 
+use Anomaly\Streams\Platform\Stream\Contract\StreamInterface;
 use Anomaly\Streams\Platform\Ui\Table\Component\Filter\Contract\FilterInterface;
 use Anomaly\Streams\Platform\Ui\Table\Component\Filter\Query\GenericFilterQuery;
 use Closure;
@@ -7,10 +8,9 @@ use Closure;
 /**
  * Class Filter
  *
- * @link    http://anomaly.is/streams-platform
- * @author  AnomalyLabs, Inc. <hello@anomaly.is>
- * @author  Ryan Thompson <ryan@anomaly.is>
- * @package Anomaly\Streams\Platform\Ui\Table\Component\Filter
+ * @link    http://pyrocms.com/
+ * @author  PyroCMS, Inc. <support@pyrocms.com>
+ * @author  Ryan Thompson <ryan@pyrocms.com>
  */
 class Filter implements FilterInterface
 {
@@ -23,11 +23,32 @@ class Filter implements FilterInterface
     protected $slug = 'default';
 
     /**
+     * The filter field.
+     *
+     * @var string
+     */
+    protected $field;
+
+    /**
+     * The stream object.
+     *
+     * @var StreamInterface
+     */
+    protected $stream;
+
+    /**
      * The filter prefix.
      *
      * @var null|string
      */
     protected $prefix = null;
+
+    /**
+     * The exact flag.
+     *
+     * @var bool
+     */
+    protected $exact = false;
 
     /**
      * The active flag.
@@ -139,7 +160,7 @@ class Filter implements FilterInterface
     /**
      * Set the filter prefix.
      *
-     * @param string $prefix
+     * @param  string $prefix
      * @return $this
      */
     public function setPrefix($prefix)
@@ -173,9 +194,32 @@ class Filter implements FilterInterface
     }
 
     /**
+     * Set the exact flag.
+     *
+     * @param  bool $exact
+     * @return $this
+     */
+    public function setExact($exact)
+    {
+        $this->exact = $exact;
+
+        return $this;
+    }
+
+    /**
+     * Return the exact flag.
+     *
+     * @return bool
+     */
+    public function isExact()
+    {
+        return $this->exact;
+    }
+
+    /**
      * Set the active flag.
      *
-     * @param bool $active
+     * @param  bool $active
      * @return $this
      */
     public function setActive($active)
@@ -193,5 +237,51 @@ class Filter implements FilterInterface
     public function isActive()
     {
         return $this->active;
+    }
+
+    /**
+     * Get the filter field.
+     *
+     * @return string
+     */
+    public function getField()
+    {
+        return $this->field;
+    }
+
+    /**
+     * Set the filter field.
+     *
+     * @param  $field
+     * @return $this
+     */
+    public function setField($field)
+    {
+        $this->field = $field;
+
+        return $this;
+    }
+
+    /**
+     * Get the stream.
+     *
+     * @return StreamInterface
+     */
+    public function getStream()
+    {
+        return $this->stream;
+    }
+
+    /**
+     * Set the stream.
+     *
+     * @param  StreamInterface $stream
+     * @return $this
+     */
+    public function setStream(StreamInterface $stream)
+    {
+        $this->stream = $stream;
+
+        return $this;
     }
 }

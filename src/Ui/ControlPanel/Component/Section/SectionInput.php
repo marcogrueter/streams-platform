@@ -6,10 +6,9 @@ use Anomaly\Streams\Platform\Ui\ControlPanel\ControlPanelBuilder;
 /**
  * Class SectionInput
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Ui\ControlPanel\Component\Section
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
 class SectionInput
 {
@@ -66,7 +65,7 @@ class SectionInput
      * @param SectionEvaluator  $evaluator
      * @param SectionNormalizer $normalizer
      */
-    function __construct(
+    public function __construct(
         SectionParser $parser,
         SectionGuesser $guesser,
         ModuleCollection $modules,
@@ -91,6 +90,7 @@ class SectionInput
     public function read(ControlPanelBuilder $builder)
     {
         $this->resolver->resolve($builder);
+        $this->evaluator->evaluate($builder);
         $this->normalizer->normalize($builder);
         $this->guesser->guess($builder);
         $this->evaluator->evaluate($builder);

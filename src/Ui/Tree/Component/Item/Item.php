@@ -2,14 +2,14 @@
 
 use Anomaly\Streams\Platform\Ui\Button\ButtonCollection;
 use Anomaly\Streams\Platform\Ui\Tree\Component\Item\Contract\ItemInterface;
+use Anomaly\Streams\Platform\Ui\Tree\Component\Segment\SegmentCollection;
 
 /**
  * Class Item
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Ui\Tree\Component\Item
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
 class Item implements ItemInterface
 {
@@ -22,18 +22,18 @@ class Item implements ItemInterface
     protected $id;
 
     /**
-     * The item value.
-     *
-     * @var string
-     */
-    protected $value;
-
-    /**
      * The parent ID.
      *
      * @var int
      */
     protected $parent;
+
+    /**
+     * The segment collection.
+     *
+     * @var SegmentCollection
+     */
+    protected $segments;
 
     /**
      * The item buttons.
@@ -66,29 +66,6 @@ class Item implements ItemInterface
     }
 
     /**
-     * Get the value.
-     *
-     * @return string
-     */
-    public function getValue()
-    {
-        return $this->value;
-    }
-
-    /**
-     * Set the value.
-     *
-     * @param $value
-     * @return $this
-     */
-    public function setValue($value)
-    {
-        $this->value = $value;
-
-        return $this;
-    }
-
-    /**
      * Get the parent ID.
      *
      * @return int
@@ -112,6 +89,29 @@ class Item implements ItemInterface
     }
 
     /**
+     * Get the segments.
+     *
+     * @return SegmentCollection
+     */
+    public function getSegments()
+    {
+        return $this->segments;
+    }
+
+    /**
+     * Set the segments.
+     *
+     * @param  SegmentCollection $segments
+     * @return $this
+     */
+    public function setSegments(SegmentCollection $segments)
+    {
+        $this->segments = $segments;
+
+        return $this;
+    }
+
+    /**
      * Get the buttons.
      *
      * @return ButtonCollection
@@ -124,7 +124,7 @@ class Item implements ItemInterface
     /**
      * Set the buttons.
      *
-     * @param ButtonCollection $buttons
+     * @param  ButtonCollection $buttons
      * @return $this
      */
     public function setButtons(ButtonCollection $buttons)

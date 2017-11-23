@@ -1,18 +1,20 @@
 <?php namespace Anomaly\Streams\Platform\Ui\Table\Component\View;
 
+use Anomaly\Streams\Platform\Traits\FiresCallbacks;
 use Anomaly\Streams\Platform\Ui\Table\Component\View\Contract\ViewInterface;
 use Closure;
 
 /**
  * Class View
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Ui\Table\Component\View
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
 class View implements ViewInterface
 {
+
+    use FiresCallbacks;
 
     /**
      * The view slug.
@@ -57,6 +59,13 @@ class View implements ViewInterface
     protected $attributes = [];
 
     /**
+     * The view filters.
+     *
+     * @var null
+     */
+    protected $filters = null;
+
+    /**
      * The view columns.
      *
      * @var null
@@ -76,6 +85,13 @@ class View implements ViewInterface
      * @var null
      */
     protected $actions = null;
+
+    /**
+     * The view options.
+     *
+     * @var null
+     */
+    protected $options = null;
 
     /**
      * The view handler.
@@ -104,7 +120,7 @@ class View implements ViewInterface
     /**
      * Set the attributes.
      *
-     * @param array $attributes
+     * @param  array $attributes
      * @return $this
      */
     public function setAttributes(array $attributes)
@@ -163,7 +179,7 @@ class View implements ViewInterface
     /**
      * Set the active flag.
      *
-     * @param bool $active
+     * @param  bool $active
      * @return $this
      */
     public function setActive($active)
@@ -242,7 +258,7 @@ class View implements ViewInterface
     /**
      * Set the view text.
      *
-     * @param string $text
+     * @param  string $text
      * @return $this
      */
     public function setText($text)
@@ -271,6 +287,29 @@ class View implements ViewInterface
     public function setIcon($icon)
     {
         $this->icon = $icon;
+
+        return $this;
+    }
+
+    /**
+     * Get the filters.
+     *
+     * @return null|array
+     */
+    public function getFilters()
+    {
+        return $this->filters;
+    }
+
+    /**
+     * Set the filters.
+     *
+     * @param $filters
+     * @return $this
+     */
+    public function setFilters($filters)
+    {
+        $this->filters = $filters;
 
         return $this;
     }
@@ -340,6 +379,29 @@ class View implements ViewInterface
     public function setActions($actions)
     {
         $this->actions = $actions;
+
+        return $this;
+    }
+
+    /**
+     * Get the options.
+     *
+     * @return null|array
+     */
+    public function getOptions()
+    {
+        return $this->options;
+    }
+
+    /**
+     * Set the options.
+     *
+     * @param $options
+     * @return $this
+     */
+    public function setOptions($options)
+    {
+        $this->options = $options;
 
         return $this;
     }

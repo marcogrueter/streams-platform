@@ -5,10 +5,9 @@ use Anomaly\Streams\Platform\Ui\Table\TableBuilder;
 /**
  * Class HeaderInput
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Ui\Table\Component\Header
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
 class HeaderInput
 {
@@ -62,7 +61,7 @@ class HeaderInput
     /**
      * Read builder header input.
      *
-     * @param TableBuilder $builder
+     * @param  TableBuilder $builder
      * @return array
      */
     public function read(TableBuilder $builder)

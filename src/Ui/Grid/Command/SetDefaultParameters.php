@@ -1,17 +1,15 @@
 <?php namespace Anomaly\Streams\Platform\Ui\Grid\Command;
 
 use Anomaly\Streams\Platform\Ui\Grid\GridBuilder;
-use Illuminate\Contracts\Bus\SelfHandling;
 
 /**
  * Class SetDefaultParameters
  *
- * @link    http://anomaly.is/streams-platform
- * @author  AnomalyLabs, Inc. <hello@anomaly.is>
- * @author  Ryan Thompson <ryan@anomaly.is>
- * @package Anomaly\Streams\Platform\Ui\Grid\Command
+ * @link    http://pyrocms.com/
+ * @author  PyroCMS, Inc. <support@pyrocms.com>
+ * @author  Ryan Thompson <ryan@pyrocms.com>
  */
-class SetDefaultParameters implements SelfHandling
+class SetDefaultParameters
 {
 
     /**
@@ -36,13 +34,12 @@ class SetDefaultParameters implements SelfHandling
      */
     public function handle()
     {
-        /**
+        /*
          * Set the default buttons handler based
          * on the builder class. Defaulting to
          * no handler.
          */
         if (!$this->builder->getButtons()) {
-
             $buttons = str_replace('GridBuilder', 'GridButtons', get_class($this->builder));
 
             if (class_exists($buttons)) {

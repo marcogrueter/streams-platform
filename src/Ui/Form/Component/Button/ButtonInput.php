@@ -5,10 +5,9 @@ use Anomaly\Streams\Platform\Ui\Form\FormBuilder;
 /**
  * Class ButtonInput
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Ui\Form\Component\Button
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
 class ButtonInput
 {
@@ -35,6 +34,15 @@ class ButtonInput
     protected $guesser;
 
     /**
+     * The button dropdown utility.
+     *
+     * @var ButtonDropdown
+     */
+    protected $dropdown;
+
+    /**
+     * The button defaults.
+     *
      * @var ButtonDefaults
      */
     protected $defaults;
@@ -67,6 +75,7 @@ class ButtonInput
      * @param ButtonLookup     $lookup
      * @param ButtonGuesser    $guesser
      * @param ButtonDefaults   $defaults
+     * @param ButtonDropdown   $dropdown
      * @param ButtonResolver   $resolver
      * @param ButtonEvaluator  $evaluator
      * @param ButtonNormalizer $normalizer
@@ -76,6 +85,7 @@ class ButtonInput
         ButtonLookup $lookup,
         ButtonGuesser $guesser,
         ButtonDefaults $defaults,
+        ButtonDropdown $dropdown,
         ButtonResolver $resolver,
         ButtonEvaluator $evaluator,
         ButtonNormalizer $normalizer
@@ -84,6 +94,7 @@ class ButtonInput
         $this->lookup     = $lookup;
         $this->guesser    = $guesser;
         $this->defaults   = $defaults;
+        $this->dropdown   = $dropdown;
         $this->resolver   = $resolver;
         $this->evaluator  = $evaluator;
         $this->normalizer = $normalizer;
@@ -100,8 +111,10 @@ class ButtonInput
         $this->evaluator->evaluate($builder);
         $this->defaults->defaults($builder);
         $this->normalizer->normalize($builder);
+        $this->dropdown->flatten($builder);
         $this->lookup->merge($builder);
-        $this->parser->parse($builder);
         $this->guesser->guess($builder);
+        $this->parser->parse($builder);
+        $this->dropdown->build($builder);
     }
 }

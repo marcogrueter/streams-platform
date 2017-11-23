@@ -1,25 +1,30 @@
 <?php namespace Anomaly\Streams\Platform\Addon;
 
-use Anomaly\Streams\Platform\Http\Middleware\MiddlewareCollection;
-use Illuminate\Console\Scheduling\Schedule;
-use Illuminate\Events\Dispatcher;
+use Anomaly\Streams\Platform\Addon\FieldType\FieldType;
+use Anomaly\Streams\Platform\Addon\Module\Module;
+use Anomaly\Streams\Platform\Addon\Plugin\Plugin;
+use Anomaly\Streams\Platform\Addon\Theme\Theme;
+use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Bus\DispatchesJobs;
-use Illuminate\Routing\Router;
-use Illuminate\Support\ServiceProvider;
-use TwigBridge\Bridge;
 
 /**
  * Class AddonServiceProvider
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Addon
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
-class AddonServiceProvider extends ServiceProvider
+class AddonServiceProvider
 {
 
     use DispatchesJobs;
+
+    /**
+     * Class aliases.
+     *
+     * @var array
+     */
+    protected $aliases = [];
 
     /**
      * Class bindings.
@@ -64,11 +69,32 @@ class AddonServiceProvider extends ServiceProvider
     protected $routes = [];
 
     /**
+     * Addon API routes.
+     *
+     * @var array
+     */
+    protected $api = [];
+
+    /**
      * Addon middleware.
      *
      * @var array
      */
     protected $middleware = [];
+
+    /**
+     * Addon group middleware.
+     *
+     * @var array
+     */
+    protected $groupMiddleware = [];
+
+    /**
+     * Addon route middleware.
+     *
+     * @var array
+     */
+    protected $routeMiddleware = [];
 
     /**
      * Addon event listeners.
@@ -100,292 +126,39 @@ class AddonServiceProvider extends ServiceProvider
     protected $mobile = [];
 
     /**
-     * Cached services.
+     * The application instance.
      *
-     * @var array
+     * @var Application
      */
-    protected $cached = [];
-
-    /**
-     * The twig instance.
-     *
-     * @var Bridge
-     */
-    protected $twig;
+    protected $app;
 
     /**
      * The addon instance.
      *
-     * @var Addon
+     * @var FieldType|Module|Plugin|Theme
      */
     protected $addon;
 
     /**
-     * The event dispatcher.
-     *
-     * @var Dispatcher
-     */
-    protected $events;
-
-    /**
-     * The router utility.
-     *
-     * @var Router
-     */
-    protected $router;
-
-    /**
-     * The command scheduler.
-     *
-     * @var Schedule
-     */
-    protected $scheduler;
-
-    /**
-     * The middleware collection.
-     *
-     * @var MiddlewareCollection
-     */
-    protected $middlewares;
-
-    /**
      * Create a new AddonServiceProvider instance.
      *
-     * @param \Illuminate\Contracts\Foundation\Application $app
-     * @param Addon                                        $addon
+     * @param Application $app
+     * @param Addon       $addon
      */
-    public function __construct($app, Addon $addon)
+    public function __construct(Application $app, Addon $addon)
     {
+        $this->app   = $app;
         $this->addon = $addon;
-
-        $this->twig            = $app->make('twig');
-        $this->router          = $app->make('router');
-        $this->events          = $app->make('events');
-        $this->scheduler       = $app->make('Illuminate\Console\Scheduling\Schedule');
-        $this->viewOverrides   = $app->make('Anomaly\Streams\Platform\View\ViewOverrides');
-        $this->mobileOverrides = $app->make('Anomaly\Streams\Platform\View\ViewMobileOverrides');
-        $this->middlewares     = $app->make('Anomaly\Streams\Platform\Http\Middleware\MiddlewareCollection');
-
-        parent::__construct($app);
     }
 
     /**
-     * Boot the service provider.
+     * Get class aliases.
+     *
+     * @return array
      */
-    public function boot()
+    public function getAliases()
     {
-        $this->registerSchedules();
-    }
-
-    /**
-     * Register the service provider.
-     */
-    public function register()
-    {
-        $this->bindClasses();
-        $this->bindSingletons();
-
-        $this->registerRoutes();
-        $this->registerEvents();
-        $this->registerPlugins();
-        $this->registerCommands();
-        $this->registerProviders();
-        $this->registerOverrides();
-        $this->registerMiddleware();
-        $this->registerAdditionalRoutes();
-    }
-
-    /**
-     * Register the addon providers.
-     */
-    protected function registerProviders()
-    {
-        foreach ($this->getProviders() as $provider) {
-            $this->app->register($provider);
-        }
-    }
-
-    /**
-     * Register the addon commands.
-     */
-    protected function registerCommands()
-    {
-        foreach ($this->getCommands() as $command) {
-            $this->commands($command);
-        }
-    }
-
-    /**
-     * Bind addon classes.
-     */
-    protected function bindClasses()
-    {
-        foreach ($this->getBindings() as $abstract => $concrete) {
-            $this->app->bind($abstract, $concrete);
-        }
-    }
-
-    /**
-     * Bind addon singletons.
-     */
-    protected function bindSingletons()
-    {
-        foreach ($this->getSingletons() as $abstract => $concrete) {
-            $this->app->singleton($abstract, $concrete);
-        }
-    }
-
-    /**
-     * Register the addon events.
-     */
-    protected function registerEvents()
-    {
-        if (!$listen = $this->getListeners()) {
-            return;
-        }
-
-        foreach ($listen as $event => $listeners) {
-            foreach ($listeners as $key => $listener) {
-
-                if (is_integer($listener)) {
-                    $listener = $key;
-                    $priority = $listener;
-                } else {
-                    $priority = 0;
-                }
-
-                $this->events->listen($event, $listener, $priority);
-            }
-        }
-    }
-
-    /**
-     * Register the addon routes.
-     */
-    protected function registerRoutes()
-    {
-        if ($this->routesAreCached()) {
-            return;
-        }
-
-        if (!$routes = $this->getRoutes()) {
-            return;
-        }
-
-        foreach ($routes as $uri => $route) {
-
-            /**
-             * If the route definition is an
-             * not an array then let's make it one.
-             * Array type routes give us more control
-             * and allow us to pass information in the
-             * request's route action array.
-             */
-            if (!is_array($route)) {
-                $route = [
-                    'uses' => $route
-                ];
-            }
-
-            $verb        = array_pull($route, 'verb', 'any');
-            $constraints = array_pull($route, 'constraints', []);
-
-            array_set($route, 'streams::addon', $this->addon->getNamespace());
-
-            if (!str_contains($route['uses'], '@')) {
-                $this->router->controller($uri, $route['uses']);
-            } else {
-                $this->router->{$verb}($uri, $route)->where($constraints);
-            }
-        }
-    }
-
-    /**
-     * Register the addon plugins.
-     */
-    protected function registerPlugins()
-    {
-        if (!$plugins = $this->getPlugins()) {
-            return;
-        }
-
-        foreach ($plugins as $plugin) {
-            $this->twig->addExtension($this->app->make($plugin));
-        }
-    }
-
-    /**
-     * Register the addon schedules.
-     */
-    protected function registerSchedules()
-    {
-        if (!$schedules = $this->getSchedules()) {
-            return;
-        }
-
-        foreach ($schedules as $command => $cron) {
-            $this->scheduler->command($command)->cron($cron);
-        }
-    }
-
-    /**
-     * Register view overrides.
-     */
-    protected function registerOverrides()
-    {
-        $overrides = $this->getOverrides();
-        $mobiles   = $this->getMobile();
-
-        if (!$overrides && !$mobiles) {
-            return;
-        }
-
-        $this->viewOverrides->put($this->addon->getNamespace(), $overrides);
-        $this->mobileOverrides->put($this->addon->getNamespace(), $mobiles);
-    }
-
-    /**
-     * Register middleware.
-     */
-    protected function registerMiddleware()
-    {
-        if (!$middleware = $this->getMiddleware()) {
-            return;
-        }
-
-        foreach ($middleware as $class) {
-            $this->middlewares->push($class);
-        }
-    }
-
-    /**
-     * Register additional routes.
-     */
-    protected function registerAdditionalRoutes()
-    {
-        if ($this->routesAreCached()) {
-            return;
-        }
-
-        if (method_exists($this, 'map')) {
-            $this->app->call([$this, 'map']);
-        }
-    }
-
-    /**
-     * Check if routes are cached.
-     */
-    protected function routesAreCached()
-    {
-        if (in_array('routes', $this->cached)) {
-            return true;
-        }
-
-        if (file_exists(base_path('bootstrap/cache/routes.php'))) {
-            return $this->cached[] = 'routes';
-        }
-
-        return false;
+        return $this->aliases;
     }
 
     /**
@@ -475,13 +248,29 @@ class AddonServiceProvider extends ServiceProvider
      */
     public function getRoutes()
     {
-        $routes = $this->routes;
+        $routes = [];
 
         foreach (glob($this->addon->getPath('resources/routes/*')) as $include) {
-            $routes = array_merge(require $include, $routes);
+            $include = require $include;
+
+            if (!is_array($include)) {
+                continue;
+            }
+
+            $routes = array_merge($include, $routes);
         }
 
-        return $routes;
+        return array_merge($this->routes, $routes);
+    }
+
+    /**
+     * Get the addon API routes.
+     *
+     * @return array
+     */
+    public function getApi()
+    {
+        return $this->api;
     }
 
     /**
@@ -492,6 +281,26 @@ class AddonServiceProvider extends ServiceProvider
     public function getMiddleware()
     {
         return $this->middleware;
+    }
+
+    /**
+     * Get the group middleware.
+     *
+     * @return array
+     */
+    public function getGroupMiddleware()
+    {
+        return $this->groupMiddleware;
+    }
+
+    /**
+     * Get the route middleware.
+     *
+     * @return array
+     */
+    public function getRouteMiddleware()
+    {
+        return $this->routeMiddleware;
     }
 
     /**

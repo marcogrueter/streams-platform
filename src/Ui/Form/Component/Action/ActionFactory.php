@@ -2,15 +2,14 @@
 
 use Anomaly\Streams\Platform\Support\Hydrator;
 use Anomaly\Streams\Platform\Ui\Form\Component\Action\Contract\ActionInterface;
-use Illuminate\Container\Container;
+use Illuminate\Contracts\Container\Container;
 
 /**
  * Class ActionFactory
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Ui\Form\Component\Action
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
 class ActionFactory
 {
@@ -35,7 +34,7 @@ class ActionFactory
      * @param Hydrator  $hydrator
      * @param Container $container
      */
-    function __construct(Hydrator $hydrator, Container $container)
+    public function __construct(Hydrator $hydrator, Container $container)
     {
         $this->hydrator  = $hydrator;
         $this->container = $container;
@@ -44,7 +43,7 @@ class ActionFactory
     /**
      * Make an action.
      *
-     * @param  array $parameters
+     * @param  array           $parameters
      * @return ActionInterface
      */
     public function make(array $parameters)

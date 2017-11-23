@@ -5,10 +5,9 @@ use Anomaly\Streams\Platform\Ui\Table\TableBuilder;
 /**
  * Class ViewLookup
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Ui\Table\Component\View
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
 class ViewLookup
 {
@@ -41,7 +40,7 @@ class ViewLookup
 
         foreach ($views as &$parameters) {
             if ($view = $this->views->get(array_get($parameters, 'view'))) {
-                $parameters = array_replace_recursive($view, $parameters);
+                $parameters = array_replace_recursive($view, array_except($parameters, ['view']));
             }
         }
 

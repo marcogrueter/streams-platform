@@ -2,17 +2,15 @@
 
 use Anomaly\Streams\Platform\Ui\Table\Component\Filter\FilterBuilder;
 use Anomaly\Streams\Platform\Ui\Table\TableBuilder;
-use Illuminate\Contracts\Bus\SelfHandling;
 
 /**
  * Class BuildFilters
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Ui\Table\Component\Filter\Command
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
-class BuildFilters implements SelfHandling
+class BuildFilters
 {
 
     /**

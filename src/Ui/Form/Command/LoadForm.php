@@ -3,18 +3,16 @@
 use Anomaly\Streams\Platform\Ui\Breadcrumb\BreadcrumbCollection;
 use Anomaly\Streams\Platform\Ui\Form\FormBuilder;
 use Anomaly\Streams\Platform\View\ViewTemplate;
-use Illuminate\Container\Container;
-use Illuminate\Contracts\Bus\SelfHandling;
+use Illuminate\Contracts\Container\Container;
 
 /**
  * Class LoadForm
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Ui\Form\Command
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
-class LoadForm implements SelfHandling
+class LoadForm
 {
 
     /**
@@ -57,9 +55,12 @@ class LoadForm implements SelfHandling
             $template->put('title', $title);
         }
 
+        // Move this to options so we can read it.
+        $this->builder->setFormOption('read_only', $this->builder->isReadOnly());
+
         $form->addData('form', $form);
 
-        if ($breadcrumb = $form->getOption('breadcrumb', 'streams::form.mode.' . $form->getMode())) {
+        if ($breadcrumb = $form->getOption('breadcrumb', 'streams::form.mode.' . $this->builder->getFormMode())) {
             $breadcrumbs->put($breadcrumb, '#');
         }
     }

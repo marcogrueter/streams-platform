@@ -6,34 +6,24 @@ use Assetic\Asset\AssetInterface;
 /**
  * Class StylusFilter
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Asset\Filter
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
 class StylusFilter extends \Assetic\Filter\StylusFilter
 {
-
-    /**
-     * The asset parser utility.
-     *
-     * @var AssetParser
-     */
-    protected $parser;
 
     /**
      * Create a new LessFilter instance.
      *
      * @param AssetParser $parser
      */
-    public function __construct(AssetParser $parser)
+    public function __construct()
     {
         parent::__construct(
             '/usr/local/bin/node',
             ['/usr/local/lib/node_modules', '/usr/local/lib/node_modules/stylus']
         );
-
-        $this->parser = $parser;
     }
 
     /**
@@ -53,7 +43,7 @@ class StylusFilter extends \Assetic\Filter\StylusFilter
      */
     public function filterDump(AssetInterface $asset)
     {
-        $asset->setContent($this->parser->parse($asset->getContent()));
+        $asset->setContent($asset->getContent());
 
         parent::filterLoad($asset);
     }

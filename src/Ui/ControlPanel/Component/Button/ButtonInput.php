@@ -1,15 +1,13 @@
 <?php namespace Anomaly\Streams\Platform\Ui\ControlPanel\Component\Button;
 
-use Anomaly\Streams\Platform\Ui\ControlPanel\Component\Section\Contract\SectionInterface;
 use Anomaly\Streams\Platform\Ui\ControlPanel\ControlPanelBuilder;
 
 /**
  * Class ButtonInput
  *
- * @link          http://anomaly.is/streams-Platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Ui\ControlPanel\Component\Button
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
 class ButtonInput
 {
@@ -20,6 +18,13 @@ class ButtonInput
      * @var ButtonParser
      */
     protected $parser;
+
+    /**
+     * The button lookup.
+     *
+     * @var ButtonLookup
+     */
+    protected $lookup;
 
     /**
      * The button guesser.
@@ -46,17 +51,20 @@ class ButtonInput
      * Create a new ButtonInput instance.
      *
      * @param ButtonParser     $parser
+     * @param ButtonLookup     $lookup
      * @param ButtonGuesser    $guesser
      * @param ButtonResolver   $resolver
      * @param ButtonNormalizer $normalizer
      */
     public function __construct(
         ButtonParser $parser,
+        ButtonLookup $lookup,
         ButtonGuesser $guesser,
         ButtonResolver $resolver,
         ButtonNormalizer $normalizer
     ) {
         $this->parser     = $parser;
+        $this->lookup     = $lookup;
         $this->guesser    = $guesser;
         $this->resolver   = $resolver;
         $this->normalizer = $normalizer;
@@ -65,25 +73,14 @@ class ButtonInput
     /**
      * Read builder button input.
      *
-     * @param ControlPanelBuilder $builder
+     * @param  ControlPanelBuilder $builder
      * @return array
      */
     public function read(ControlPanelBuilder $builder)
     {
-        $buttons = [];
-
-        $controlPanel = $builder->getControlPanel();
-        $sections     = $controlPanel->getSections();
-        $section      = $sections->active();
-
-        if ($section instanceof SectionInterface) {
-            $buttons = $section->getButtons();
-        }
-
-        $builder->setButtons($buttons);
-
         $this->resolver->resolve($builder);
         $this->normalizer->normalize($builder);
+        $this->lookup->merge($builder);
         $this->guesser->guess($builder);
         $this->parser->parse($builder);
     }

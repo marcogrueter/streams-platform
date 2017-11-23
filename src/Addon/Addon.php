@@ -1,5 +1,6 @@
 <?php namespace Anomaly\Streams\Platform\Addon;
 
+use Anomaly\Streams\Platform\Addon\AddonPresenter;
 use Anomaly\Streams\Platform\Traits\FiresCallbacks;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Foundation\Bus\DispatchesJobs;
@@ -9,16 +10,22 @@ use Robbo\Presenter\Presenter;
 /**
  * Class Addon
  *
- * @link    http://anomaly.is/streams-platform
- * @author  AnomalyLabs, Inc. <hello@anomaly.is>
- * @author  Ryan Thompson <ryan@anomaly.is>
- * @package Anomaly\Streams\Platform\Addon
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
 class Addon implements PresentableInterface, Arrayable
 {
 
     use FiresCallbacks;
     use DispatchesJobs;
+
+    /**
+     * Runtime cache.
+     *
+     * @var array
+     */
+    protected $cache = [];
 
     /**
      * The addon path.
@@ -49,13 +56,46 @@ class Addon implements PresentableInterface, Arrayable
     protected $vendor = null;
 
     /**
+     * The addon namespace.
+     *
+     * @var null|string
+     */
+    protected $namespace = null;
+
+    /**
      * Get the addon's presenter.
      *
      * @return Presenter
      */
     public function getPresenter()
     {
-        return app()->make('Anomaly\Streams\Platform\Addon\AddonPresenter', ['object' => $this]);
+        return app()->make(AddonPresenter::class, ['object' => $this]);
+    }
+
+    /**
+     * Return a new service provider.
+     *
+     * @return AddonServiceProvider
+     */
+    public function newServiceProvider()
+    {
+        return app()->make(
+            $this->getServiceProvider(),
+            [
+                'container' => app(),
+                'addon'     => $this,
+            ]
+        );
+    }
+
+    /**
+     * Get the service provider class.
+     *
+     * @return string
+     */
+    public function getServiceProvider()
+    {
+        return get_class($this) . 'ServiceProvider';
     }
 
     /**
@@ -76,6 +116,16 @@ class Addon implements PresentableInterface, Arrayable
     public function isShared()
     {
         return str_contains($this->getPath(), 'addons/shared/' . $this->getVendor());
+    }
+
+    /**
+     * Return whether the addon is for testing or not.
+     *
+     * @return bool
+     */
+    public function isTesting()
+    {
+        return str_contains($this->getPath(), 'vendor/anomaly/streams-platform/addons/' . $this->getVendor());
     }
 
     /**
@@ -116,20 +166,24 @@ class Addon implements PresentableInterface, Arrayable
      */
     public function getNamespace($key = null)
     {
-        return "{$this->getVendor()}.{$this->getType()}.{$this->getSlug()}" . ($key ? '::' . $key : $key);
+        if (!$this->namespace) {
+            $this->makeNamespace();
+        }
+
+        return $this->namespace . ($key ? '::' . $key : $key);
     }
 
     /**
      * Get the transformed
      * class to another suffix.
      *
-     * @param null $suffix
+     * @param  null $suffix
      * @return string
      */
     public function getTransformedClass($suffix = null)
     {
         $namespace = implode('\\', array_slice(explode('\\', get_class($this)), 0, -1));
-        
+
         return $namespace . ($suffix ? '\\' . $suffix : $suffix);
     }
 
@@ -147,12 +201,30 @@ class Addon implements PresentableInterface, Arrayable
      * Return whether an addon has
      * config matching the key.
      *
-     * @param string $key
+     * @param  string $key
      * @return boolean
      */
     public function hasConfig($key = '*')
     {
-        return (config($this->getNamespace($key)));
+        return (bool)config($this->getNamespace($key));
+    }
+
+    /**
+     * Return whether an addon has
+     * config matching any key.
+     *
+     * @param  array $keys
+     * @return bool
+     */
+    public function hasAnyConfig(array $keys = ['*'])
+    {
+        foreach ($keys as $key) {
+            if ($this->hasConfig($key)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -172,6 +244,41 @@ class Addon implements PresentableInterface, Arrayable
     }
 
     /**
+     * Get the composer json contents.
+     *
+     * @return mixed|null
+     */
+    public function getComposerLock()
+    {
+        $json = base_path('composer.lock');
+
+        if (!file_exists($json)) {
+            return null;
+        }
+
+        $json = json_decode(file_get_contents($json));
+
+        return array_first(
+            $json->packages,
+            function (\stdClass $package) {
+                return $package->name == $this->getPackageName();
+            }
+        );
+    }
+
+    /**
+     * Return the package name.
+     *
+     * @return string
+     */
+    public function getPackageName()
+    {
+        return $this->getVendor() . '/' . $this->getSlug() . '-' . $this->getType();
+    }
+
+    /**
+     * Sets the path.
+     *
      * @param $path
      * @return $this
      */
@@ -199,7 +306,7 @@ class Addon implements PresentableInterface, Arrayable
      */
     public function getAppPath($path = null)
     {
-        return str_replace(base_path(), '', $this->getPath($path));
+        return ltrim(str_replace(base_path(), '', $this->getPath($path)), DIRECTORY_SEPARATOR);
     }
 
     /**
@@ -272,12 +379,20 @@ class Addon implements PresentableInterface, Arrayable
     }
 
     /**
+     * Make the addon namespace.
+     */
+    protected function makeNamespace()
+    {
+        $this->namespace = "{$this->getVendor()}.{$this->getType()}.{$this->getSlug()}";
+    }
+
+    /**
      * Get a property value from the object.
      *
      * @param $name
      * @return mixed
      */
-    function __get($name)
+    public function __get($name)
     {
         $method = camel_case('get_' . $name);
 
@@ -300,7 +415,7 @@ class Addon implements PresentableInterface, Arrayable
      * @param $name
      * @return bool
      */
-    function __isset($name)
+    public function __isset($name)
     {
         $method = camel_case('get_' . $name);
 
@@ -318,6 +433,16 @@ class Addon implements PresentableInterface, Arrayable
     }
 
     /**
+     * Return the addon as a string.
+     *
+     * @return string
+     */
+    public function __toString()
+    {
+        return $this->getNamespace();
+    }
+
+    /**
      * Get the instance as an array.
      *
      * @return array
@@ -328,7 +453,7 @@ class Addon implements PresentableInterface, Arrayable
             'id'        => $this->getNamespace(),
             'name'      => $this->getName(),
             'namespace' => $this->getNamespace(),
-            'type'      => $this->getType()
+            'type'      => $this->getType(),
         ];
     }
 }

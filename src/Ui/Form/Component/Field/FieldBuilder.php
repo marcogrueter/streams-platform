@@ -7,10 +7,9 @@ use Anomaly\Streams\Platform\Ui\Form\FormBuilder;
 /**
  * Class FieldTypeBuilder
  *
- * @link    http://anomaly.is/streams-platform
- * @author  AnomalyLabs, Inc. <hello@anomaly.is>
- * @author  Ryan Thompson <ryan@anomaly.is>
- * @package Anomaly\Streams\Platform\Ui\Form\Component\Field
+ * @link    http://pyrocms.com/
+ * @author  PyroCMS, Inc. <support@pyrocms.com>
+ * @author  Ryan Thompson <ryan@pyrocms.com>
  */
 class FieldBuilder
 {
@@ -68,7 +67,7 @@ class FieldBuilder
 
         $this->input->read($builder);
 
-        /**
+        /*
          * Convert each field to a field object
          * and put to the forms field collection.
          */

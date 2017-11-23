@@ -1,18 +1,19 @@
 <?php namespace Anomaly\Streams\Platform\Ui\Form\Command;
 
+use Anomaly\Streams\Platform\Ui\Form\Event\FormWasPosted;
 use Anomaly\Streams\Platform\Ui\Form\FormBuilder;
-use Illuminate\Contracts\Bus\SelfHandling;
+use Anomaly\Streams\Platform\Ui\Form\Multiple\MultipleFormBuilder;
+use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 
 /**
  * Class PostForm
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Ui\Form\Command
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
-class PostForm implements SelfHandling
+class PostForm
 {
 
     use DispatchesJobs;
@@ -36,14 +37,25 @@ class PostForm implements SelfHandling
 
     /**
      * Handle the command.
+     *
+     * @param Dispatcher $events
      */
-    public function handle()
+    public function handle(Dispatcher $events)
     {
         $this->builder->fire('posting', ['builder' => $this->builder]);
         $this->builder->fireFieldEvents('form_posting');
 
+        /**
+         * Multiple form builders do not get
+         * validated here.. in fact:
+         *
+         * @todo: Decouple validation into it's own method like multiple form builders
+         */
+        if (!$this->builder instanceof MultipleFormBuilder) {
+            $this->dispatch(new ValidateForm($this->builder));
+        }
+
         $this->dispatch(new LoadFormValues($this->builder));
-        $this->dispatch(new ValidateForm($this->builder));
         $this->dispatch(new RemoveSkippedFields($this->builder));
         $this->dispatch(new HandleForm($this->builder));
         $this->dispatch(new SetSuccessMessage($this->builder));
@@ -55,5 +67,7 @@ class PostForm implements SelfHandling
 
         $this->builder->fire('posted', ['builder' => $this->builder]);
         $this->builder->fireFieldEvents('form_posted');
+
+        $events->fire(new FormWasPosted($this->builder));
     }
 }

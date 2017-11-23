@@ -5,13 +5,27 @@ use Illuminate\Support\Collection;
 /**
  * Interface RowInterface
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Ui\Table\Component\Row\Contract
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
 interface RowInterface
 {
+
+    /**
+     * Get the class.
+     *
+     * @return null
+     */
+    public function getClass();
+
+    /**
+     * Set the class.
+     *
+     * @param $class
+     * @return $this
+     */
+    public function setClass($class);
 
     /**
      * Set the row buttons.

@@ -6,10 +6,9 @@ use Illuminate\Http\Request;
 /**
  * Class BypassMaintenanceCheck
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Http\Middleware
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
 class BypassMaintenanceCheck
 {
@@ -22,8 +21,8 @@ class BypassMaintenanceCheck
      * checking it later JUST after so we can
      * use our bundled view.
      *
-     * @param Request  $request
-     * @param callable $next
+     * @param  Request                                 $request
+     * @param  callable                                $next
      * @return \Illuminate\Http\RedirectResponse|mixed
      */
     public function handle(Request $request, Closure $next)

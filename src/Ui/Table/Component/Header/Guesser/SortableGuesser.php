@@ -6,10 +6,9 @@ use Anomaly\Streams\Platform\Ui\Table\TableBuilder;
 /**
  * Class SortableGuesser
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Ui\Table\Component\Button\Guesser
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
 class SortableGuesser
 {
@@ -25,8 +24,13 @@ class SortableGuesser
         $stream  = $builder->getTableStream();
 
         foreach ($columns as &$column) {
+            if ($builder->getTableOption('sortable_headers') === false) {
+                $column['sortable'] = false;
 
-            /**
+                continue;
+            }
+
+            /*
              * If the heading is false or does not exist
              * then the intent was to not have
              * heading text at all.
@@ -35,7 +39,7 @@ class SortableGuesser
                 continue;
             }
 
-            /**
+            /*
              * If sortable is already set the we don't
              * need to guess anything.
              */
@@ -43,7 +47,17 @@ class SortableGuesser
                 continue;
             }
 
-            /**
+            /*
+             * If the sort column is set and
+             * sortable is not yet, set it.
+             */
+            if (isset($column['sort_column'])) {
+                $column['sortable'] = true;
+
+                continue;
+            }
+
+            /*
              * No stream means we can't
              * really do much here.
              */
@@ -51,7 +65,7 @@ class SortableGuesser
                 continue;
             }
 
-            /**
+            /*
              * We're going to be using the value to
              * try and determine if a streams field is
              * being used. No value, no guess.
@@ -60,14 +74,14 @@ class SortableGuesser
                 continue;
             }
 
-            /**
+            /*
              * Now we're going to try and determine
              * what streams field this column if
              * using if any at all.
              */
             $field = $column['value'];
 
-            /**
+            /*
              * If the value matches a field
              * with dot format then reduce it.
              */
@@ -75,7 +89,7 @@ class SortableGuesser
                 $field = $match[1];
             }
 
-            /**
+            /*
              * If we can't determine a field type
              * then we don't have anything to base
              * our guess off of.
@@ -86,10 +100,12 @@ class SortableGuesser
 
             $type = $assignment->getFieldType();
 
-            /**
+            /*
              * If the field type has a database
              * column type then we can sort on it
              * by default!
+             *
+             * @todo: Allow sorting of translatable fields.
              */
             if ($type->getColumnType() && !$assignment->isTranslatable()) {
                 $column['sortable']    = true;

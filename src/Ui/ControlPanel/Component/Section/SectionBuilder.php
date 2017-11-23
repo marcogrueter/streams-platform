@@ -6,10 +6,9 @@ use Anomaly\Streams\Platform\Ui\ControlPanel\ControlPanelBuilder;
 /**
  * Class SectionBuilder
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Ui\ControlPanel\Component\Section
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
 class SectionBuilder
 {
@@ -42,7 +41,7 @@ class SectionBuilder
      * @param SectionFactory $factory
      * @param Authorizer     $authorizer
      */
-    function __construct(SectionInput $input, SectionFactory $factory, Authorizer $authorizer)
+    public function __construct(SectionInput $input, SectionFactory $factory, Authorizer $authorizer)
     {
         $this->input      = $input;
         $this->factory    = $factory;
@@ -57,17 +56,16 @@ class SectionBuilder
     public function build(ControlPanelBuilder $builder)
     {
         $controlPanel = $builder->getControlPanel();
-        $sections     = $controlPanel->getSections();
 
         $this->input->read($builder);
 
-        foreach ($builder->getSections() as $slug => $section) {
+        foreach ($builder->getSections() as $section) {
 
-            if (!$this->authorizer->authorize($section['permission'])) {
+            if (!$this->authorizer->authorize(array_get($section, 'permission'))) {
                 continue;
             }
 
-            $sections->push($this->factory->make($section));
+            $controlPanel->addSection($this->factory->make($section));
         }
     }
 }

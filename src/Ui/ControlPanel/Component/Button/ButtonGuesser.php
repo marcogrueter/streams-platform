@@ -2,16 +2,16 @@
 
 use Anomaly\Streams\Platform\Ui\ControlPanel\Component\Button\Guesser\EnabledGuesser;
 use Anomaly\Streams\Platform\Ui\ControlPanel\Component\Button\Guesser\HrefGuesser;
+use Anomaly\Streams\Platform\Ui\ControlPanel\Component\Button\Guesser\TextGuesser;
 use Anomaly\Streams\Platform\Ui\ControlPanel\Component\Button\Guesser\TypeGuesser;
 use Anomaly\Streams\Platform\Ui\ControlPanel\ControlPanelBuilder;
 
 /**
  * Class ButtonGuesser
  *
- * @link          http://anomaly.is/streams-Platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Ui\ControlPanel\Component\Button
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
 class ButtonGuesser
 {
@@ -22,6 +22,13 @@ class ButtonGuesser
      * @var HrefGuesser
      */
     protected $href;
+
+    /**
+     * The text guesser.
+     *
+     * @var TextGuesser
+     */
+    protected $text;
 
     /**
      * The type guesser.
@@ -41,12 +48,14 @@ class ButtonGuesser
      * Create a new ButtonGuesser instance.
      *
      * @param HrefGuesser    $href
+     * @param TextGuesser    $text
      * @param TypeGuesser    $type
      * @param EnabledGuesser $enabled
      */
-    public function __construct(HrefGuesser $href, TypeGuesser $type, EnabledGuesser $enabled)
+    public function __construct(HrefGuesser $href, TextGuesser $text, TypeGuesser $type, EnabledGuesser $enabled)
     {
         $this->href    = $href;
+        $this->text    = $text;
         $this->type    = $type;
         $this->enabled = $enabled;
     }
@@ -60,6 +69,7 @@ class ButtonGuesser
     {
         $this->type->guess($builder);
         $this->href->guess($builder);
+        $this->text->guess($builder);
         $this->enabled->guess($builder);
     }
 }

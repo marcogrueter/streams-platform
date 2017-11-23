@@ -1,11 +1,11 @@
 <?php namespace Anomaly\Streams\Platform\Ui\Table\Component\Header;
 
-/**
+/*
  * Class Header
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  * @package       Anomaly\Streams\Platform\Ui\Table\Component\Header
  */
 use Anomaly\Streams\Platform\Ui\Table\Component\Header\Contract\HeaderInterface;
@@ -14,10 +14,9 @@ use Anomaly\Streams\Platform\Ui\Table\TableBuilder;
 /**
  * Class Header
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Ui\Table\Component\Header
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
 class Header implements HeaderInterface
 {
@@ -70,10 +69,33 @@ class Header implements HeaderInterface
     }
 
     /**
+     * Get the table builder.
+     *
+     * @return TableBuilder
+     */
+    public function getBuilder()
+    {
+        return $this->builder;
+    }
+
+    /**
+     * Set the table builder.
+     *
+     * @param  TableBuilder $builder
+     * @return $this
+     */
+    public function setBuilder(TableBuilder $builder)
+    {
+        $this->builder = $builder;
+
+        return $this;
+    }
+
+    /**
      * Get the current direction
      * defaulting to ascending.
      *
-     * @param null $default
+     * @param  null        $default
      * @return string|null
      */
     public function getDirection($default = null)
@@ -90,24 +112,24 @@ class Header implements HeaderInterface
     }
 
     /**
-     * Get the table builder.
+     * Get the sort column.
      *
-     * @return TableBuilder
+     * @return string
      */
-    public function getBuilder()
+    public function getSortColumn()
     {
-        return $this->builder;
+        return $this->sortColumn;
     }
 
     /**
-     * Set the table builder.
+     * Set the sort column.
      *
-     * @param TableBuilder $builder
+     * @param  string $sortColumn
      * @return $this
      */
-    public function setBuilder(TableBuilder $builder)
+    public function setSortColumn($sortColumn)
     {
-        $this->builder = $builder;
+        $this->sortColumn = $sortColumn;
 
         return $this;
     }
@@ -148,35 +170,12 @@ class Header implements HeaderInterface
     /**
      * Set the sortable flag.
      *
-     * @param boolean $sortable
+     * @param  boolean $sortable
      * @return $this
      */
     public function setSortable($sortable)
     {
         $this->sortable = $sortable;
-
-        return $this;
-    }
-
-    /**
-     * Get the sort column.
-     *
-     * @return string
-     */
-    public function getSortColumn()
-    {
-        return $this->sortColumn;
-    }
-
-    /**
-     * Set the sort column.
-     *
-     * @param string $sortColumn
-     * @return $this
-     */
-    public function setSortColumn($sortColumn)
-    {
-        $this->sortColumn = $sortColumn;
 
         return $this;
     }

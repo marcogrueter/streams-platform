@@ -2,20 +2,17 @@
 
 use Anomaly\Streams\Platform\Ui\Tree\Component\Item\Command\BuildItems;
 use Anomaly\Streams\Platform\Ui\Tree\TreeBuilder;
-use Illuminate\Contracts\Bus\SelfHandling;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 
 /**
  * Class BuildTree
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Ui\Tree\Command
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
-class BuildTree implements SelfHandling
+class BuildTree
 {
-
     use DispatchesJobs;
 
     /**
@@ -40,7 +37,7 @@ class BuildTree implements SelfHandling
      */
     public function handle()
     {
-        /**
+        /*
          * Resolve and set the tree model and stream.
          */
         $this->dispatch(new SetTreeModel($this->builder));
@@ -50,17 +47,17 @@ class BuildTree implements SelfHandling
         $this->dispatch(new SetTreeRepository($this->builder));
         $this->dispatch(new SetDefaultParameters($this->builder));
 
-        /**
+        /*
          * Before we go any further, authorize the request.
          */
         $this->dispatch(new AuthorizeTree($this->builder));
 
-        /**
+        /*
          * Get tree entries.
          */
         $this->dispatch(new GetTreeEntries($this->builder));
 
-        /**
+        /*
          * Lastly tree items.
          */
         $this->dispatch(new BuildItems($this->builder));

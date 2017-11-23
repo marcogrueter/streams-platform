@@ -3,10 +3,9 @@
 /**
  * Class FieldTypeAccessor
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Addon\FieldType
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
 class FieldTypeAccessor
 {
@@ -32,7 +31,6 @@ class FieldTypeAccessor
      * Set the value.
      *
      * @param $value
-     * @return array
      */
     public function set($value)
     {
@@ -57,5 +55,28 @@ class FieldTypeAccessor
         $attributes = $entry->getAttributes();
 
         return array_get($attributes, $this->fieldType->getColumnName());
+    }
+
+    /**
+     * Get the field type.
+     *
+     * @return FieldType
+     */
+    public function getFieldType()
+    {
+        return $this->fieldType;
+    }
+
+    /**
+     * Set the field type.
+     *
+     * @param  FieldType $fieldType
+     * @return $this
+     */
+    public function setFieldType(FieldType $fieldType)
+    {
+        $this->fieldType = $fieldType;
+
+        return $this;
     }
 }

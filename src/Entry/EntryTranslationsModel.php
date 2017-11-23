@@ -2,17 +2,24 @@
 
 use Anomaly\Streams\Platform\Assignment\Contract\AssignmentInterface;
 use Anomaly\Streams\Platform\Model\EloquentModel;
+use Carbon\Carbon;
 
 /**
  * Class EntryTranslationsModel
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Entry
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
 class EntryTranslationsModel extends EloquentModel
 {
+
+    /**
+     * This model uses timestamps.
+     *
+     * @var bool
+     */
+    public $timestamps = true;
 
     /**
      * Cache minutes.
@@ -32,19 +39,29 @@ class EntryTranslationsModel extends EloquentModel
     }
 
     /**
+     * Return the last modified datetime.
+     *
+     * @return Carbon
+     */
+    public function lastModified()
+    {
+        return $this->updated_at ?: $this->created_at;
+    }
+
+    /**
      * Get the locale.
      *
      * @return string
      */
     public function getLocale()
     {
-        return $this->{$this->getLocaleKey()};
+        return $this->getAttributeFromArray($this->getLocaleKey());
     }
 
     /**
      * Get an attribute.
      *
-     * @param string $key
+     * @param  string $key
      * @return mixed
      */
     public function getAttribute($key)
@@ -101,7 +118,6 @@ class EntryTranslationsModel extends EloquentModel
         $assignment = $parent->getAssignment($key);
 
         if (!$assignment) {
-
             parent::setAttribute($key, $value);
 
             return;
@@ -134,7 +150,6 @@ class EntryTranslationsModel extends EloquentModel
 
         /* @var AssignmentInterface $assignment */
         foreach ($assignments->translatable() as $assignment) {
-
             $fieldType = $assignment->getFieldType();
 
             $fieldType->setValue($parent->getFieldValue($assignment->getFieldSlug()));
@@ -147,23 +162,46 @@ class EntryTranslationsModel extends EloquentModel
     }
 
     /**
-     * Let the parent handle calls if they don't exist here.
+     * Truncate the translation's table.
      *
-     * @param string $name
-     * @param array  $arguments
      * @return mixed
      */
-    function __call($name, $arguments)
+    public function truncate()
     {
-        if (method_exists($this, $name)) {
-            return call_user_func_array([$this, $name], $arguments);
+        return $this->newQuery()->truncate();
+    }
+
+    /**
+     * Let the parent handle calls if they don't exist here.
+     *
+     * @param  string $name
+     * @param  array  $arguments
+     * @return mixed
+     */
+    public function __call($name, $arguments)
+    {
+        if (!$parent = $this->getParent()) {
+            return parent::__call($name, $arguments);
         }
 
-        if ($this->getParent() && method_exists($this->getParent(), $name)) {
-            return call_user_func_array([$this->getParent(), $name], $arguments);
+        return call_user_func_array([$parent, $name], $arguments);
+    }
+
+    /**
+     * Get the attribute from the parent
+     * if it does not exist here.
+     *
+     * @param  string $key
+     * @return mixed
+     */
+    public function __get($key)
+    {
+        $value = parent::__get($key);
+
+        if (!$value && $parent = $this->getParent()) {
+            return $parent->{$key};
         }
 
-        // Let it throw the exception.
-        return call_user_func_array([$this, $name], $arguments);
+        return $value;
     }
 }

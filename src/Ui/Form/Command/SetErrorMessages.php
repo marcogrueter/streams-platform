@@ -1,18 +1,19 @@
 <?php namespace Anomaly\Streams\Platform\Ui\Form\Command;
 
+use Anomaly\Streams\Platform\Assignment\Contract\AssignmentInterface;
 use Anomaly\Streams\Platform\Message\MessageBag;
 use Anomaly\Streams\Platform\Ui\Form\FormBuilder;
-use Illuminate\Contracts\Bus\SelfHandling;
+use Illuminate\Http\Request;
+use Illuminate\Translation\Translator;
 
 /**
  * Class SetErrorMessages
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Ui\Form\Command
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
-class SetErrorMessages implements SelfHandling
+class SetErrorMessages
 {
 
     /**
@@ -35,9 +36,11 @@ class SetErrorMessages implements SelfHandling
     /**
      * Handle the command.
      *
+     * @param Request    $request
      * @param MessageBag $messages
+     * @param Translator $translator
      */
-    public function handle(MessageBag $messages)
+    public function handle(Request $request, MessageBag $messages, Translator $translator)
     {
         if ($this->builder->isAjax()) {
             return;
@@ -46,5 +49,22 @@ class SetErrorMessages implements SelfHandling
         $errors = $this->builder->getFormErrors();
 
         $messages->error($errors->all());
+
+        if ($request->segment(1) == 'admin' && ($stream = $this->builder->getFormStream()) && $stream->isTrashable()) {
+
+            /* @var AssignmentInterface $assignment */
+            foreach ($stream->getUniqueAssignments() as $assignment) {
+                if ($this->builder->hasFormError($assignment->getFieldSlug())) {
+                    $messages->warning(
+                        $translator->trans(
+                            'streams::validation.unique_trash',
+                            [
+                                'attribute' => '"' . $translator->trans($assignment->getFieldName()) . '"',
+                            ]
+                        )
+                    );
+                }
+            }
+        }
     }
 }

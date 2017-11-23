@@ -5,10 +5,9 @@ use Anomaly\Streams\Platform\Addon\AddonCollection;
 /**
  * Class ThemeCollection
  *
- * @link    http://anomaly.is/streams-platform
- * @author  AnomalyLabs, Inc. <hello@anomaly.is>
- * @author  Ryan Thompson <ryan@anomaly.is>
- * @package Anomaly\Streams\Platform\Addon\Theme
+ * @link    http://pyrocms.com/
+ * @author  PyroCMS, Inc. <support@pyrocms.com>
+ * @author  Ryan Thompson <ryan@pyrocms.com>
  */
 class ThemeCollection extends AddonCollection
 {
@@ -18,11 +17,17 @@ class ThemeCollection extends AddonCollection
      *
      * @return Theme
      */
-    public function active()
+    public function active($type = null)
     {
+        if (!$type) {
+            return $this->current();
+        }
+
+        $admin = $type == 'standard' ? false : true;
+
         /* @var Theme $item */
         foreach ($this->items as $item) {
-            if ($item->isActive()) {
+            if ($item->isActive() && $item->isAdmin() === $admin) {
                 return $item;
             }
         }
@@ -31,27 +36,20 @@ class ThemeCollection extends AddonCollection
     }
 
     /**
-     * Return the active standard theme.
+     * Return the current theme.
      *
      * @return null|Theme
      */
-    public function activeStandard()
+    public function current()
     {
-        return $this
-            ->standard()
-            ->active();
-    }
+        /* @var Theme $item */
+        foreach ($this->items as $item) {
+            if ($item->isCurrent()) {
+                return $item;
+            }
+        }
 
-    /**
-     * Return the active admin theme.
-     *
-     * @return null|Theme
-     */
-    public function activeAdmin()
-    {
-        return $this
-            ->admin()
-            ->active();
+        return null;
     }
 
     /**
@@ -90,22 +88,5 @@ class ThemeCollection extends AddonCollection
         }
 
         return new static($items);
-    }
-
-    /**
-     * Return the current theme.
-     *
-     * @return null|Theme
-     */
-    public function current()
-    {
-        /* @var Theme $item */
-        foreach ($this->items as $item) {
-            if ($item->isCurrent()) {
-                return $item;
-            }
-        }
-
-        return null;
     }
 }

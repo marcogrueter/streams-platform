@@ -3,6 +3,13 @@
 use Anomaly\Streams\Platform\Addon\Module\ModuleCollection;
 use Anomaly\Streams\Platform\Ui\ControlPanel\ControlPanelBuilder;
 
+/**
+ * Class PermissionGuesser
+ *
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
+ */
 class PermissionGuesser
 {
 
@@ -14,7 +21,7 @@ class PermissionGuesser
     protected $modules;
 
     /**
-     * Create a new TextGuesser instance.
+     * Create a new TitleGuesser instance.
      *
      * @param ModuleCollection $modules
      */
@@ -24,13 +31,15 @@ class PermissionGuesser
     }
 
     /**
-     * Guess the sections text.
+     * Guess the sections title.
      *
      * @param ControlPanelBuilder $builder
      */
     public function guess(ControlPanelBuilder $builder)
     {
-        $module = $this->modules->active();
+        if (!$module = $this->modules->active()) {
+            return;
+        }
 
         $sections = $builder->getSections();
 

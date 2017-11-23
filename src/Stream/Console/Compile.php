@@ -1,5 +1,6 @@
 <?php namespace Anomaly\Streams\Platform\Stream\Console;
 
+use Anomaly\Streams\Platform\Model\EloquentModel;
 use Anomaly\Streams\Platform\Stream\Contract\StreamInterface;
 use Anomaly\Streams\Platform\Stream\Contract\StreamRepositoryInterface;
 use Illuminate\Console\Command;
@@ -7,10 +8,9 @@ use Illuminate\Console\Command;
 /**
  * Class Compile
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Stream\Console
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
 class Compile extends Command
 {
@@ -34,9 +34,9 @@ class Compile extends Command
      *
      * @param StreamRepositoryInterface $streams
      */
-    public function fire(StreamRepositoryInterface $streams)
+    public function handle(StreamRepositoryInterface $streams)
     {
-        /* @var StreamInterface $stream */
+        /* @var StreamInterface|EloquentModel $stream */
         foreach ($streams->all() as $stream) {
             if ($streams->save($stream)) {
                 $this->info($stream->getEntryModelName() . ' compiled successfully.');

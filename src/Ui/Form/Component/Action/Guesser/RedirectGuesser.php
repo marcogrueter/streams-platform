@@ -7,10 +7,9 @@ use Illuminate\Http\Request;
 /**
  * Class RedirectGuesser
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Ui\Form\Component\Action\Guesser
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
 class RedirectGuesser
 {
@@ -50,44 +49,83 @@ class RedirectGuesser
     {
         $actions = $builder->getActions();
 
-        // Nothing to do if empty.
-        if (!$section = $this->sections->active()) {
-            return;
-        }
+        $section = $this->sections->active();
 
-        foreach ($actions as &$action) {
+        reset($actions);
 
-            // If we already have an HREF then skip it.
+        $first = key($actions);
+
+        foreach ($actions as $key => &$action) {
+
+            /*
+             * If we already have an
+             * HREF then skip it.
+             */
             if (isset($action['redirect'])) {
-                return;
+                continue;
+            }
+
+            /*
+             * If this is the first action and the
+             * form builder has a redirect option
+             * then use it for the action redirect.
+             */
+            if ($key == $first && $redirect = $builder->getOption('redirect')) {
+                $action['redirect'] = $redirect;
+
+                continue;
+            }
+
+            /*
+             * If we're not in admin then just assume we
+             * need to head back to the form. No redirect
+             * will redirect back in this case.
+             */
+            if ($this->request->segment(1) !== 'admin') {
+                continue;
             }
 
             // Determine the HREF based on the action type.
             switch (array_get($action, 'action')) {
 
                 case 'save':
-                    $action['redirect'] = $section->getHref();
+                case 'submit':
+                case 'save_exit':
+                    $action['redirect'] = $section ? $section->getHref() : $this->request->fullUrl();
                     break;
 
-                case 'save_and_edit':
-                case 'save_and_continue':
-                    $action['redirect'] = $section->getHref('edit/{entry.id}');
+                case 'save_create':
+                    $action['redirect'] = $this->request->fullUrl();
                     break;
 
-                case 'save_and_edit_next':
+                case 'update':
+                case 'save_edit':
+                case 'save_continue':
+                    $action['redirect'] = function () use ($section, $builder) {
+                        if ($section && $builder->getFormMode() == 'create') {
+                            return $section->getHref('edit/' . $builder->getContextualId());
+                        }
+
+                        return $this->request->fullUrl();
+                    };
+                    break;
+
+                case 'save_edit_next':
                     $ids = array_filter(explode(',', $builder->getRequestValue('edit_next')));
 
                     if (!$ids) {
-                        $action['redirect'] = $section->getHref();
+                        $action['redirect'] = $section ? $section->getHref() : $this->request->fullUrl();
                     } elseif (count($ids) == 1) {
-                        $action['redirect'] = $section->getHref('edit/' . array_shift($ids));
+                        $action['redirect'] = $section ? $section->getHref(
+                            'edit/' . array_shift($ids)
+                        ) : $this->request->fullUrl();
                     } else {
-                        $action['redirect'] = $section->getHref(
+                        $action['redirect'] = $section ? $section->getHref(
                             'edit/' . array_shift($ids) . '?' . $builder->getOption('prefix') . 'edit_next=' . implode(
                                 ',',
                                 $ids
                             )
-                        );
+                        ) : $this->request->fullUrl();
                     }
                     break;
             }

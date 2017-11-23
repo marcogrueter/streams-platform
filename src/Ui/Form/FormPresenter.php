@@ -8,10 +8,9 @@ use Illuminate\View\View;
 /**
  * Class FormPresenter
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Ui\Form
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
 class FormPresenter extends Presenter
 {
@@ -56,11 +55,15 @@ class FormPresenter extends Presenter
     /**
      * Return the opening form tag.
      *
-     * @param array $options
+     * @param  array $options
      * @return string
      */
     public function open(array $options = [])
     {
+        if ($url = $this->object->getOption('url')) {
+            $options['url'] = $url;
+        }
+
         return $this->html->open($options);
     }
 
@@ -77,20 +80,26 @@ class FormPresenter extends Presenter
     /**
      * Return the form layout.
      *
-     * @param null $view
+     * @param  null $view
      * @return string
      */
     public function renderFields($view = null)
     {
         return $this->view
-            ->make($view ?: 'streams::form/partials/fields', ['form' => $this->object])
+            ->make(
+                $view ?: 'streams::form/partials/fields',
+                [
+                    'form'   => $this,
+                    'fields' => array_unique($this->object->getFields()->fieldNames()),
+                ]
+            )
             ->render();
     }
 
     /**
      * Return the action buttons.
      *
-     * @param null $view
+     * @param  null $view
      * @return string
      */
     public function renderActions($view = null)
@@ -105,7 +114,7 @@ class FormPresenter extends Presenter
      *
      * @return string
      */
-    function __toString()
+    public function __toString()
     {
         $content = $this->object->getContent();
 

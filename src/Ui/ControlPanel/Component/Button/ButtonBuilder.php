@@ -6,10 +6,9 @@ use Anomaly\Streams\Platform\Ui\ControlPanel\ControlPanelBuilder;
 /**
  * Class ButtonBuilder
  *
- * @link    http://anomaly.is/streams-Platform
- * @author  AnomalyLabs, Inc. <hello@anomaly.is>
- * @author  Ryan Thompson <ryan@anomaly.is>
- * @package Anomaly\Streams\Platform\Ui\ControlPanel\Component\Button
+ * @link    http://pyrocms.com/
+ * @author  PyroCMS, Inc. <support@pyrocms.com>
+ * @author  Ryan Thompson <ryan@pyrocms.com>
  */
 class ButtonBuilder
 {
@@ -48,13 +47,12 @@ class ButtonBuilder
     public function build(ControlPanelBuilder $builder)
     {
         $controlPanel = $builder->getControlPanel();
-        $buttons      = $controlPanel->getButtons();
 
         $this->input->read($builder);
 
         foreach ($builder->getButtons() as $button) {
-            if (array_get($button, 'enabled', true)) {
-                $buttons->push($this->factory->make($button));
+            if (($button = $this->factory->make($button)) && $button->isEnabled()) {
+                $controlPanel->addButton($button);
             }
         }
     }

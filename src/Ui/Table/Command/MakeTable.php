@@ -1,17 +1,15 @@
 <?php namespace Anomaly\Streams\Platform\Ui\Table\Command;
 
 use Anomaly\Streams\Platform\Ui\Table\TableBuilder;
-use Illuminate\Contracts\Bus\SelfHandling;
 
 /**
  * Class MakeTable
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Ui\Table\Command
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
-class MakeTable implements SelfHandling
+class MakeTable
 {
 
     /**
@@ -41,7 +39,10 @@ class MakeTable implements SelfHandling
         $options = $table->getOptions();
         $data    = $table->getData();
 
-        $content = view($options->get('table_view', 'streams::table/table'), $data)->render();
+        $content = view(
+            $options->get('table_view', $this->builder->isAjax() ? 'streams::table/ajax' : 'streams::table/table'),
+            $data
+        )->render();
 
         $table->setContent($content);
         $table->addData('content', $content);

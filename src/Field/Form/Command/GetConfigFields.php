@@ -2,19 +2,26 @@
 
 use Anomaly\Streams\Platform\Addon\FieldType\FieldType;
 use Anomaly\Streams\Platform\Support\Evaluator;
-use Illuminate\Config\Repository;
-use Illuminate\Contracts\Bus\SelfHandling;
+use Anomaly\Streams\Platform\Ui\Form\FormBuilder;
+use Illuminate\Contracts\Config\Repository;
+use Illuminate\Translation\Translator;
 
 /**
  * Class GetConfigFields
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Field\Form\Command
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
-class GetConfigFields implements SelfHandling
+class GetConfigFields
 {
+
+    /**
+     * The form builder.
+     *
+     * @var FormBuilder
+     */
+    protected $builder;
 
     /**
      * The field type object.
@@ -28,8 +35,9 @@ class GetConfigFields implements SelfHandling
      *
      * @param FieldType $fieldType
      */
-    public function __construct(FieldType $fieldType)
+    public function __construct(FormBuilder $builder, FieldType $fieldType)
     {
+        $this->builder   = $builder;
         $this->fieldType = $fieldType;
     }
 
@@ -39,54 +47,65 @@ class GetConfigFields implements SelfHandling
      * @param Repository $config
      * @param Evaluator  $evaluator
      */
-    public function handle(Repository $config, Evaluator $evaluator)
+    public function handle(Repository $config, Evaluator $evaluator, Translator $translator)
     {
-        $fields = [];
+        if (!$fields = $config->get($this->fieldType->getNamespace('config/config'))) {
+            $fields = $config->get($this->fieldType->getNamespace('config'), []);
+        }
 
-        $config = $evaluator->evaluate($config->get($this->fieldType->getNamespace('config'), []));
+        $fields = $evaluator->evaluate($fields);
 
-        foreach ($config as $slug => &$field) {
+        foreach ($fields as $slug => $field) {
 
-            /**
+            /*
              * Determine the field label.
              */
             $label = $this->fieldType->getNamespace('config.' . $slug . '.label');
 
-            if (!trans()->has($label)) {
-                $label = trans($this->fieldType->getNamespace('config.' . $slug . '.name'));
+            if (!$translator->has($label)) {
+                $label = $this->fieldType->getNamespace('config.' . $slug . '.name');
             }
 
             $field['label'] = array_get($field, 'label', $label);
 
-            /**
+            /*
              * Determine the instructions.
              */
             $instructions = $this->fieldType->getNamespace('config.' . $slug . '.instructions');
 
-            if (trans()->has($instructions)) {
+            if ($translator->has($instructions)) {
                 $field['instructions'] = $instructions;
             }
 
-            /**
+            /*
              * Determine the placeholder.
              */
             $placeholder = $this->fieldType->getNamespace('config.' . $slug . '.placeholder');
 
-            if (trans()->has($placeholder)) {
+            if ($translator->has($placeholder)) {
                 $field['placeholder'] = $placeholder;
             }
 
-            /**
+            /*
+             * Determine the warning.
+             */
+            $warning = $this->fieldType->getNamespace('config.' . $slug . '.warning');
+
+            if ($translator->has($warning)) {
+                $field['warning'] = $warning;
+            }
+
+            /*
              * Set the configuration value.
              */
             $field['value'] = array_get($this->fieldType->getConfig(), $slug);
 
             // Prefix the slugs.
-            $field['field'] = 'config.' . $slug;
+            $field['field'] = 'config__' . $slug;
 
-            $fields['config.' . $slug] = $field;
+            $fields['config__' . $slug] = $field;
+
+            $this->builder->addField($field);
         }
-
-        return $fields;
     }
 }

@@ -1,15 +1,17 @@
 <?php namespace Anomaly\Streams\Platform\Ui\ControlPanel;
 
 use Anomaly\Streams\Platform\Ui\ControlPanel\Command\BuildControlPanel;
+use Anomaly\Streams\Platform\Ui\ControlPanel\Component\Button\ButtonHandler;
+use Anomaly\Streams\Platform\Ui\ControlPanel\Component\Navigation\NavigationHandler;
+use Anomaly\Streams\Platform\Ui\ControlPanel\Component\Section\SectionHandler;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 
 /**
  * Class ControlPanelBuilder
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Ui\ControlPanel
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
 class ControlPanelBuilder
 {
@@ -21,14 +23,21 @@ class ControlPanelBuilder
      *
      * @var array
      */
-    protected $buttons = [];
+    protected $buttons = ButtonHandler::class;
 
     /**
      * The module sections.
      *
      * @var array
      */
-    protected $sections = [];
+    protected $sections = SectionHandler::class;
+
+    /**
+     * The navigation links.
+     *
+     * @var array
+     */
+    protected $navigation = NavigationHandler::class;
 
     /**
      * The control_panel object.
@@ -98,11 +107,119 @@ class ControlPanelBuilder
     }
 
     /**
+     * Set the sections.
+     *
      * @param array $sections
+     * @return $this
      */
     public function setSections($sections)
     {
         $this->sections = $sections;
+
+        return $this;
+    }
+
+    /**
+     * Add a section.
+     *
+     * @param        $slug
+     * @param  array $section
+     * @param null   $position
+     * @return $this
+     */
+    public function addSection($slug, array $section, $position = null)
+    {
+        if ($position === null) {
+            $position = count($this->sections) + 1;
+        }
+
+        $front = array_slice($this->sections, 0, $position, true);
+        $back  = array_slice($this->sections, $position, count($this->sections) - $position, true);
+
+        $this->sections = $front + [$slug => $section] + $back;
+
+        return $this;
+    }
+
+    /**
+     * Add a section button.
+     *
+     * @param        $section
+     * @param        $slug
+     * @param  array $button
+     * @param null   $position
+     * @return $this
+     */
+    public function addSectionButton($section, $slug, array $button, $position = null)
+    {
+        $buttons = (array)array_get($this->sections, "{$section}.buttons");
+
+        if ($position === null) {
+            $position = count($buttons) + 1;
+        }
+
+        $front = array_slice($buttons, 0, $position, true);
+        $back  = array_slice($buttons, $position, count($buttons) - $position, true);
+
+        $buttons = $front + [$slug => $button] + $back;
+
+        array_set($this->sections, "{$section}.buttons", $buttons);
+
+        return $this;
+    }
+
+    /**
+     * Get the module navigation.
+     *
+     * @return array
+     */
+    public function getNavigation()
+    {
+        return $this->navigation;
+    }
+
+    /**
+     * Set the navigation.
+     *
+     * @param array $navigation
+     */
+    public function setNavigation($navigation)
+    {
+        $this->navigation = $navigation;
+    }
+
+    /**
+     * Add a navigation item.
+     *
+     * @param        $slug
+     * @param  array $section
+     * @param null   $position
+     * @return $this
+     */
+    public function addNavigation($slug, array $item, $position = null)
+    {
+        if ($position === null) {
+            $position = count($this->navigation) + 1;
+        }
+
+        $front = array_slice($this->navigation, 0, $position, true);
+        $back  = array_slice($this->navigation, $position, count($this->navigation) - $position, true);
+
+        $this->navigation = $front + [$slug => $item] + $back;
+
+        return $this;
+    }
+
+    /**
+     * Return the active control panel section.
+     *
+     * @return Component\Section\Contract\SectionInterface|null
+     */
+    public function getControlPanelActiveSection()
+    {
+        $sections = $this->getControlPanelSections();
+
+        return $sections->active();
     }
 
     /**
@@ -116,14 +233,12 @@ class ControlPanelBuilder
     }
 
     /**
-     * Return the active control panel section.
+     * Get the control panel navigation.
      *
-     * @return Component\Section\Contract\SectionInterface|null
+     * @return Component\Navigation\NavigationCollection
      */
-    public function getActiveSection()
+    public function getControlPanelNavigation()
     {
-        $sections = $this->getControlPanelSections();
-
-        return $sections->active();
+        return $this->controlPanel->getNavigation();
     }
 }

@@ -3,18 +3,32 @@
 use Anomaly\Streams\Platform\Assignment\AssignmentModel;
 use Anomaly\Streams\Platform\Collection\CacheCollection;
 use Anomaly\Streams\Platform\Entry\Contract\EntryInterface;
+use Anomaly\Streams\Platform\Entry\EntryModel;
+use Anomaly\Streams\Platform\Stream\StreamModel;
+use Anomaly\Streams\Platform\Traits\Hookable;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Query\JoinClause;
+use Illuminate\Foundation\Bus\DispatchesJobs;
 
 /**
  * Class EloquentQueryBuilder
  *
- * @link    http://anomaly.is/streams-platform
- * @author  AnomalyLabs, Inc. <hello@anomaly.is>
- * @author  Ryan Thompson <ryan@anomaly.is>
- * @package Anomaly\Streams\Platform\Model
+ * @link    http://pyrocms.com/
+ * @author  PyroCMS, Inc. <support@pyrocms.com>
+ * @author  Ryan Thompson <ryan@pyrocms.com>
  */
 class EloquentQueryBuilder extends Builder
 {
+
+    use Hookable;
+    use DispatchesJobs;
+
+    /**
+     * Runtime cache.
+     *
+     * @var array
+     */
+    protected static $cache = [];
 
     /**
      * The model being queried.
@@ -31,20 +45,60 @@ class EloquentQueryBuilder extends Builder
      */
     public function get($columns = ['*'])
     {
-        $this->orderByDefault();
-        $this->rememberIndex();
+        $key = $this->getCacheKey();
 
-        if ($this->model->getCacheMinutes()) {
-            return app('cache')->remember(
-                $this->getCacheKey(),
-                $this->model->getCacheMinutes(),
-                function () use ($columns) {
-                    return parent::get($columns);
-                }
-            );
+        if (
+            env('INSTALLED')
+            && PHP_SAPI != 'cli'
+            && env('DB_CACHE') !== false
+            && $this->model instanceof EntryModel
+            && isset(self::$cache[$this->model->getCacheCollectionKey()][$key])
+        ) {
+            return self::$cache[$this->model->getCacheCollectionKey()][$key];
         }
 
-        return parent::get($columns);
+        $this->orderByDefault();
+
+        if (PHP_SAPI != 'cli' && env('DB_CACHE') !== false && $this->model->getTtl()) {
+
+            $this->rememberIndex();
+
+            try {
+                return app('cache')->remember(
+                    $this->getCacheKey(),
+                    $this->model->getTtl(),
+                    function () use ($columns) {
+                        return parent::get($columns);
+                    }
+                );
+            } catch (\Exception $e) {
+                return parent::get($columns);
+            }
+        }
+
+        return self::$cache[$this->model->getCacheCollectionKey()][$key] = parent::get($columns);
+    }
+
+    /**
+     * Return if a table has been joined or not.
+     *
+     * @param $table
+     * @return bool
+     */
+    public function hasJoin($table)
+    {
+        if (!$this->query->joins) {
+            return false;
+        }
+
+        /* @var JoinClause $join */
+        foreach ($this->query->joins as $join) {
+            if ($join->table === $table) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -54,7 +108,7 @@ class EloquentQueryBuilder extends Builder
      */
     protected function rememberIndex()
     {
-        if ($this->model->getCacheMinutes()) {
+        if ($this->model->getTtl()) {
             $this->indexCacheCollection();
         }
 
@@ -77,6 +131,17 @@ class EloquentQueryBuilder extends Builder
     }
 
     /**
+     * Drop a cache collection
+     * from runtime cache.
+     *
+     * @param $collection
+     */
+    public static function dropRuntimeCache($collection)
+    {
+        unset(self::$cache[$collection]);
+    }
+
+    /**
      * Get the unique cache key for the query.
      *
      * @return string
@@ -89,6 +154,19 @@ class EloquentQueryBuilder extends Builder
     }
 
     /**
+     * Set the model TTl.
+     *
+     * @param $ttl
+     * @return $this
+     */
+    public function cache($ttl)
+    {
+        $this->model->setTtl($ttl);
+
+        return $this;
+    }
+
+    /**
      * Get fresh models / disable cache
      *
      * @param  boolean $fresh
@@ -97,7 +175,7 @@ class EloquentQueryBuilder extends Builder
     public function fresh($fresh = true)
     {
         if ($fresh) {
-            $this->model->setCacheMinutes(0);
+            $this->model->setTtl(0);
         }
 
         return $this;
@@ -106,7 +184,7 @@ class EloquentQueryBuilder extends Builder
     /**
      * Update a record in the database.
      *
-     * @param array $values
+     * @param  array $values
      * @return int
      */
     public function update(array $values)
@@ -144,8 +222,88 @@ class EloquentQueryBuilder extends Builder
         $model = $this->getModel();
         $query = $this->getQuery();
 
-        if ($query->orders === null && ($model instanceof EntryInterface || $model instanceof AssignmentModel)) {
-            $query->orderBy('sort_order', 'ASC');
+        if ($query->orders === null) {
+            if ($model instanceof AssignmentModel) {
+                $query->orderBy('streams_assignments.sort_order', 'ASC');
+            } elseif ($model instanceof StreamModel && env('INSTALLED')) { // Ensure migrations are complete.
+                $query->orderBy('streams_streams.sort_order', 'ASC');
+            } elseif ($model instanceof EntryInterface) {
+                if ($model->getStream()->isSortable()) {
+                    $query->orderBy('sort_order', 'ASC');
+                } elseif ($model->titleColumnIsTranslatable()) {
+
+                    /**
+                     * Postgres makes it damn near impossible
+                     * to order by a foreign column and retain
+                     * distinct results so let's avoid it entirely.
+                     *
+                     * Sorry!
+                     */
+                    if (env('DB_CONNECTION', 'mysql') == 'pgsql') {
+                        return;
+                    }
+
+                    if (!$this->hasJoin($model->getTranslationsTableName())) {
+                        $this->query->leftJoin(
+                            $model->getTranslationsTableName(),
+                            $model->getTableName() . '.id',
+                            '=',
+                            $model->getTranslationsTableName() . '.entry_id'
+                        );
+                    }
+
+                    $this
+                        ->groupBy($model->getTableName() . '.id')
+                        ->select($model->getTableName() . '.*')
+                        ->where(
+                            function (Builder $query) use ($model) {
+                                $query->where($model->getTranslationsTableName() . '.locale', config('app.locale'));
+                                $query->orWhere(
+                                    $model->getTranslationsTableName() . '.locale',
+                                    config('app.fallback_locale')
+                                );
+                                $query->orWhereNull($model->getTranslationsTableName() . '.locale');
+                            }
+                        )
+                        ->orderBy($model->getTranslationsTableName() . '.' . $model->getTitleName(), 'ASC');
+                } elseif ($model->getTitleName() && $model->getTitleName() !== 'id') {
+                    $query->orderBy($model->getTitleName(), 'ASC');
+                }
+            }
         }
+    }
+
+    /**
+     * Select the default columns.
+     *
+     * This is helpful when using addSelect
+     * elsewhere like in a hook/criteria and
+     * that select ends up being all you select.
+     *
+     * @return $this
+     */
+    public function selectDefault()
+    {
+        if (!$this->query->columns && $this->query->from) {
+            $this->query->select($this->query->from . '.*');
+        }
+
+        return $this;
+    }
+
+    /**
+     * Add hookable catch to the query builder system.
+     *
+     * @param string $method
+     * @param array $parameters
+     * @return mixed
+     */
+    public function __call($method, $parameters)
+    {
+        if ($this->hasHook($hook = snake_case($method))) {
+            return $this->call($hook, $parameters);
+        }
+
+        return parent::__call($method, $parameters);
     }
 }

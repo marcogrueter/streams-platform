@@ -1,14 +1,14 @@
 <?php namespace Anomaly\Streams\Platform\Ui\Table\Component\Header\Command;
 
 use Anomaly\Streams\Platform\Ui\Table\TableBuilder;
+use Anomaly\Streams\Platform\Ui\Table\Component\Header\HeaderBuilder;
 
 /**
  * Class BuildHeaders
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Ui\Table\Component\Header\Command
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
 class BuildHeaders
 {
@@ -31,12 +31,12 @@ class BuildHeaders
     }
 
     /**
-     * Get the table builder.
+     * Handle the command
      *
-     * @return TableBuilder
+     * @param HeaderBuilder $builder
      */
-    public function getBuilder()
+    public function handle(HeaderBuilder $builder)
     {
-        return $this->builder;
+        $builder->build($this->builder);
     }
 }

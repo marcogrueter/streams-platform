@@ -2,18 +2,10 @@
 
 use Anomaly\Streams\Platform\Application\Event\ApplicationHasLoaded;
 use Closure;
-use Illuminate\Events\Dispatcher;
+use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-/**
- * Class ApplicationReady
- *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Http\Middleware
- */
 class ApplicationReady
 {
 
@@ -46,13 +38,12 @@ class ApplicationReady
     {
         $response = $this->events->fire(new ApplicationHasLoaded(), [], true);
 
-        if ($response instanceof Response) {
-            return $response;
+        if (!defined('IS_ADMIN')) {
+            define('IS_ADMIN', $request->segment(1) == 'admin');
         }
 
-        if (env('APP_ENV') != 'testing') {
-            // http://wappalyzer.com
-            setcookie('powered_by', 'PyroCMS');
+        if ($response instanceof Response) {
+            return $response;
         }
 
         return $next($request);

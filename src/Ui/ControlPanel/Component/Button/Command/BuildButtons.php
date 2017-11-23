@@ -2,17 +2,15 @@
 
 use Anomaly\Streams\Platform\Ui\ControlPanel\Component\Button\ButtonBuilder;
 use Anomaly\Streams\Platform\Ui\ControlPanel\ControlPanelBuilder;
-use Illuminate\Contracts\Bus\SelfHandling;
 
 /**
  * Class BuildButtons
  *
- * @link          http://anomaly.is/streams-Platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Ui\ControlPanel\Component\Button\Command
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
-class BuildButtons implements SelfHandling
+class BuildButtons
 {
 
     /**

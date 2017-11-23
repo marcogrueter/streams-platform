@@ -6,10 +6,9 @@ use Anomaly\Streams\Platform\Ui\Table\Table;
 /**
  * Class GetColumnValue
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Ui\Table\Command
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
 class GetColumnValue
 {
@@ -42,7 +41,7 @@ class GetColumnValue
      * @param ColumnInterface $column
      * @param                 $entry
      */
-    function __construct(Table $table, ColumnInterface $column, $entry)
+    public function __construct(Table $table, ColumnInterface $column, $entry)
     {
         $this->entry  = $entry;
         $this->table  = $table;

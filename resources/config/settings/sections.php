@@ -1,53 +1,58 @@
 <?php
 
 return [
-    [
-        'section' => 'tabbed',
-        'tabs'    => [
-            'general'      => [
-                'title'  => 'streams::tab.general',
-                'fields' => [
-                    'name',
-                    'description'
-                ]
-            ],
-            'datetime'     => [
-                'title'  => 'streams::tab.datetime',
-                'fields' => [
-                    'default_timezone',
-                    'date_format',
-                    'time_format'
-                ]
-            ],
-            'localization' => [
-                'title'  => 'streams::tab.localization',
-                'fields' => [
-                    'default_locale',
-                    'enabled_locales'
-                ]
-            ],
-            'access'       => [
-                'title'  => 'streams::tab.access',
-                'fields' => [
-                    'site_enabled',
-                    '503_message',
-                    'ip_whitelist',
-                    'force_https'
-                ]
-            ],
-            'email'        => [
-                'title'  => 'streams::tab.email',
-                'fields' => [
-                    'contact_email',
-                    'server_email',
-                    'mail_driver',
-                    'mail_host',
-                    'mail_port',
-                    'mail_username',
-                    'mail_password',
-                    'mail_debug'
-                ]
-            ]
-        ]
-    ]
+    'details'      => [
+        'context' => 'info',
+        'title'   => 'streams::label.details',
+        'fields'  => [
+            'name',
+            'description',
+        ],
+    ],
+    'display'      => [
+        'context' => 'info',
+        'title'   => 'streams::label.display',
+        'fields'  => [
+            'standard_theme',
+            'admin_theme',
+            'per_page',
+        ],
+    ],
+    'formats'      => [
+        'context' => 'danger',
+        'title'   => 'streams::label.formats',
+        'fields'  => [
+            'timezone',
+            'date_format',
+            'time_format',
+            'unit_system',
+            'currency',
+        ],
+    ],
+    'localization' => [
+        'context' => 'info',
+        'title'   => 'streams::label.localization',
+        'fields'  => [
+            'default_locale',
+            'enabled_locales',
+        ],
+    ],
+    'email'        => [
+        'context' => 'danger',
+        'title'   => 'streams::label.email',
+        'fields'  => [
+            'email',
+            'sender',
+        ],
+    ],
+    'maintenance'  => [
+        'context' => 'danger',
+        'title'   => 'streams::label.maintenance',
+        'fields'  => [
+            'debug',
+            'maintenance',
+            'basic_auth',
+            'ip_whitelist',
+        ],
+    ],
 ];

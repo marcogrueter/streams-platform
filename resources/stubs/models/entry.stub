@@ -7,13 +7,19 @@ class {class} extends EntryModel
 
     {trashable}
 
+    protected $searchable = {searchable};
+
     protected $table = '{table}';
 
     protected $titleName = '{title}';
 
-    public $rules = {rules};
+    protected $rules = {rules};
 
-    public $dates = {dates};
+    protected $fields = {field_slugs};
+
+    protected $dates = {dates};
+
+    protected $relationships = {relationships};
 
     {translated_attributes}
 

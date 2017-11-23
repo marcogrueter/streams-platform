@@ -5,20 +5,12 @@ use Anomaly\Streams\Platform\Ui\Table\TableBuilder;
 /**
  * Class ActionInput
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Ui\Table\Component\Action
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
 class ActionInput
 {
-
-    /**
-     * The action parser.
-     *
-     * @var ActionParser
-     */
-    private $parser;
 
     /**
      * The action lookup.
@@ -33,6 +25,13 @@ class ActionInput
      * @var ActionGuesser
      */
     protected $guesser;
+
+    /**
+     * The dropdown utility.
+     *
+     * @var ActionDropdown
+     */
+    protected $dropdown;
 
     /**
      * The resolver utility.
@@ -63,11 +62,19 @@ class ActionInput
     protected $normalizer;
 
     /**
+     * The action parser.
+     *
+     * @var ActionParser
+     */
+    private $parser;
+
+    /**
      * Create a new ActionInput instance.
      *
      * @param ActionParser     $parser
      * @param ActionLookup     $lookup
      * @param ActionGuesser    $guesser
+     * @param ActionDropdown   $dropdown
      * @param ActionResolver   $resolver
      * @param ActionPredictor  $predictor
      * @param ActionEvaluator  $evaluator
@@ -77,6 +84,7 @@ class ActionInput
         ActionParser $parser,
         ActionLookup $lookup,
         ActionGuesser $guesser,
+        ActionDropdown $dropdown,
         ActionResolver $resolver,
         ActionPredictor $predictor,
         ActionEvaluator $evaluator,
@@ -85,6 +93,7 @@ class ActionInput
         $this->parser     = $parser;
         $this->lookup     = $lookup;
         $this->guesser    = $guesser;
+        $this->dropdown   = $dropdown;
         $this->resolver   = $resolver;
         $this->predictor  = $predictor;
         $this->evaluator  = $evaluator;
@@ -94,7 +103,7 @@ class ActionInput
     /**
      * Read builder action input.
      *
-     * @param TableBuilder $builder
+     * @param  TableBuilder $builder
      * @return array
      */
     public function read(TableBuilder $builder)
@@ -103,8 +112,10 @@ class ActionInput
         $this->evaluator->evaluate($builder);
         $this->predictor->predict($builder);
         $this->normalizer->normalize($builder);
+        $this->dropdown->flatten($builder);
         $this->lookup->merge($builder);
         $this->guesser->guess($builder);
         $this->parser->parse($builder);
+        $this->dropdown->build($builder);
     }
 }

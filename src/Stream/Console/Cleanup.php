@@ -5,14 +5,6 @@ use Anomaly\Streams\Platform\Field\Contract\FieldRepositoryInterface;
 use Anomaly\Streams\Platform\Stream\Contract\StreamRepositoryInterface;
 use Illuminate\Console\Command;
 
-/**
- * Class Cleanup
- *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Stream\Console
- */
 class Cleanup extends Command
 {
 
@@ -37,7 +29,7 @@ class Cleanup extends Command
      * @param StreamRepositoryInterface     $streams
      * @param AssignmentRepositoryInterface $assignments
      */
-    public function fire(
+    public function handle(
         FieldRepositoryInterface $fields,
         StreamRepositoryInterface $streams,
         AssignmentRepositoryInterface $assignments

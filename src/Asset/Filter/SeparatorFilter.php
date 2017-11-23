@@ -8,7 +8,6 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-
 namespace Anomaly\Streams\Platform\Asset\Filter;
 
 use Assetic\Asset\AssetInterface;
@@ -57,6 +56,8 @@ class SeparatorFilter implements FilterInterface
      */
     public function filterDump(AssetInterface $asset)
     {
-        $asset->setContent($asset->getContent() . $this->separator);
+        if ($content = $asset->getContent()) {
+            $asset->setContent($content . $this->separator);
+        }
     }
 }

@@ -1,14 +1,14 @@
 <?php namespace Anomaly\Streams\Platform\Stream\Command;
 
 use Anomaly\Streams\Platform\Stream\Contract\StreamInterface;
+use Anomaly\Streams\Platform\Stream\StreamSchema;
 
 /**
  * Class CreateStreamsEntryTable
  *
- * @link    http://anomaly.is/streams-platform
- * @author  AnomalyLabs, Inc. <hello@anomaly.is>
- * @author  Ryan Thompson <ryan@anomaly.is>
- * @package Anomaly\Streams\Platform\Stream\Command
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
 class CreateStreamsEntryTable
 {
@@ -16,7 +16,7 @@ class CreateStreamsEntryTable
     /**
      * The stream interface.
      *
-     * @var \Anomaly\Streams\Platform\Stream\Contract\StreamInterface
+     * @var StreamInterface
      */
     protected $stream;
 
@@ -31,12 +31,16 @@ class CreateStreamsEntryTable
     }
 
     /**
-     * Get the stream interface.
+     * Handle the command.
      *
-     * @return StreamInterface
+     * @param StreamSchema $schema
      */
-    public function getStream()
+    public function handle(StreamSchema $schema)
     {
-        return $this->stream;
+        $schema->createTable($this->stream);
+
+        if ($this->stream->isTranslatable()) {
+            $schema->createTranslationsTable($this->stream);
+        }
     }
 }

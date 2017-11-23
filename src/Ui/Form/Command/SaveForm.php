@@ -1,17 +1,17 @@
 <?php namespace Anomaly\Streams\Platform\Ui\Form\Command;
 
+use Anomaly\Streams\Platform\Ui\Form\Event\FormWasSaved;
 use Anomaly\Streams\Platform\Ui\Form\FormBuilder;
-use Illuminate\Contracts\Bus\SelfHandling;
+use Illuminate\Contracts\Events\Dispatcher;
 
 /**
  * Class SaveForm
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Ui\Form\Command
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
-class SaveForm implements SelfHandling
+class SaveForm
 {
 
     /**
@@ -33,17 +33,24 @@ class SaveForm implements SelfHandling
 
     /**
      * Handle the command.
+     *
+     * @param Dispatcher $events
      */
-    public function handle()
+    public function handle(Dispatcher $events)
     {
+        // We can't save if there is no repository.
+        if (!$repository = $this->builder->getRepository()) {
+            return;
+        }
+
         $this->builder->fire('saving', ['builder' => $this->builder]);
         $this->builder->fireFieldEvents('form_saving');
-
-        $repository = $this->builder->getRepository();
 
         $repository->save($this->builder);
 
         $this->builder->fire('saved', ['builder' => $this->builder]);
         $this->builder->fireFieldEvents('form_saved');
+
+        $events->fire(new FormWasSaved($this->builder));
     }
 }

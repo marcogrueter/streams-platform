@@ -1,17 +1,15 @@
 <?php namespace Anomaly\Streams\Platform\Ui\Form\Command;
 
 use Anomaly\Streams\Platform\Ui\Form\FormBuilder;
-use Illuminate\Contracts\Bus\SelfHandling;
 
 /**
  * Class MakeForm
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Ui\Form\Command
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
-class MakeForm implements SelfHandling
+class MakeForm
 {
 
     /**
@@ -42,7 +40,7 @@ class MakeForm implements SelfHandling
         $data    = $form->getData();
 
         $content = view(
-            $options->get('form_view', $this->builder->isAjax() ? 'streams::form/ajax' : 'streams::form/form'),
+            $options->get('form_view'),
             $data->all()
         );
 

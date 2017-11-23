@@ -8,10 +8,9 @@ use Anomaly\Streams\Platform\Ui\Table\TableBuilder;
 /**
  * Class ButtonBuilder
  *
- * @link    http://anomaly.is/streams-platform
- * @author  AnomalyLabs, Inc. <hello@anomaly.is>
- * @author  Ryan Thompson <ryan@anomaly.is>
- * @package Anomaly\Streams\Platform\Ui\Table\Component\Button
+ * @link    http://pyrocms.com/
+ * @author  PyroCMS, Inc. <support@pyrocms.com>
+ * @author  Ryan Thompson <ryan@pyrocms.com>
  */
 class ButtonBuilder
 {
@@ -22,6 +21,13 @@ class ButtonBuilder
      * @var ButtonInput
      */
     protected $input;
+
+    /**
+     * The button value utility.
+     *
+     * @var ButtonValue
+     */
+    protected $value;
 
     /**
      * The button parser.
@@ -47,14 +53,21 @@ class ButtonBuilder
     /**
      * Create a new ButtonBuilder instance.
      *
-     * @param ButtonInput   $input
-     * @param ButtonParser  $parser
+     * @param ButtonInput $input
+     * @param ButtonValue $value
+     * @param ButtonParser $parser
      * @param ButtonFactory $factory
-     * @param Evaluator     $evaluator
+     * @param Evaluator $evaluator
      */
-    public function __construct(ButtonInput $input, ButtonParser $parser, ButtonFactory $factory, Evaluator $evaluator)
-    {
+    public function __construct(
+        ButtonInput $input,
+        ButtonValue $value,
+        ButtonParser $parser,
+        ButtonFactory $factory,
+        Evaluator $evaluator
+    ) {
         $this->input     = $input;
+        $this->value     = $value;
         $this->parser    = $parser;
         $this->factory   = $factory;
         $this->evaluator = $evaluator;
@@ -63,8 +76,8 @@ class ButtonBuilder
     /**
      * Build the buttons.
      *
-     * @param TableBuilder $builder
-     * @param              $entry
+     * @param  TableBuilder $builder
+     * @param                   $entry
      * @return ButtonCollection
      */
     public function build(TableBuilder $builder, $entry)
@@ -73,14 +86,14 @@ class ButtonBuilder
 
         $buttons = new ButtonCollection();
 
-        $this->input->read($builder, $entry);
+        $this->input->read($builder);
 
         foreach ($builder->getButtons() as $button) {
-
             array_set($button, 'entry', $entry);
 
             $button = $this->evaluator->evaluate($button, compact('entry', 'table'));
             $button = $this->parser->parse($button, $entry);
+            $button = $this->value->replace($button, $entry);
             $button = $this->factory->make($button);
 
             if (!$button->isEnabled()) {

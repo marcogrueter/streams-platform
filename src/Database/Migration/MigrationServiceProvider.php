@@ -4,30 +4,26 @@ use Anomaly\Streams\Platform\Database\Migration\Console\MigrateCommand;
 use Anomaly\Streams\Platform\Database\Migration\Console\MigrateMakeCommand;
 use Anomaly\Streams\Platform\Database\Migration\Console\RefreshCommand;
 use Anomaly\Streams\Platform\Database\Migration\Console\ResetCommand;
-use Illuminate\Database\MigrationServiceProvider as BaseMigrationServiceProvider;
+use Anomaly\Streams\Platform\Database\Migration\Console\RollbackCommand;
 
 /**
  * Class MigrationServiceProvider
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Database\Migration
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
-class MigrationServiceProvider extends BaseMigrationServiceProvider
+class MigrationServiceProvider extends \Illuminate\Database\MigrationServiceProvider
 {
 
     /**
      * Register the migration repository service.
-     *
-     * @return void
      */
     protected function registerRepository()
     {
         $this->app->singleton(
             'migration.repository',
             function ($app) {
-
                 $table = $app['config']['database.migrations'];
 
                 return new MigrationRepository($app['db'], $table);
@@ -48,7 +44,6 @@ class MigrationServiceProvider extends BaseMigrationServiceProvider
         $this->app->singleton(
             'migrator',
             function ($app) {
-
                 $repository = $app['migration.repository'];
 
                 return new Migrator($repository, $app['db'], $app['files']);
@@ -121,6 +116,21 @@ class MigrationServiceProvider extends BaseMigrationServiceProvider
             'command.migrate.refresh',
             function () {
                 return new RefreshCommand;
+            }
+        );
+    }
+
+    /**
+     * Register the "rollback" migration command.
+     *
+     * @return void
+     */
+    protected function registerRollbackCommand()
+    {
+        $this->app->singleton(
+            'command.migrate.rollback',
+            function ($app) {
+                return new RollbackCommand($app['migrator']);
             }
         );
     }

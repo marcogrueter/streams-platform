@@ -1,16 +1,17 @@
 <?php namespace Anomaly\Streams\Platform\Ui\Table\Component\Filter;
 
+use Anomaly\Streams\Platform\Ui\Table\Component\Filter\Type\DatetimeFilter;
 use Anomaly\Streams\Platform\Ui\Table\Component\Filter\Type\FieldFilter;
 use Anomaly\Streams\Platform\Ui\Table\Component\Filter\Type\InputFilter;
+use Anomaly\Streams\Platform\Ui\Table\Component\Filter\Type\SearchFilter;
 use Anomaly\Streams\Platform\Ui\Table\Component\Filter\Type\SelectFilter;
 
 /**
  * Class FilterRegistry
  *
- * @link    http://anomaly.is/streams-platform
- * @author  AnomalyLabs, Inc. <hello@anomaly.is>
- * @author  Ryan Thompson <ryan@anomaly.is>
- * @package Anomaly\Streams\Platform\Ui\Table\Component\Filter
+ * @link    http://pyrocms.com/
+ * @author  PyroCMS, Inc. <support@pyrocms.com>
+ * @author  Ryan Thompson <ryan@pyrocms.com>
  */
 class FilterRegistry
 {
@@ -21,17 +22,30 @@ class FilterRegistry
      * @var array
      */
     protected $filters = [
-        'input'  => [
+        'input'      => [
             'slug'   => 'input',
             'filter' => InputFilter::class,
         ],
-        'select' => [
+        'search'     => [
+            'slug'        => 'search',
+            'filter'      => SearchFilter::class,
+            'placeholder' => 'streams::message.search',
+        ],
+        'select'     => [
             'slug'   => 'select',
             'filter' => SelectFilter::class,
         ],
-        'field'  => [
+        'field'      => [
             'filter' => FieldFilter::class,
-        ]
+        ],
+        'created_at' => [
+            'filter'      => DatetimeFilter::class,
+            'placeholder' => 'streams::entry.created_at',
+        ],
+        'updated_at' => [
+            'filter'      => DatetimeFilter::class,
+            'placeholder' => 'streams::entry.updated_at',
+        ],
     ];
 
     /**
@@ -48,8 +62,8 @@ class FilterRegistry
     /**
      * Register a filter.
      *
-     * @param       $filter
-     * @param array $parameters
+     * @param        $filter
+     * @param  array $parameters
      * @return $this
      */
     public function register($filter, array $parameters)

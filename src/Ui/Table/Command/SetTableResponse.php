@@ -1,18 +1,16 @@
 <?php namespace Anomaly\Streams\Platform\Ui\Table\Command;
 
 use Anomaly\Streams\Platform\Ui\Table\TableBuilder;
-use Illuminate\Contracts\Bus\SelfHandling;
 use Illuminate\Routing\ResponseFactory;
 
 /**
  * Class SetTableResponse
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Ui\Table\Command
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
-class SetTableResponse implements SelfHandling
+class SetTableResponse
 {
 
     /**
@@ -44,6 +42,11 @@ class SetTableResponse implements SelfHandling
         $options = $table->getOptions();
         $data    = $table->getData();
 
-        $table->setResponse($response->view($options->get('wrapper_view', 'streams::blank'), $data));
+        $table->setResponse(
+            $response->view(
+                $options->get('wrapper_view', $this->builder->isAjax() ? 'streams::ajax' : 'streams::blank'),
+                $data
+            )
+        );
     }
 }

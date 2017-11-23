@@ -5,10 +5,9 @@ use Illuminate\Pagination\LengthAwarePaginator;
 /**
  * Class TablePagination
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Ui\Table
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
 class TablePagination
 {
@@ -16,22 +15,23 @@ class TablePagination
     /**
      * Return table pagination data.
      *
-     * @param Table $table
+     * @param  Table $table
      * @return array
      */
     public function make(Table $table)
     {
         $options = $table->getOptions();
 
-        $perPage   = $options->get('limit', 15);
-        $page      = app('request')->get('page');
+        $perPage   = $options->get('limit') ?: config('streams::system.per_page');
+        $pageName  = $table->getOption('prefix') . 'page';
+        $page      = app('request')->get($pageName);
         $path      = '/' . app('request')->path();
         $paginator = new LengthAwarePaginator(
             $table->getEntries(),
             $options->get('total_results', 0),
             $perPage,
             $page,
-            compact('path')
+            compact('path', 'pageName')
         );
 
         $pagination          = $paginator->toArray();

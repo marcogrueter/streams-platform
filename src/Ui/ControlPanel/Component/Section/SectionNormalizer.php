@@ -6,10 +6,9 @@ use Anomaly\Streams\Platform\Ui\ControlPanel\ControlPanelBuilder;
 /**
  * Class SectionNormalizer
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Ui\ControlPanel\Component\Section
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
 class SectionNormalizer
 {
@@ -40,44 +39,77 @@ class SectionNormalizer
     {
         $sections = $builder->getSections();
 
-        /**
+        /*
+         * Move child sections into main array.
+         */
+        foreach ($sections as $slug => &$section) {
+            if (isset($section['sections'])) {
+                foreach ($section['sections'] as $key => &$child) {
+                    $child['parent'] = array_get($section, 'slug', $slug);
+                    $child['slug']   = array_get($child, 'slug', $key);
+
+                    $sections[$key] = $child;
+                }
+            }
+        }
+
+        /*
          * Loop over each section and make sense of the input
          * provided for the given module.
          */
         foreach ($sections as $slug => &$section) {
 
-            /**
+            /*
              * If the slug is not valid and the section
              * is a string then use the section as the slug.
              */
             if (is_numeric($slug) && is_string($section)) {
                 $section = [
-                    'slug' => $section
+                    'slug' => $section,
                 ];
             }
 
-            /**
-             * If the slug is a string and the text is not
+            /*
+             * If the slug is a string and the title is not
              * set then use the slug as the slug.
              */
             if (is_string($slug) && !isset($section['slug'])) {
                 $section['slug'] = $slug;
             }
 
-            /**
+            /*
              * Make sure we have attributes.
              */
             $section['attributes'] = array_get($section, 'attributes', []);
 
-            /**
+            /*
              * Move the HREF into attributes.
              */
             if (isset($section['href'])) {
                 $section['attributes']['href'] = array_pull($section, 'href');
             }
 
-            /**
-             * Make sure the HREF is absolute.
+            /*
+             * Move all data-* keys
+             * to attributes.
+             */
+            foreach ($section as $attribute => $value) {
+                if (str_is('data-*', $attribute)) {
+                    array_set($section, 'attributes.' . $attribute, array_pull($section, $attribute));
+                }
+            }
+
+            /*
+             * Move the data-href into the permalink.
+             *
+             * @deprecated as of v3.2
+             */
+            if (!isset($section['permalink']) && isset($section['attributes']['data-href'])) {
+                $section['permalink'] = array_pull($section, 'attributes.data-href');
+            }
+
+            /*
+             * Make sure the HREF and permalink are absolute.
              */
             if (
                 isset($section['attributes']['href']) &&
@@ -85,6 +117,14 @@ class SectionNormalizer
                 !starts_with($section['attributes']['href'], 'http')
             ) {
                 $section['attributes']['href'] = url($section['attributes']['href']);
+            }
+
+            if (
+                isset($section['permalink']) &&
+                is_string($section['permalink']) &&
+                !starts_with($section['permalink'], 'http')
+            ) {
+                $section['permalink'] = url($section['permalink']);
             }
         }
 

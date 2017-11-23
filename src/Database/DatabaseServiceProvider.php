@@ -1,15 +1,8 @@
 <?php namespace Anomaly\Streams\Platform\Database;
 
+use Anomaly\Streams\Platform\Database\Migration\MigrationServiceProvider;
 use Illuminate\Support\ServiceProvider;
 
-/**
- * Class DatabaseServiceProvider
- *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Database
- */
 class DatabaseServiceProvider extends ServiceProvider
 {
 
@@ -20,7 +13,7 @@ class DatabaseServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        $this->app->register('Anomaly\Streams\Platform\Database\Seeder\SeederServiceProvider');
-        $this->app->register('Anomaly\Streams\Platform\Database\Migration\MigrationServiceProvider');
+        //$this->app->register('Anomaly\Streams\Platform\Database\Seeder\SeederServiceProvider');
+        $this->app->register(MigrationServiceProvider::class);
     }
 }

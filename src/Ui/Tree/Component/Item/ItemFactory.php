@@ -6,10 +6,9 @@ use Anomaly\Streams\Platform\Ui\Tree\Component\Item\Contract\ItemInterface;
 /**
  * Class ItemFactory
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Ui\Tree
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
 class ItemFactory
 {
@@ -34,7 +33,7 @@ class ItemFactory
     /**
      * Make an item.
      *
-     * @param  array $parameters
+     * @param  array         $parameters
      * @return ItemInterface
      */
     public function make(array $parameters)

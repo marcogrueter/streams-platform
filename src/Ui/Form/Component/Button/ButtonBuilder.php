@@ -6,10 +6,9 @@ use Anomaly\Streams\Platform\Ui\Form\FormBuilder;
 /**
  * Class ButtonBuilder
  *
- * @link    http://anomaly.is/streams-platform
- * @author  AnomalyLabs, Inc. <hello@anomaly.is>
- * @author  Ryan Thompson <ryan@anomaly.is>
- * @package Anomaly\Streams\Platform\Ui\Form\Component\Button
+ * @link    http://pyrocms.com/
+ * @author  PyroCMS, Inc. <support@pyrocms.com>
+ * @author  Ryan Thompson <ryan@pyrocms.com>
  */
 class ButtonBuilder
 {
@@ -50,12 +49,9 @@ class ButtonBuilder
         $this->input->read($builder);
 
         foreach ($builder->getButtons() as $button) {
-
             if (array_get($button, 'enabled', true)) {
 
                 $button = $this->factory->make($button);
-
-                $button->setSize('sm');
 
                 $builder->addFormButton($button);
             }

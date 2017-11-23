@@ -5,10 +5,9 @@ use Anomaly\Streams\Platform\Ui\Form\FormBuilder;
 /**
  * Class SectionInput
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Ui\Form\Component\Section
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
 class SectionInput
 {
@@ -28,15 +27,24 @@ class SectionInput
     protected $evaluator;
 
     /**
+     * The section normalizer.
+     *
+     * @var SectionNormalizer
+     */
+    protected $normalizer;
+
+    /**
      * Create a new SectionInput instance.
      *
-     * @param SectionResolver  $resolver
-     * @param SectionEvaluator $evaluator
+     * @param SectionResolver   $resolver
+     * @param SectionEvaluator  $evaluator
+     * @param SectionNormalizer $normalizer
      */
-    function __construct(SectionResolver $resolver, SectionEvaluator $evaluator)
+    public function __construct(SectionResolver $resolver, SectionEvaluator $evaluator, SectionNormalizer $normalizer)
     {
-        $this->resolver  = $resolver;
-        $this->evaluator = $evaluator;
+        $this->resolver   = $resolver;
+        $this->evaluator  = $evaluator;
+        $this->normalizer = $normalizer;
     }
 
     /**
@@ -48,5 +56,6 @@ class SectionInput
     {
         $this->resolver->resolve($builder);
         $this->evaluator->evaluate($builder);
+        $this->normalizer->normalize($builder);
     }
 }

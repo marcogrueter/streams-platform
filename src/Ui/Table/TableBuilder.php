@@ -7,8 +7,11 @@ use Anomaly\Streams\Platform\Ui\Table\Command\LoadTable;
 use Anomaly\Streams\Platform\Ui\Table\Command\MakeTable;
 use Anomaly\Streams\Platform\Ui\Table\Command\PostTable;
 use Anomaly\Streams\Platform\Ui\Table\Command\SetTableResponse;
+use Anomaly\Streams\Platform\Ui\Table\Component\Filter\Contract\FilterInterface;
 use Anomaly\Streams\Platform\Ui\Table\Component\Row\Contract\RowInterface;
+use Anomaly\Streams\Platform\Ui\Table\Component\View\ViewCollection;
 use Anomaly\Streams\Platform\Ui\Table\Contract\TableRepositoryInterface;
+use Illuminate\Contracts\Config\Repository;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Support\Collection;
 use Symfony\Component\HttpFoundation\Response;
@@ -16,16 +19,21 @@ use Symfony\Component\HttpFoundation\Response;
 /**
  * Class TableBuilder
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Ui\Table
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
 class TableBuilder
 {
-
     use DispatchesJobs;
     use FiresCallbacks;
+
+    /**
+     * The ajax flag.
+     *
+     * @var bool
+     */
+    protected $ajax = false;
 
     /**
      * The table model.
@@ -116,38 +124,61 @@ class TableBuilder
 
     /**
      * Build the table.
+     *
+     * @return $this
      */
     public function build()
     {
         $this->fire('ready', ['builder' => $this]);
 
         $this->dispatch(new BuildTable($this));
+        
+        $this->fire('built', ['builder' => $this]);
+
+        return $this;
     }
 
     /**
      * Make the table response.
+     *
+     * @return $this
      */
     public function make()
     {
         $this->build();
         $this->post();
+        $this->load();
 
-        if ($this->table->getResponse() === null) {
-            $this->dispatch(new LoadTable($this));
-            $this->dispatch(new AddAssets($this));
-            $this->dispatch(new MakeTable($this));
-        }
+        return $this;
+    }
+
+    /**
+     * Return the table response.
+     *
+     * @return $this
+     */
+    public function load()
+    {
+        $this->dispatch(new LoadTable($this));
+        $this->dispatch(new AddAssets($this));
+        $this->dispatch(new MakeTable($this));
+
+        return $this;
     }
 
     /**
      * Trigger post operations
      * for the table.
+     *
+     * @return $this
      */
     public function post()
     {
         if (app('request')->isMethod('post')) {
             $this->dispatch(new PostTable($this));
         }
+
+        return $this;
     }
 
     /**
@@ -167,6 +198,29 @@ class TableBuilder
     }
 
     /**
+     * Get the ajax flag.
+     *
+     * @return bool
+     */
+    public function isAjax()
+    {
+        return $this->ajax;
+    }
+
+    /**
+     * Set the ajax flag.
+     *
+     * @param $ajax
+     * @return $this
+     */
+    public function setAjax($ajax)
+    {
+        $this->ajax = $ajax;
+
+        return $this;
+    }
+
+    /**
      * Get the table object.
      *
      * @return Table
@@ -179,7 +233,7 @@ class TableBuilder
     /**
      * Set the table model.
      *
-     * @param string $model
+     * @param  string $model
      * @return $this
      */
     public function setModel($model)
@@ -235,7 +289,7 @@ class TableBuilder
     /**
      * Set the repository.
      *
-     * @param TableRepositoryInterface $repository
+     * @param  TableRepositoryInterface $repository
      * @return $this
      */
     public function setRepository(TableRepositoryInterface $repository)
@@ -289,6 +343,19 @@ class TableBuilder
     public function getFilters()
     {
         return $this->filters;
+    }
+
+    /**
+     * Add a column configuration.
+     *
+     * @param $column
+     * @return $this
+     */
+    public function addColumn($column)
+    {
+        $this->columns[] = $column;
+
+        return $this;
     }
 
     /**
@@ -373,10 +440,10 @@ class TableBuilder
     /**
      * Set the options.
      *
-     * @param array $options
+     * @param  array $options
      * @return $this
      */
-    public function setOptions(array $options)
+    public function setOptions($options)
     {
         $this->options = $options;
 
@@ -386,8 +453,8 @@ class TableBuilder
     /**
      * Get an option value.
      *
-     * @param      $key
-     * @param null $default
+     * @param        $key
+     * @param  null  $default
      * @return mixed
      */
     public function getOption($key, $default = null)
@@ -473,8 +540,8 @@ class TableBuilder
     /**
      * Get a table option value.
      *
-     * @param      $key
-     * @param null $default
+     * @param        $key
+     * @param  null  $default
      * @return mixed
      */
     public function getTableOption($key, $default = null)
@@ -509,7 +576,7 @@ class TableBuilder
     /**
      * Set the table entries.
      *
-     * @param Collection $entries
+     * @param  Collection $entries
      * @return $this
      */
     public function setTableEntries(Collection $entries)
@@ -550,6 +617,33 @@ class TableBuilder
     }
 
     /**
+     * Get the table filter.
+     *
+     * @param $key
+     * @return FilterInterface
+     */
+    public function getTableFilter($key)
+    {
+        return $this->table->getFilter($key);
+    }
+
+    /**
+     * Get a table filter value.
+     *
+     * @param        $key
+     * @param  null  $default
+     * @return mixed
+     */
+    public function getTableFilterValue($key, $default = null)
+    {
+        if ($filter = $this->table->getFilter($key)) {
+            return $filter->getValue();
+        }
+
+        return $default;
+    }
+
+    /**
      * Get the table views.
      *
      * @return Component\View\ViewCollection
@@ -557,6 +651,19 @@ class TableBuilder
     public function getTableViews()
     {
         return $this->table->getViews();
+    }
+
+    /**
+     * Set the table views.
+     *
+     * @param  ViewCollection $views
+     * @return $this
+     */
+    public function setTableViews(ViewCollection $views)
+    {
+        $this->table->setViews($views);
+
+        return $this;
     }
 
     /**
@@ -587,7 +694,7 @@ class TableBuilder
     /**
      * Add a row to the table.
      *
-     * @param RowInterface $row
+     * @param  RowInterface $row
      * @return $this
      */
     public function addTableRow(RowInterface $row)
@@ -632,10 +739,20 @@ class TableBuilder
     }
 
     /**
+     * Get the table content.
+     *
+     * @return null|string
+     */
+    public function getTableContent()
+    {
+        return $this->table->getContent();
+    }
+
+    /**
      * Get a request value.
      *
-     * @param      $key
-     * @param null $default
+     * @param        $key
+     * @param  null  $default
      * @return mixed
      */
     public function getRequestValue($key, $default = null)

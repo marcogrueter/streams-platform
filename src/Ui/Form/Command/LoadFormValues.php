@@ -2,17 +2,15 @@
 
 use Anomaly\Streams\Platform\Addon\FieldType\FieldType;
 use Anomaly\Streams\Platform\Ui\Form\FormBuilder;
-use Illuminate\Contracts\Bus\SelfHandling;
 
 /**
  * Class LoadFormValues
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Ui\Form\Command
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
-class LoadFormValues implements SelfHandling
+class LoadFormValues
 {
 
     /**
@@ -37,11 +35,13 @@ class LoadFormValues implements SelfHandling
      */
     public function handle()
     {
-        $form = $this->builder->getForm();
+        if ($this->builder->hasFormErrors()) {
+            return;
+        }
 
         /* @var FieldType $field */
-        foreach ($form->getEnabledFields() as $field) {
-            $form->setValue($field->getInputName(), $field->getInputValue());
+        foreach ($this->builder->getEnabledFormFields() as $field) {
+            $this->builder->setFormValue($field->getInputName(), $field->getInputValue());
         }
     }
 }

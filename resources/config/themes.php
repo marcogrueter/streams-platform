@@ -1,10 +1,16 @@
 <?php
 
 return [
-    'admin'    => [
-        'active' => env('ADMIN_THEME', 'anomaly.theme.anomaly')
-    ],
-    'standard' => [
-        'active' => env('STANDARD_THEME', 'anomaly.theme.starter')
-    ]
+
+    /*
+    |--------------------------------------------------------------------------
+    | Active Themes
+    |--------------------------------------------------------------------------
+    |
+    | These values specify the admin and public theme to use.
+    |
+    */
+
+    'admin'    => env('ADMIN_THEME', 'anomaly.theme.anomaly'),
+    'standard' => env('STANDARD_THEME', 'anomaly.theme.starter')
 ];

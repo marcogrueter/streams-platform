@@ -3,18 +3,16 @@
 use Anomaly\Streams\Platform\Addon\Extension\Contract\ExtensionRepositoryInterface;
 use Anomaly\Streams\Platform\Addon\Extension\Event\ExtensionWasDisabled;
 use Anomaly\Streams\Platform\Addon\Extension\Extension;
-use Illuminate\Contracts\Bus\SelfHandling;
-use Illuminate\Events\Dispatcher;
+use Illuminate\Contracts\Events\Dispatcher;
 
 /**
  * Class DisableExtension
  *
- * @link    http://anomaly.is/streams-platform
- * @author  AnomalyLabs, Inc. <hello@anomaly.is>
- * @author  Ryan Thompson <ryan@anomaly.is>
- * @package Anomaly\Streams\Platform\Addon\Extension\Command
+ * @link    http://pyrocms.com/
+ * @author  PyroCMS, Inc. <support@pyrocms.com>
+ * @author  Ryan Thompson <ryan@pyrocms.com>
  */
-class DisableExtension implements SelfHandling
+class DisableExtension
 {
 
     /**
@@ -37,8 +35,8 @@ class DisableExtension implements SelfHandling
     /**
      * Handle the command.
      *
-     * @param ExtensionRepositoryInterface $extensions
-     * @param Dispatcher                   $events
+     * @param  ExtensionRepositoryInterface $extensions
+     * @param  Dispatcher                   $events
      * @return bool
      */
     public function handle(ExtensionRepositoryInterface $extensions, Dispatcher $events)

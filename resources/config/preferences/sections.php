@@ -1,24 +1,20 @@
 <?php
 
 return [
-    [
-        'section' => 'tabbed',
-        'tabs'    => [
-            'datetime'     => [
-                'title'  => 'streams::tab.datetime',
-                'fields' => [
-                    'timezone',
-                    'date_format',
-                    'time_format'
-                ]
-            ],
-            'localization' => [
-                'title'  => 'streams::tab.localization',
-                'fields' => [
-                    'admin_locale',
-                    'public_locale'
-                ]
-            ]
+    'display' => [
+        'context' => 'info',
+        'title'   => 'streams::label.display',
+        'fields'  => [
+            'per_page'
+        ]
+    ],
+    'formats' => [
+        'context' => 'danger',
+        'title'   => 'streams::label.formats',
+        'fields'  => [
+            'timezone',
+            'date_format',
+            'time_format'
         ]
     ]
 ];

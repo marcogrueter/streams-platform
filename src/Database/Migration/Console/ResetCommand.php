@@ -1,19 +1,21 @@
 <?php namespace Anomaly\Streams\Platform\Database\Migration\Console;
 
+use Anomaly\Streams\Platform\Database\Migration\Console\Command\ConfigureMigrator;
 use Anomaly\Streams\Platform\Database\Migration\Migrator;
-use Illuminate\Database\Console\Migrations\ResetCommand as BaseResetCommand;
+use Illuminate\Foundation\Bus\DispatchesJobs;
 use Symfony\Component\Console\Input\InputOption;
 
 /**
  * Class ResetCommand
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Database\Migration\Console
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
-class ResetCommand extends BaseResetCommand
+class ResetCommand extends \Illuminate\Database\Console\Migrations\ResetCommand
 {
+
+    use DispatchesJobs;
 
     /**
      * The migrator utility.
@@ -27,38 +29,17 @@ class ResetCommand extends BaseResetCommand
      *
      * @return void
      */
-    public function fire()
+    public function handle()
     {
-        // Reset a specific addon(s).
-        if ($addon = $this->input->getOption('addon')) {
+        $this->dispatch(
+            new ConfigureMigrator(
+                $this,
+                $this->input,
+                $this->migrator
+            )
+        );
 
-            $pretend = $this->input->getOption('pretend');
-
-            $namespaces = explode(',', $addon);
-
-            foreach ($namespaces as $namespace) {
-
-                while (true) {
-
-                    $count = $this->migrator->rollbackNamespace($namespace, $pretend);
-
-                    // Once the migrator has run we will grab the note output and send it out to
-                    // the console screen, since the migrator itself functions without having
-                    // any instances of the OutputInterface contract passed into the class.
-                    foreach ($this->migrator->getNotes() as $note) {
-                        $this->output->writeln($note);
-                    }
-
-                    if ($count == 0) {
-                        break;
-                    }
-                }
-            }
-        } else {
-
-            // Reset everything.
-            parent::fire();
-        }
+        parent::handle();
     }
 
     /**
@@ -71,8 +52,7 @@ class ResetCommand extends BaseResetCommand
         return array_merge(
             parent::getOptions(),
             [
-                ['addon', null, InputOption::VALUE_OPTIONAL, 'The addon to reset migrations.'],
-                ['no-addons', null, InputOption::VALUE_NONE, 'Don\'t run addon migrations, only laravel migrations.'],
+                ['addon', null, InputOption::VALUE_OPTIONAL, 'The addon to reset migrations for.'],
             ]
         );
     }

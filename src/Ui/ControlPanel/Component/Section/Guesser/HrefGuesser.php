@@ -7,10 +7,9 @@ use Illuminate\Routing\UrlGenerator;
 /**
  * Class HrefGuesser
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Ui\ControlPanel\Component\Section\Guesser
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
 class HrefGuesser
 {
@@ -48,6 +47,10 @@ class HrefGuesser
      */
     public function guess(ControlPanelBuilder $builder)
     {
+        if (!$module = $this->modules->active()) {
+            return;
+        }
+
         $sections = $builder->getSections();
 
         foreach ($sections as $index => &$section) {
@@ -56,8 +59,6 @@ class HrefGuesser
             if (isset($section['attributes']['href'])) {
                 continue;
             }
-
-            $module = $this->modules->active();
 
             $href = $this->url->to('admin/' . $module->getSlug());
 

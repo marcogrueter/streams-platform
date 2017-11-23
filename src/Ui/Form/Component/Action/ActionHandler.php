@@ -2,20 +2,20 @@
 
 use Anomaly\Streams\Platform\Support\Parser;
 use Anomaly\Streams\Platform\Ui\Form\FormBuilder;
-use Illuminate\Contracts\Bus\SelfHandling;
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Redirector;
+use Illuminate\Session\Store;
 
 /**
  * Class ActionHandler
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Ui\Form\Component\Action
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
-class ActionHandler implements SelfHandling
+class ActionHandler
 {
 
     /**
@@ -24,6 +24,13 @@ class ActionHandler implements SelfHandling
      * @var Parser
      */
     protected $parser;
+
+    /**
+     * The session store.
+     *
+     * @var Store
+     */
+    protected $session;
 
     /**
      * The request object.
@@ -43,12 +50,14 @@ class ActionHandler implements SelfHandling
      * Create a new ActionHandler instance.
      *
      * @param Parser     $parser
+     * @param Store      $session
      * @param Request    $request
      * @param Redirector $redirector
      */
-    public function __construct(Parser $parser, Request $request, Redirector $redirector)
+    public function __construct(Parser $parser, Store $session, Request $request, Redirector $redirector)
     {
         $this->parser     = $parser;
+        $this->session    = $session;
         $this->request    = $request;
         $this->redirector = $redirector;
     }
@@ -60,11 +69,19 @@ class ActionHandler implements SelfHandling
      */
     public function handle(FormBuilder $builder)
     {
-        /**
+        /*
          * If the form already has a response
          * then we're being overridden. Abort!
          */
         if ($builder->getFormResponse()) {
+            return;
+        }
+        
+        /**
+         * If a redirect is undesired then
+         * skip this step all together.
+         */
+        if ($builder->getFormOption('redirect') === false) {
             return;
         }
 
@@ -77,33 +94,42 @@ class ActionHandler implements SelfHandling
             $entry = $entry->toArray();
         }
 
-        // Get the redirect from the form first.
-        $url = $builder->getFormOption('redirect');
+        $redirect = $action->getRedirect();
 
-        if ($url === null) {
-            $url = $action->getRedirect();
-        }
+        if ($redirect instanceof RedirectResponse) {
+            $builder->setFormResponse($redirect);
 
-        if ($url === false) {
             return;
         }
 
-        $url = $this->parser->parse($url, compact('entry'));
-
-        /**
-         * If the URL is null then use the current one.
-         */
-        if ($url === null) {
-            $url = $this->request->fullUrl();
+        if ($redirect === false) {
+            return;
         }
 
-        /**
+        $redirect = $this->parser->parse($redirect, compact('entry'));
+
+        /*
+         * If the redirect is null then use the current one.
+         */
+        if ($redirect === null) {
+            $redirect = $this->redirector->back()->getTargetUrl();
+        }
+
+        /*
          * If the URL is a closure then call it.
          */
-        if ($url instanceof \Closure) {
-            $url = app()->call($url, compact('builder'));
+        if ($redirect instanceof \Closure) {
+            $redirect = app()->call($redirect, compact('builder'));
         }
 
-        $builder->setFormResponse($this->redirector->to($url));
+        /*
+         * Restore the query string prior if
+         * we're coming from a table.
+         */
+        if ($query = $this->session->get('table::' . $redirect)) {
+            $redirect = strpos($redirect, '?') ? $redirect . '&' . $query : $redirect . '?' . $query;
+        }
+
+        $builder->setFormResponse($this->redirector->to($redirect));
     }
 }

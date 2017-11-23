@@ -5,10 +5,9 @@ use Anomaly\Streams\Platform\Ui\Table\TableBuilder;
 /**
  * Class HeaderBuilder
  *
- * @link    http://anomaly.is/streams-platform
- * @author  AnomalyLabs, Inc. <hello@anomaly.is>
- * @author  Ryan Thompson <ryan@anomaly.is>
- * @package Anomaly\Streams\Platform\Ui\Table\Component\Header
+ * @link    http://pyrocms.com/
+ * @author  PyroCMS, Inc. <support@pyrocms.com>
+ * @author  Ryan Thompson <ryan@pyrocms.com>
  */
 class HeaderBuilder
 {
@@ -50,8 +49,11 @@ class HeaderBuilder
 
         $this->input->read($builder);
 
-        foreach ($builder->getColumns() as $column) {
+        if ($builder->getTableOption('enable_headers') === false) {
+            return;
+        }
 
+        foreach ($builder->getColumns() as $column) {
             $column['builder'] = $builder;
 
             $table->addHeader($this->factory->make($column));

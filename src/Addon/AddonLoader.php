@@ -1,52 +1,108 @@
 <?php namespace Anomaly\Streams\Platform\Addon;
 
 use Composer\Autoload\ClassLoader;
+use Symfony\Component\Process\Process;
 
 /**
  * Class AddonLoader
  *
- * @link    http://anomaly.is/streams-platform
- * @author  AnomalyLabs, Inc. <hello@anomaly.is>
- * @author  Ryan Thompson <ryan@anomaly.is>
- * @package Anomaly\Streams\Platform\Addon
+ * @link    http://pyrocms.com/
+ * @author  PyroCMS, Inc. <support@pyrocms.com>
+ * @author  Ryan Thompson <ryan@pyrocms.com>
  */
-class AddonLoader extends ClassLoader
+class AddonLoader
 {
+
+    /**
+     * The class loader instance.
+     *
+     * @var ClassLoader
+     */
+    protected $loader;
+
+    /**
+     * Create a new AddonLoader instance.
+     */
+    public function __construct()
+    {
+        foreach (spl_autoload_functions() as $loader) {
+            if ($loader[0] instanceof ClassLoader) {
+                $this->loader = $loader[0];
+            }
+        }
+
+        if (!$this->loader) {
+            throw new \Exception("The ClassLoader could not be found.");
+        }
+    }
 
     /**
      * Load the addon.
      *
      * @param $path
+     * @return $this
      */
     public function load($path)
     {
-        $autoload = $path . '/vendor/autoload.php';
+        if (file_exists($autoload = $path . '/vendor/autoload.php')) {
 
-        if (file_exists($autoload)) {
+            include $autoload;
 
-            require_once $autoload;
-
-            return;
+            return $this;
         }
 
-        $composer = json_decode(file_get_contents($path . '/composer.json'), true);
+        if (!file_exists($path . '/composer.json')) {
+            return $this;
+        }
+
+        if (!$composer = json_decode(file_get_contents($path . '/composer.json'), true)) {
+            throw new \Exception("A JSON syntax error was encountered in {$path}/composer.json");
+        }
 
         if (!array_key_exists('autoload', $composer)) {
-            return;
+            return $this;
         }
 
         foreach (array_get($composer['autoload'], 'psr-4', []) as $namespace => $autoload) {
-            parent::addPsr4($namespace, $path . '/' . $autoload, false);
+            $this->loader->addPsr4($namespace, $path . '/' . $autoload, false);
         }
 
         foreach (array_get($composer['autoload'], 'psr-0', []) as $namespace => $autoload) {
-            parent::add($namespace, $path . '/' . $autoload, false);
+            $this->loader->add($namespace, $path . '/' . $autoload, false);
         }
 
         foreach (array_get($composer['autoload'], 'files', []) as $file) {
             include($path . '/' . $file);
         }
 
-        parent::register();
+        if ($classmap = array_get($composer['autoload'], 'classmap')) {
+            $this->loader->addClassMap($classmap);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Register the loader.
+     *
+     * return $this
+     */
+    public function register()
+    {
+        $this->loader->register();
+
+        return $this;
+    }
+
+    /**
+     * Dump the autoloader.
+     *
+     * return $this
+     */
+    public function dump()
+    {
+        (new Process('composer dump-autoload'))->run();
+
+        return $this;
     }
 }

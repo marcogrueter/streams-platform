@@ -1,18 +1,16 @@
 <?php namespace Anomaly\Streams\Platform\Addon\Console\Command;
 
 use Anomaly\Streams\Platform\Support\Parser;
-use Illuminate\Contracts\Bus\SelfHandling;
 use Illuminate\Filesystem\Filesystem;
 
 /**
  * Class WriteAddonLang
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Addon\Console\Command
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
-class WriteAddonLang implements SelfHandling
+class WriteAddonLang
 {
 
     /**
@@ -68,7 +66,7 @@ class WriteAddonLang implements SelfHandling
         );
 
         $filesystem->makeDirectory(dirname($path), 0755, true, true);
-        
+
         $filesystem->put($path, $parser->parse($template, compact('title', 'type')));
     }
 }

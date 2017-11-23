@@ -7,10 +7,9 @@ use Illuminate\Contracts\Support\Arrayable;
  * Class EloquentPresenter
  * The base presenter for all our models.
  *
- * @link    http://anomaly.is/streams-platform
- * @author  AnomalyLabs, Inc. <hello@anomaly.is>
- * @author  Ryan Thompson <ryan@anomaly.is>
- * @package Anomaly\Streams\Platform\Model
+ * @link    http://pyrocms.com/
+ * @author  PyroCMS, Inc. <support@pyrocms.com>
+ * @author  Ryan Thompson <ryan@pyrocms.com>
  */
 class EloquentPresenter extends Presenter implements Arrayable
 {

@@ -18,14 +18,12 @@ use Illuminate\Support\Collection;
 /**
  * Class TreeBuilder
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Ui\Tree
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
 class TreeBuilder
 {
-
     use FiresCallbacks;
     use DispatchesJobs;
 
@@ -37,7 +35,14 @@ class TreeBuilder
     protected $model = null;
 
     /**
-     * The buttons configuration.
+     * The item segments.
+     *
+     * @var array|string
+     */
+    protected $segments = [];
+
+    /**
+     * The item buttons.
      *
      * @var array|string
      */
@@ -65,15 +70,19 @@ class TreeBuilder
     protected $tree;
 
     /**
+     * Create a new TreeBuilder instance.
+     *
      * @param Tree $tree
      */
-    function __construct(Tree $tree)
+    public function __construct(Tree $tree)
     {
         $this->tree = $tree;
     }
 
     /**
      * Build the tree.
+     *
+     * @return $this
      */
     public function build()
     {
@@ -84,20 +93,53 @@ class TreeBuilder
         if (app('request')->isMethod('post')) {
             $this->dispatch(new PostTree($this));
         }
+
+        return $this;
     }
 
     /**
      * Make the tree response.
+     *
+     * @return $this
      */
     public function make()
     {
         $this->build();
+        $this->post();
 
+        return $this;
+    }
+
+    /**
+     * Post the table.
+     *
+     * @return $this
+     */
+    public function post()
+    {
         if (!app('request')->isMethod('post')) {
             $this->dispatch(new LoadTree($this));
             $this->dispatch(new AddAssets($this));
             $this->dispatch(new MakeTree($this));
         }
+
+        return $this;
+    }
+
+    /**
+     * Return the tree response.
+     *
+     * @return $this
+     */
+    public function response()
+    {
+        if ($this->tree->getResponse() === null) {
+            $this->dispatch(new LoadTree($this));
+            $this->dispatch(new AddAssets($this));
+            $this->dispatch(new MakeTree($this));
+        }
+
+        return $this;
     }
 
     /**
@@ -109,7 +151,9 @@ class TreeBuilder
     {
         $this->make();
 
-        $this->dispatch(new SetTreeResponse($this));
+        if ($this->tree->getResponse() === null) {
+            $this->dispatch(new SetTreeResponse($this));
+        }
 
         return $this->tree->getResponse();
     }
@@ -127,7 +171,7 @@ class TreeBuilder
     /**
      * Set the tree model.
      *
-     * @param string $model
+     * @param  string $model
      * @return $this
      */
     public function setModel($model)
@@ -145,6 +189,29 @@ class TreeBuilder
     public function getModel()
     {
         return $this->model;
+    }
+
+    /**
+     * Set the segments.
+     *
+     * @param $segments
+     * @return $this
+     */
+    public function setSegments($segments)
+    {
+        $this->segments = $segments;
+
+        return $this;
+    }
+
+    /**
+     * Get the segments.
+     *
+     * @return array
+     */
+    public function getSegments()
+    {
+        return $this->segments;
     }
 
     /**
@@ -183,12 +250,12 @@ class TreeBuilder
     /**
      * Set the options.
      *
-     * @param array $options
+     * @param  array $options
      * @return $this
      */
     public function setOptions(array $options)
     {
-        $this->options = $options;
+        $this->options = array_merge($this->options, $options);
 
         return $this;
     }
@@ -196,8 +263,8 @@ class TreeBuilder
     /**
      * Get an option value.
      *
-     * @param      $key
-     * @param null $default
+     * @param        $key
+     * @param  null  $default
      * @return mixed
      */
     public function getOption($key, $default = null)
@@ -283,8 +350,8 @@ class TreeBuilder
     /**
      * Get a tree option value.
      *
-     * @param      $key
-     * @param null $default
+     * @param        $key
+     * @param  null  $default
      * @return mixed
      */
     public function getTreeOption($key, $default = null)
@@ -319,7 +386,7 @@ class TreeBuilder
     /**
      * Set the tree entries.
      *
-     * @param Collection $entries
+     * @param  Collection $entries
      * @return $this
      */
     public function setTreeEntries(Collection $entries)
@@ -342,7 +409,7 @@ class TreeBuilder
     /**
      * Add a tree item to the collection.
      *
-     * @param ItemInterface $item
+     * @param  ItemInterface $item
      * @return $this
      */
     public function addTreeItem(ItemInterface $item)
@@ -373,6 +440,29 @@ class TreeBuilder
     }
 
     /**
+     * Set the tree repository.
+     *
+     * @param  TreeRepositoryInterface $repository
+     * @return $this
+     */
+    public function setTreeRepository(TreeRepositoryInterface $repository)
+    {
+        $this->tree->setRepository($repository);
+
+        return $this;
+    }
+
+    /**
+     * Get the tree content.
+     *
+     * @return null|string
+     */
+    public function getTreeContent()
+    {
+        return $this->tree->getContent();
+    }
+
+    /**
      * Get the tree repository.
      *
      * @return TreeRepositoryInterface
@@ -385,8 +475,8 @@ class TreeBuilder
     /**
      * Get a request value.
      *
-     * @param      $key
-     * @param null $default
+     * @param        $key
+     * @param  null  $default
      * @return mixed
      */
     public function getRequestValue($key, $default = null)

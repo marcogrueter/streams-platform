@@ -6,10 +6,9 @@ use Anomaly\Streams\Platform\Ui\Table\Component\Filter\Contract\FilterInterface;
 /**
  * Class FilterFactory
  *
- * @link    http://anomaly.is/streams-platform
- * @author  AnomalyLabs, Inc. <hello@anomaly.is>
- * @author  Ryan Thompson <ryan@anomaly.is>
- * @package Anomaly\Streams\Platform\Ui\Table\Component\Filter
+ * @link    http://pyrocms.com/
+ * @author  PyroCMS, Inc. <support@pyrocms.com>
+ * @author  Ryan Thompson <ryan@pyrocms.com>
  */
 class FilterFactory
 {
@@ -22,13 +21,6 @@ class FilterFactory
     protected $filter = Filter::class;
 
     /**
-     * The filter registry.
-     *
-     * @var FilterRegistry
-     */
-    protected $filters;
-
-    /**
      * The hydrator utility.
      *
      * @var Hydrator
@@ -38,12 +30,10 @@ class FilterFactory
     /**
      * Create a new FilterFactory instance.
      *
-     * @param FilterRegistry $filters
-     * @param Hydrator       $hydrator
+     * @param Hydrator $hydrator
      */
-    public function __construct(FilterRegistry $filters, Hydrator $hydrator)
+    public function __construct(Hydrator $hydrator)
     {
-        $this->filters  = $filters;
         $this->hydrator = $hydrator;
     }
 
@@ -55,10 +45,6 @@ class FilterFactory
      */
     public function make(array $parameters)
     {
-        if ($filter = $this->filters->get(array_get($parameters, 'filter'))) {
-            $parameters = array_replace_recursive($filter, array_except($parameters, 'filter'));
-        }
-
         $filter = app()->make(array_get($parameters, 'filter', $this->filter), $parameters);
 
         $this->hydrator->hydrate($filter, $parameters);

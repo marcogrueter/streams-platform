@@ -9,10 +9,9 @@ use Illuminate\Database\Schema\Builder;
 /**
  * Class StreamRepository
  *
- * @link    http://anomaly.is/streams-platform
- * @author  AnomalyLabs, Inc. <hello@anomaly.is>
- * @author  Ryan Thompson <ryan@anomaly.is>
- * @package Anomaly\Streams\Platform\Stream
+ * @link    http://pyrocms.com/
+ * @author  PyroCMS, Inc. <support@pyrocms.com>
+ * @author  Ryan Thompson <ryan@pyrocms.com>
  */
 class StreamRepository extends EloquentRepository implements StreamRepositoryInterface
 {
@@ -46,26 +45,15 @@ class StreamRepository extends EloquentRepository implements StreamRepositoryInt
     /**
      * Create a new Stream.
      *
-     * @param array $attributes
+     * @param  array $attributes
      * @return StreamInterface
      */
     public function create(array $attributes = [])
     {
-        // Set some reasonable defaults.
-        $attributes['order_by']     = array_get($attributes, 'order_by', 'id');
-        $attributes['title_column'] = array_get($attributes, 'title_column', 'id');
+        $attributes['config'] = array_get($attributes, 'config', []);
+        $attributes['slug']   = str_slug(array_get($attributes, 'slug'), '_');
+        $attributes['prefix'] = array_get($attributes, 'prefix', array_get($attributes, 'namespace') . '_');
 
-        $attributes['locked']       = (array_get($attributes, 'locked', false));
-        $attributes['trashable']    = (array_get($attributes, 'trashable', false));
-        $attributes['translatable'] = (array_get($attributes, 'translatable', false));
-
-        $attributes['prefix']       = array_get($attributes, 'prefix', array_get($attributes, 'namespace') . '_');
-        $attributes['view_options'] = array_get($attributes, 'view_options', ['id', 'created_at']);
-
-        // Format just in case.
-        $attributes['slug'] = str_slug(array_get($attributes, 'slug'), '_');
-
-        // Move to lang just in case.
         if (isset($attributes['name'])) {
             array_set(
                 $attributes,
@@ -98,6 +86,17 @@ class StreamRepository extends EloquentRepository implements StreamRepositoryInt
     }
 
     /**
+     * Find all streams by their searchable flag.
+     *
+     * @param $searchable
+     * @return StreamCollection
+     */
+    public function findAllBySearchable($searchable)
+    {
+        return $this->model->where('searchable', $searchable)->get();
+    }
+
+    /**
      * Find all streams in a namespace.
      *
      * @param  $namespace
@@ -106,6 +105,27 @@ class StreamRepository extends EloquentRepository implements StreamRepositoryInt
     public function findAllByNamespace($namespace)
     {
         return $this->model->where('namespace', $namespace)->get();
+    }
+
+    /**
+     * Return streams that are/not hidden.
+     *
+     * @param $hidden
+     * @return StreamCollection
+     */
+    public function hidden($hidden = true)
+    {
+        return $this->model->where('hidden', $hidden)->get();
+    }
+
+    /**
+     * Return only visible streams.
+     *
+     * @return StreamCollection
+     */
+    public function visible()
+    {
+        return $this->hidden(false);
     }
 
     /**
@@ -130,6 +150,22 @@ class StreamRepository extends EloquentRepository implements StreamRepositoryInt
             if (!$this->schema->hasTable($stream->getEntryTableName())) {
                 $this->delete($stream);
             }
+        }
+
+        $translations = $this->model->getTranslationModel();
+
+        $translations = $translations
+            ->leftJoin(
+                'streams_streams',
+                'streams_streams_translations.stream_id',
+                '=',
+                'streams_streams.id'
+            )
+            ->whereNull('streams_streams.id')
+            ->get();
+
+        foreach ($translations as $translation) {
+            $this->delete($translation);
         }
     }
 }

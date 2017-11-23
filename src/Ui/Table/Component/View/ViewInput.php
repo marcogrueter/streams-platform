@@ -5,10 +5,9 @@ use Anomaly\Streams\Platform\Ui\Table\TableBuilder;
 /**
  * Class ViewInput
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Ui\Table\Component\View
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
 class ViewInput
 {
@@ -26,6 +25,13 @@ class ViewInput
      * @var ViewGuesser
      */
     protected $guesser;
+
+    /**
+     * The view defaults.
+     *
+     * @var ViewDefaults
+     */
+    protected $defaults;
 
     /**
      * The view resolver.
@@ -46,17 +52,20 @@ class ViewInput
      *
      * @param ViewLookup     $lookup
      * @param ViewGuesser    $guesser
+     * @param ViewDefaults   $defaults
      * @param ViewResolver   $resolver
      * @param ViewNormalizer $normalizer
      */
     public function __construct(
         ViewLookup $lookup,
         ViewGuesser $guesser,
+        ViewDefaults $defaults,
         ViewResolver $resolver,
         ViewNormalizer $normalizer
     ) {
         $this->lookup     = $lookup;
         $this->guesser    = $guesser;
+        $this->defaults   = $defaults;
         $this->resolver   = $resolver;
         $this->normalizer = $normalizer;
     }
@@ -64,12 +73,13 @@ class ViewInput
     /**
      * Read builder view input.
      *
-     * @param TableBuilder $builder
+     * @param  TableBuilder $builder
      * @return array
      */
     public function read(TableBuilder $builder)
     {
         $this->resolver->resolve($builder);
+        $this->defaults->defaults($builder);
         $this->normalizer->normalize($builder);
         $this->lookup->merge($builder);
         $this->guesser->guess($builder);

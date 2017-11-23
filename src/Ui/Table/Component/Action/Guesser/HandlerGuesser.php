@@ -5,10 +5,9 @@ use Anomaly\Streams\Platform\Ui\Table\TableBuilder;
 /**
  * Class HandlerGuesser
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Ui\Table\Component\Action\Guesser
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
 class HandlerGuesser
 {
@@ -38,8 +37,8 @@ class HandlerGuesser
     /**
      * Guess the handler class from the builder.
      *
-     * @param TableBuilder $builder
-     * @param array        $action
+     * @param  TableBuilder $builder
+     * @param  array        $action
      * @return string
      */
     protected function guessClass(TableBuilder $builder, array $action)

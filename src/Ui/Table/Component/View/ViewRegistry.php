@@ -2,14 +2,14 @@
 
 use Anomaly\Streams\Platform\Ui\Table\Component\View\Type\All;
 use Anomaly\Streams\Platform\Ui\Table\Component\View\Type\RecentlyCreated;
+use Anomaly\Streams\Platform\Ui\Table\Component\View\Type\Trash;
 
 /**
  * Class ViewRegistry
  *
- * @link    http://anomaly.is/streams-platform
- * @author  AnomalyLabs, Inc. <hello@anomaly.is>
- * @author  Ryan Thompson <ryan@anomaly.is>
- * @package Anomaly\Streams\Platform\Ui\Table\Component\View
+ * @link    http://pyrocms.com/
+ * @author  PyroCMS, Inc. <support@pyrocms.com>
+ * @author  Ryan Thompson <ryan@pyrocms.com>
  */
 class ViewRegistry
 {
@@ -25,11 +25,25 @@ class ViewRegistry
             'text' => 'streams::view.all',
             'view' => All::class,
         ],
+        'trash'            => [
+            'slug'    => 'trash',
+            'text'    => 'streams::view.trash',
+            'view'    => Trash::class,
+            'buttons' => [
+                'restore' => [],
+            ],
+            'actions' => [
+                'force_delete' => [],
+            ],
+            'options' => [
+                'sortable' => false,
+            ],
+        ],
         'recently_created' => [
             'slug' => 'recently_created',
             'text' => 'streams::view.recently_created',
             'view' => RecentlyCreated::class,
-        ]
+        ],
     ];
 
     /**
@@ -50,8 +64,8 @@ class ViewRegistry
     /**
      * Register a view.
      *
-     * @param       $view
-     * @param array $parameters
+     * @param        $view
+     * @param  array $parameters
      * @return $this
      */
     public function register($view, array $parameters)

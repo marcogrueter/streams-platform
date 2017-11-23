@@ -9,27 +9,31 @@ use Anomaly\Streams\Platform\Stream\Contract\StreamInterface;
 use Anomaly\Streams\Platform\Support\Collection;
 use Anomaly\Streams\Platform\Traits\FiresCallbacks;
 use Anomaly\Streams\Platform\Ui\Button\Contract\ButtonInterface;
-use Anomaly\Streams\Platform\Ui\Form\Command\AddAssets;
 use Anomaly\Streams\Platform\Ui\Form\Command\BuildForm;
+use Anomaly\Streams\Platform\Ui\Form\Command\FlashFieldValues;
+use Anomaly\Streams\Platform\Ui\Form\Command\FlashFormErrors;
 use Anomaly\Streams\Platform\Ui\Form\Command\LoadForm;
+use Anomaly\Streams\Platform\Ui\Form\Command\LoadFormValues;
 use Anomaly\Streams\Platform\Ui\Form\Command\MakeForm;
 use Anomaly\Streams\Platform\Ui\Form\Command\PopulateFields;
 use Anomaly\Streams\Platform\Ui\Form\Command\PostForm;
 use Anomaly\Streams\Platform\Ui\Form\Command\SaveForm;
 use Anomaly\Streams\Platform\Ui\Form\Command\SetFormResponse;
+use Anomaly\Streams\Platform\Ui\Form\Command\ValidateForm;
 use Anomaly\Streams\Platform\Ui\Form\Component\Action\ActionCollection;
+use Anomaly\Streams\Platform\Ui\Form\Component\Action\Contract\ActionInterface;
 use Anomaly\Streams\Platform\Ui\Form\Contract\FormRepositoryInterface;
+use Closure;
+use Illuminate\Contracts\Support\MessageBag;
 use Illuminate\Foundation\Bus\DispatchesJobs;
-use Illuminate\Support\MessageBag;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Class FormBuilder
  *
- * @link    http://anomaly.is/streams-platform
- * @author  AnomalyLabs, Inc. <hello@anomaly.is>
- * @author  Ryan Thompson <ryan@anomaly.is>
- * @package Anomaly\Streams\Platform\Ui\Form
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
 class FormBuilder
 {
@@ -94,6 +98,13 @@ class FormBuilder
     protected $skips = [];
 
     /**
+     * Fields to rules.
+     *
+     * @var array|string
+     */
+    protected $rules = [];
+
+    /**
      * The actions config.
      *
      * @var array|string
@@ -136,6 +147,13 @@ class FormBuilder
     protected $save = true;
 
     /**
+     * The read only flag.
+     *
+     * @var bool
+     */
+    protected $readOnly = false;
+
+    /**
      * The form object.
      *
      * @var Form
@@ -155,7 +173,7 @@ class FormBuilder
     /**
      * Build the form.
      *
-     * @param null $entry
+     * @param  null $entry
      * @return $this
      */
     public function build($entry = null)
@@ -168,13 +186,15 @@ class FormBuilder
 
         $this->dispatch(new BuildForm($this));
 
+        $this->fire('built', ['builder' => $this]);
+
         return $this;
     }
 
     /**
      * Make the form.
      *
-     * @param null $entry
+     * @param  null $entry
      * @return $this
      */
     public function make($entry = null)
@@ -182,9 +202,10 @@ class FormBuilder
         $this->build($entry);
         $this->post();
 
+        $this->fire('make', ['builder' => $this]);
+
         if ($this->getFormResponse() === null) {
             $this->dispatch(new LoadForm($this));
-            $this->dispatch(new AddAssets($this));
             $this->dispatch(new MakeForm($this));
         }
 
@@ -194,7 +215,8 @@ class FormBuilder
     /**
      * Handle the form post.
      *
-     * @param null $entry
+     * @param  null $entry
+     * @return $this
      * @throws \Exception
      */
     public function handle($entry = null)
@@ -205,6 +227,8 @@ class FormBuilder
 
         $this->build($entry);
         $this->post();
+
+        return $this;
     }
 
     /**
@@ -216,12 +240,40 @@ class FormBuilder
     public function post()
     {
         if (app('request')->isMethod('post')) {
-            $this->dispatch(new PostForm($this));
+            $this->fire('post', ['builder' => $this]);
+
+            if ($this->hasPostData()) {
+                $this->dispatch(new PostForm($this));
+            }
         } else {
             $this->dispatch(new PopulateFields($this));
         }
 
         return $this;
+    }
+
+    /**
+     * Validate the form.
+     *
+     * @return $this
+     */
+    public function validate()
+    {
+        $this->dispatch(new LoadFormValues($this));
+        $this->dispatch(new ValidateForm($this));
+
+        return $this;
+    }
+
+    /**
+     * Flash form information to be
+     * used in conjunction with redirect
+     * type responses (not self handling).
+     */
+    public function flash()
+    {
+        $this->dispatch(new FlashFormErrors($this));
+        $this->dispatch(new FlashFieldValues($this));
     }
 
     /**
@@ -365,7 +417,7 @@ class FormBuilder
     /**
      * Set the form repository.
      *
-     * @param FormRepositoryInterface $repository
+     * @param  FormRepositoryInterface $repository
      * @return $this
      */
     public function setRepository(FormRepositoryInterface $repository)
@@ -447,11 +499,21 @@ class FormBuilder
     /**
      * Add a field.
      *
-     * @param $field
+     * @param   $field
      */
     public function addField($field)
     {
-        $this->fields[] = $field;
+        $this->fields[array_get($field, 'field')] = $field;
+    }
+
+    /**
+     * Add fields.
+     *
+     * @param array $fields
+     */
+    public function addFields(array $fields)
+    {
+        $this->fields = array_merge($this->fields, $fields);
     }
 
     /**
@@ -478,6 +540,19 @@ class FormBuilder
     }
 
     /**
+     * Merge in skipped fields.
+     *
+     * @param array $skips
+     * @return $this
+     */
+    public function mergeSkips(array $skips)
+    {
+        $this->skips = array_merge($this->skips, $skips);
+
+        return $this;
+    }
+
+    /**
      * Add a skipped field.
      *
      * @param $fieldSlug
@@ -486,6 +561,43 @@ class FormBuilder
     public function skipField($fieldSlug)
     {
         $this->skips[] = $fieldSlug;
+
+        return $this;
+    }
+
+    /**
+     * Set the rules.
+     *
+     * @param $rules
+     * @return $this
+     */
+    public function setRules($rules)
+    {
+        $this->rules = $rules;
+
+        return $this;
+    }
+
+    /**
+     * Get the rules.
+     *
+     * @return array
+     */
+    public function getRules()
+    {
+        return $this->rules;
+    }
+
+    /**
+     * Add rules for a field.
+     *
+     * @param       $field
+     * @param array $rules
+     * @return $this
+     */
+    public function addRules($field, array $rules)
+    {
+        $this->rules[$field] = $rules;
 
         return $this;
     }
@@ -506,8 +618,8 @@ class FormBuilder
     /**
      * Add an action.
      *
-     * @param       $slug
-     * @param array $definition
+     * @param        $slug
+     * @param  array $definition
      * @return $this
      */
     public function addAction($slug, array $definition = [])
@@ -567,12 +679,25 @@ class FormBuilder
     /**
      * Set the options.
      *
-     * @param array|string $options
+     * @param  array|string $options
      * @return $this
      */
     public function setOptions($options)
     {
         $this->options = $options;
+
+        return $this;
+    }
+
+    /**
+     * Merge in options.
+     *
+     * @param  array|string $options
+     * @return $this
+     */
+    public function mergeOptions($options)
+    {
+        $this->options = array_merge($this->options, $options);
 
         return $this;
     }
@@ -590,7 +715,7 @@ class FormBuilder
     /**
      * Set the sections.
      *
-     * @param array $sections
+     * @param  array|Closure $sections
      * @return $this
      */
     public function setSections($sections)
@@ -603,13 +728,21 @@ class FormBuilder
     /**
      * Add a section.
      *
-     * @param       $slug
-     * @param array $section
+     * @param        $slug
+     * @param  array $section
+     * @param null   $position
      * @return $this
      */
-    public function addSection($slug, array $section)
+    public function addSection($slug, array $section, $position = null)
     {
-        array_set($this->sections, $slug, $section);
+        if ($position === null) {
+            $position = count($this->sections) + 1;
+        }
+
+        $front = array_slice($this->sections, 0, $position, true);
+        $back  = array_slice($this->sections, $position, count($this->sections) - $position, true);
+
+        $this->sections = $front + [$slug => $section] + $back;
 
         return $this;
     }
@@ -617,13 +750,26 @@ class FormBuilder
     /**
      * Add a section tab.
      *
-     * @param       $section
-     * @param       $slug
-     * @param array $tab
+     * @param        $section
+     * @param        $slug
+     * @param  array $tab
+     * @param null   $position
+     * @return $this
      */
-    public function addSectionTab($section, $slug, array $tab)
+    public function addSectionTab($section, $slug, array $tab, $position = null)
     {
-        array_set($this->sections, "{$section}.tabs.{$slug}", $tab);
+        $tabs = (array)array_get($this->sections, "{$section}.tabs");
+
+        if ($position === null) {
+            $position = count($tabs) + 1;
+        }
+
+        $front = array_slice($tabs, 0, $position, true);
+        $back  = array_slice($tabs, $position, count($tabs) - $position, true);
+
+        $tabs = $front + [$slug => $tab] + $back;
+
+        array_set($this->sections, "{$section}.tabs", $tabs);
 
         return $this;
     }
@@ -631,8 +777,8 @@ class FormBuilder
     /**
      * Get an option value.
      *
-     * @param      $key
-     * @param null $default
+     * @param        $key
+     * @param  null  $default
      * @return mixed
      */
     public function getOption($key, $default = null)
@@ -708,8 +854,8 @@ class FormBuilder
     /**
      * Get a form option value.
      *
-     * @param      $key
-     * @param null $default
+     * @param        $key
+     * @param  null  $default
      * @return mixed
      */
     public function getFormOption($key, $default = null)
@@ -770,7 +916,21 @@ class FormBuilder
     {
         $entry = $this->getFormEntry();
 
+        if (!$entry instanceof EloquentModel) {
+            return null;
+        }
+
         return $entry->getId();
+    }
+
+    /**
+     * Get the contextual entry ID.
+     *
+     * @return int|null
+     */
+    public function getContextualId()
+    {
+        return $this->getFormEntryId();
     }
 
     /**
@@ -799,8 +959,8 @@ class FormBuilder
     /**
      * Get a form value.
      *
-     * @param      $key
-     * @param null $default
+     * @param        $key
+     * @param  null  $default
      * @return mixed
      */
     public function getFormValue($key, $default = null)
@@ -869,6 +1029,20 @@ class FormBuilder
     }
 
     /**
+     * Add form data.
+     *
+     * @param $key
+     * @param $value
+     * @return $this
+     */
+    public function addFormData($key, $value)
+    {
+        $this->form->addData($key, $value);
+
+        return $this;
+    }
+
+    /**
      * Ge the form response.
      *
      * @return null|Response
@@ -881,7 +1055,7 @@ class FormBuilder
     /**
      * Set the form response.
      *
-     * @param null|false|Response $response
+     * @param  null|false|Response $response
      * @return $this
      */
     public function setFormResponse(Response $response)
@@ -933,44 +1107,69 @@ class FormBuilder
     }
 
     /**
+     * Get the form attribute map.
+     *
+     * @return FieldType
+     */
+    public function getFormFieldFromAttribute($attribute)
+    {
+        /* @var FieldType $field */
+        foreach ($this->form->getFields() as $field) {
+            if ($field->getInputName() == $attribute) {
+                return $field;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Disable a form field.
      *
      * @param $fieldSlug
-     * @return FieldType
+     * @return $this
      */
     public function disableFormField($fieldSlug)
     {
-        return $this->form->disableField($fieldSlug);
+        $this->form->disableField($fieldSlug);
+
+        return $this;
     }
 
     /**
      * Get the form field slugs.
      *
-     * @return Array
+     * @param  null $prefix
+     * @return array
      */
-    public function getFormFieldSlugs()
+    public function getFormFieldSlugs($prefix = null)
     {
         $fields = $this->form->getFields();
 
-        return $fields->lists('field')->all();
+        return array_map(
+            function ($slug) use ($prefix) {
+                return $prefix . $slug;
+            },
+            array_unique($fields->pluck('field')->all())
+        );
     }
 
     /**
      * Get the form field names.
      *
-     * @return Array
+     * @return array
      */
     public function getFormFieldNames()
     {
         $fields = $this->form->getFields();
 
-        return $fields->lists('field_name')->all();
+        return $fields->pluck('field_name')->all();
     }
 
     /**
      * Add a form field.
      *
-     * @param FieldType $field
+     * @param  FieldType $field
      * @return $this
      */
     public function addFormField(FieldType $field)
@@ -983,7 +1182,7 @@ class FormBuilder
     /**
      * Set the form errors.
      *
-     * @param MessageBag $errors
+     * @param  MessageBag $errors
      * @return $this
      */
     public function setFormErrors(MessageBag $errors)
@@ -1032,6 +1231,17 @@ class FormBuilder
     }
 
     /**
+     * Return whether the field has an error or not.
+     *
+     * @param $fieldName
+     * @return bool
+     */
+    public function hasFormError($fieldName)
+    {
+        return $this->form->hasError($fieldName);
+    }
+
+    /**
      * Get the form actions.
      *
      * @return ActionCollection
@@ -1042,9 +1252,27 @@ class FormBuilder
     }
 
     /**
+     * Get the active form action.
+     *
+     * @return null|ActionInterface
+     */
+    public function getActiveFormAction()
+    {
+        if (!$actions = $this->form->getActions()) {
+            return null;
+        }
+
+        if (!$active = $actions->active()) {
+            return null;
+        }
+
+        return $active;
+    }
+
+    /**
      * Add a form button.
      *
-     * @param ButtonInterface $button
+     * @param  ButtonInterface $button
      * @return $this
      */
     public function addFormButton(ButtonInterface $button)
@@ -1057,8 +1285,8 @@ class FormBuilder
     /**
      * Add a form section.
      *
-     * @param       $slug
-     * @param array $section
+     * @param        $slug
+     * @param  array $section
      * @return $this
      */
     public function addFormSection($slug, array $section)
@@ -1082,10 +1310,26 @@ class FormBuilder
     }
 
     /**
+     * Set an attribute on the form's entry.
+     *
+     * @param $key
+     * @param $value
+     * @return $this
+     */
+    public function setFormEntryAttribute($key, $value)
+    {
+        $this
+            ->getFormEntry()
+            ->setAttribute($key, $value);
+
+        return $this;
+    }
+
+    /**
      * Get a request value.
      *
-     * @param      $key
-     * @param null $default
+     * @param        $key
+     * @param  null  $default
      * @return mixed
      */
     public function getRequestValue($key, $default = null)
@@ -1094,9 +1338,62 @@ class FormBuilder
     }
 
     /**
+     * Get a post value.
+     *
+     * @param        $key
+     * @param  null  $default
+     * @return mixed
+     */
+    public function getPostValue($key, $default = null)
+    {
+        return array_get($_POST, $this->getOption('prefix') . $key, $default);
+    }
+
+    /**
+     * Return a post key flag.
+     *
+     * @param        $key
+     * @param  null  $default
+     * @return mixed
+     */
+    public function hasPostedInput($key)
+    {
+        return isset($_POST[$this->getOption('prefix') . $key]);
+    }
+
+    /**
+     * Return whether any post data exists.
+     *
+     * @return bool
+     */
+    public function hasPostData()
+    {
+        /* @var FieldType $field */
+        foreach ($this->getFormFields() as $field) {
+            if ($field->hasPostedInput()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Return whether any post data exists.
+     *
+     * @return array
+     */
+    public function getPostData()
+    {
+        $fields = $this->getFormFieldSlugs($this->getOption('prefix'));
+
+        return array_intersect_key($_POST, array_flip($fields));
+    }
+
+    /**
      * Set the save flag.
      *
-     * @param bool $save
+     * @param  bool $save
      * @return $this
      */
     public function setSave($save)
@@ -1114,5 +1411,28 @@ class FormBuilder
     public function canSave()
     {
         return $this->save;
+    }
+
+    /**
+     * Set the read only flag.
+     *
+     * @param $readOnly
+     * @return $this
+     */
+    public function setReadOnly($readOnly)
+    {
+        $this->readOnly = $readOnly;
+
+        return $this;
+    }
+
+    /**
+     * Return the read only flag.
+     *
+     * @return bool
+     */
+    public function isReadOnly()
+    {
+        return $this->readOnly;
     }
 }

@@ -1,36 +1,16 @@
 <?php namespace Anomaly\Streams\Platform\Asset\Filter;
 
-use Anomaly\Streams\Platform\Asset\AssetParser;
+use Anomaly\Streams\Platform\Asset\Command\LoadThemeVariables;
+use Anomaly\Streams\Platform\Support\Collection;
 use Assetic\Asset\AssetInterface;
 use Assetic\Filter\ScssphpFilter;
+use Illuminate\Foundation\Bus\DispatchesJobs;
+use Leafo\ScssPhp\Compiler;
 
-/**
- * Class ScssFilter
- *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Asset\Filter
- */
 class ScssFilter extends ScssphpFilter
 {
 
-    /**
-     * The asset parser utility.
-     *
-     * @var AssetParser
-     */
-    protected $parser;
-
-    /**
-     * Create a new LessFilter instance.
-     *
-     * @param AssetParser $parser
-     */
-    public function __construct(AssetParser $parser)
-    {
-        $this->parser = $parser;
-    }
+    use DispatchesJobs;
 
     /**
      * Filters an asset after it has been loaded.
@@ -49,8 +29,16 @@ class ScssFilter extends ScssphpFilter
      */
     public function filterDump(AssetInterface $asset)
     {
-        $asset->setContent($this->parser->parse($asset->getContent()));
+        $this->dispatch(new LoadThemeVariables($variables = new Collection()));
 
-        parent::filterLoad($asset);
+        $compiler = new Compiler();
+
+        if ($dir = $asset->getSourceDirectory()) {
+            $compiler->addImportPath($dir);
+        }
+
+        $compiler->setVariables($variables->all());
+
+        $asset->setContent($compiler->compile($asset->getContent()));
     }
 }

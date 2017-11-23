@@ -2,14 +2,14 @@
 
 use Illuminate\Console\Command;
 use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputOption;
 
 /**
  * Class Reinstall
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Stream\Console
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
 class Reinstall extends Command
 {
@@ -31,10 +31,13 @@ class Reinstall extends Command
     /**
      * Execute the console command.
      */
-    public function fire()
+    public function handle()
     {
         $this->call('extension:uninstall', ['extension' => $this->argument('extension')]);
-        $this->call('extension:install', ['extension' => $this->argument('extension')]);
+        $this->call(
+            'extension:install',
+            ['extension' => $this->argument('extension'), '--seed' => $this->option('seed')]
+        );
     }
 
     /**
@@ -46,6 +49,18 @@ class Reinstall extends Command
     {
         return [
             ['extension', InputArgument::REQUIRED, 'The extension\'s dot namespace.'],
+        ];
+    }
+
+    /**
+     * Get the console command options.
+     *
+     * @return array
+     */
+    protected function getOptions()
+    {
+        return [
+            ['seed', null, InputOption::VALUE_NONE, 'Seed the extension after installing?'],
         ];
     }
 }

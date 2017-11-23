@@ -2,15 +2,16 @@
 
 use Anomaly\Streams\Platform\Ui\Table\Component\Action\Handler\Delete;
 use Anomaly\Streams\Platform\Ui\Table\Component\Action\Handler\Edit;
+use Anomaly\Streams\Platform\Ui\Table\Component\Action\Handler\Export;
+use Anomaly\Streams\Platform\Ui\Table\Component\Action\Handler\ForceDelete;
 use Anomaly\Streams\Platform\Ui\Table\Component\Action\Handler\Reorder;
 
 /**
  * Class ActionRegistry
  *
- * @link    http://anomaly.is/streams-platform
- * @author  AnomalyLabs, Inc. <hello@anomaly.is>
- * @author  Ryan Thompson <ryan@anomaly.is>
- * @package Anomaly\Streams\Platform\Ui\Table\Component\Action
+ * @link    http://pyrocms.com/
+ * @author  PyroCMS, Inc. <support@pyrocms.com>
+ * @author  Ryan Thompson <ryan@pyrocms.com>
  */
 class ActionRegistry
 {
@@ -21,19 +22,33 @@ class ActionRegistry
      * @var array
      */
     protected $actions = [
-        'delete'  => [
-            'handler' => Delete::class
+        'delete'       => [
+            'handler' => Delete::class,
         ],
-        'edit'    => [
-            'handler' => Edit::class
+        'prompt'       => [
+            'handler' => Delete::class,
         ],
-        'reorder' => [
+        'force_delete' => [
+            'button'  => 'prompt',
+            'handler' => ForceDelete::class,
+            'text'    => 'streams::button.force_delete',
+        ],
+        'export'       => [
+            'button'  => 'info',
+            'icon'    => 'download',
+            'handler' => Export::class,
+            'text'    => 'streams::button.export',
+        ],
+        'edit'         => [
+            'handler' => Edit::class,
+        ],
+        'reorder'      => [
             'handler' => Reorder::class,
             'text'    => 'streams::button.reorder',
             'icon'    => 'fa fa-sort-amount-asc',
             'class'   => 'reorder',
-            'type'    => 'success'
-        ]
+            'type'    => 'success',
+        ],
     ];
 
     /**
@@ -54,8 +69,8 @@ class ActionRegistry
     /**
      * Register a action.
      *
-     * @param       $action
-     * @param array $parameters
+     * @param        $action
+     * @param  array $parameters
      * @return $this
      */
     public function register($action, array $parameters)

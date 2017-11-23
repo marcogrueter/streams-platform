@@ -1,22 +1,27 @@
 {% if form.fields.empty %}
-    <div class="panel">
-        <div class="panel-body">
+
+    <div class="card">
+        <div class="card-block">
             {{ trans("streams::message.no_fields_available") }}
         </div>
     </div>
+
 {% else %}
+
     {% if not form.sections.empty() %}
+
         {% for section in form.sections %}
             {% if section.view %}
                 {% include section.view %}
-            {% elseif section.fields %}
+            {% elseif section.html %}
+                {{ section.html|raw }}
+            {% else %}
                 {% include "streams::form/partials/section" %}
-            {% elseif section.tabs %}
-                {% include "streams::form/partials/tabbed" %}
             {% endif %}
         {% endfor %}
 
     {% else %}
         {% include "streams::form/partials/default" %}
     {% endif %}
+
 {% endif %}

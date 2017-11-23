@@ -5,10 +5,9 @@ use Anomaly\Streams\Platform\Ui\Table\TableBuilder;
 /**
  * Class ButtonInput
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Ui\Table\Component\Button
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
 class ButtonInput
 {
@@ -26,6 +25,13 @@ class ButtonInput
      * @var ButtonGuesser
      */
     protected $guesser;
+
+    /**
+     * The dropdown utility.
+     *
+     * @var ButtonDropdown
+     */
+    protected $dropdown;
 
     /**
      * The resolver utility.
@@ -46,17 +52,20 @@ class ButtonInput
      *
      * @param ButtonLookup     $lookup
      * @param ButtonGuesser    $guesser
+     * @param ButtonDropdown   $dropdown
      * @param ButtonResolver   $resolver
      * @param ButtonNormalizer $normalizer
      */
     public function __construct(
         ButtonLookup $lookup,
         ButtonGuesser $guesser,
+        ButtonDropdown $dropdown,
         ButtonResolver $resolver,
         ButtonNormalizer $normalizer
     ) {
         $this->lookup     = $lookup;
         $this->guesser    = $guesser;
+        $this->dropdown   = $dropdown;
         $this->resolver   = $resolver;
         $this->normalizer = $normalizer;
     }
@@ -70,7 +79,10 @@ class ButtonInput
     {
         $this->resolver->resolve($builder);
         $this->normalizer->normalize($builder);
+        $this->dropdown->flatten($builder);
         $this->lookup->merge($builder);
+        $this->normalizer->normalize($builder);
         $this->guesser->guess($builder);
+        $this->dropdown->build($builder);
     }
 }

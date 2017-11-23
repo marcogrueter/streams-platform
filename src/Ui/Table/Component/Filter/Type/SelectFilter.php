@@ -1,18 +1,42 @@
 <?php namespace Anomaly\Streams\Platform\Ui\Table\Component\Filter\Type;
 
+use Anomaly\SelectFieldType\SelectFieldType;
+use Anomaly\Streams\Platform\Addon\FieldType\FieldTypeBuilder;
+use Anomaly\Streams\Platform\Support\Evaluator;
+use Anomaly\Streams\Platform\Support\Resolver;
 use Anomaly\Streams\Platform\Ui\Table\Component\Filter\Contract\SelectFilterInterface;
 use Anomaly\Streams\Platform\Ui\Table\Component\Filter\Filter;
 
 /**
  * Class SelectFilter
  *
- * @link    http://anomaly.is/streams-platform
- * @author  AnomalyLabs, Inc. <hello@anomaly.is>
- * @author  Ryan Thompson <ryan@anomaly.is>
- * @package Anomaly\Streams\Platform\Ui\Table\Component\Filter\Type
+ * @link    http://pyrocms.com/
+ * @author  PyroCMS, Inc. <support@pyrocms.com>
+ * @author  Ryan Thompson <ryan@pyrocms.com>
  */
 class SelectFilter extends Filter implements SelectFilterInterface
 {
+
+    /**
+     * The field type builder.
+     *
+     * @var FieldTypeBuilder
+     */
+    protected $builder;
+
+    /**
+     * The resolver utility.
+     *
+     * @var Resolver
+     */
+    protected $resolver;
+
+    /**
+     * The evaluator utility.
+     *
+     * @var Evaluator
+     */
+    protected $evaluator;
 
     /**
      * The filter options.
@@ -22,22 +46,38 @@ class SelectFilter extends Filter implements SelectFilterInterface
     protected $options;
 
     /**
+     * Create a new SelectFilter instance.
+     *
+     * @param FieldTypeBuilder $builder
+     * @param Resolver         $resolver
+     * @param Evaluator        $evaluator
+     */
+    public function __construct(FieldTypeBuilder $builder, Resolver $resolver, Evaluator $evaluator)
+    {
+        $this->builder   = $builder;
+        $this->resolver  = $resolver;
+        $this->evaluator = $evaluator;
+    }
+
+    /**
      * Get the input HTML.
      *
      * @return string
      */
     public function getInput()
     {
-        $class = 'form-control';
+        $this->resolver->resolve($this->getOptions(), ['filter' => $this]);
 
-        $options = compact('class');
-
-        return app('form')->select(
-            $this->getInputName(),
-            array_merge([null => trans($this->getPlaceholder())], $this->getOptions()),
-            $this->getValue(),
-            $options
-        );
+        return $this->builder->build(['type' => SelectFieldType::class])
+            ->setPlaceholder($this->getPlaceholder())
+            ->setField('filter_' . $this->getSlug())
+            ->setPrefix($this->getPrefix())
+            ->setValue($this->getValue())
+            ->mergeConfig(
+                [
+                    'options' => $this->evaluator->evaluate($this->getOptions(), ['filter' => $this]),
+                ]
+            )->getFilter();
     }
 
     /**
@@ -56,7 +96,7 @@ class SelectFilter extends Filter implements SelectFilterInterface
      * @param  array $options
      * @return $this
      */
-    public function setOptions(array $options)
+    public function setOptions($options)
     {
         $this->options = $options;
 

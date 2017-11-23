@@ -1,14 +1,14 @@
 <?php namespace Anomaly\Streams\Platform\Ui\Table\Component\View\Type;
 
+use Anomaly\Streams\Platform\Ui\Table\Component\View\Query\RecentlyCreatedQuery;
 use Anomaly\Streams\Platform\Ui\Table\Component\View\View;
 
 /**
  * Class RecentlyCreated
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Ui\Table\Component\View\Type
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
 class RecentlyCreated extends View
 {
@@ -19,5 +19,4 @@ class RecentlyCreated extends View
      * @var string
      */
     protected $query = RecentlyCreatedQuery::class;
-
 }

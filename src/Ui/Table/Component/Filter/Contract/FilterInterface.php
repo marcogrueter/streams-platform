@@ -1,14 +1,14 @@
 <?php namespace Anomaly\Streams\Platform\Ui\Table\Component\Filter\Contract;
 
+use Anomaly\Streams\Platform\Stream\Contract\StreamInterface;
 use Closure;
 
 /**
  * Interface FilterInterface
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Ui\Table\Component\Filter\Contract
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
 interface FilterInterface
 {
@@ -50,9 +50,24 @@ interface FilterInterface
     public function getValue();
 
     /**
+     * Set the exact flag.
+     *
+     * @param  bool $exact
+     * @return $this
+     */
+    public function setExact($exact);
+
+    /**
+     * Get the exact flag.
+     *
+     * @return bool
+     */
+    public function isExact();
+
+    /**
      * Set the active flag.
      *
-     * @param bool $active
+     * @param  bool $active
      * @return $this
      */
     public function setActive($active);
@@ -65,9 +80,39 @@ interface FilterInterface
     public function isActive();
 
     /**
+     * Set the field.
+     *
+     * @param  $field
+     * @return mixed
+     */
+    public function setField($field);
+
+    /**
+     * Get the field.
+     *
+     * @return mixed
+     */
+    public function getField();
+
+    /**
+     * Set the field stream.
+     *
+     * @param  StreamInterface $stream
+     * @return mixed
+     */
+    public function setStream(StreamInterface $stream);
+
+    /**
+     * Get the field stream.
+     *
+     * @return StreamInterface
+     */
+    public function getStream();
+
+    /**
      * Set the filter prefix.
      *
-     * @param string $prefix
+     * @param  string $prefix
      * @return $this
      */
     public function setPrefix($prefix);

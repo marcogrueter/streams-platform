@@ -1,25 +1,24 @@
-<div class="{{ section.class ?: 'panel' }}" {{ html_attributes(section.attributes) }}>
+<div class="card {{ section.stacked ? 'card-flex' }}" {{ html_attributes(section.attributes) }}>
 
-    {% if section.title %}
-        <div class="panel-heading">
-            <h2 class="panel-title">
-                {{ trans(section.title) }}
+    {% include "streams::form/partials/header" with {"section": section} %}
 
-                {% if section.description %}
-                    <small class="clearfix">
-                        {{ trans(section.description)|raw }}
-                    </small>
-                {% endif %}
-            </h2>
+    {% if section.fields %}
+
+        <div class="card-block">
+            {% include "streams::form/partials/fields" with {"fields": section.fields} %}
         </div>
-    {% endif %}
 
-    <div class="panel-body">
-        {% for field in section.fields %}
-            {% for field in form.fields.translations(field) %}
-                {{ field.render|raw }}
-            {% endfor %}
-        {% endfor %}
-    </div>
+    {% elseif section.tabs %}
+
+        {# No card block - tabs push to the edges #}
+        {% include "streams::form/partials/tabs" with {"tabs": section.tabs, "stacked": section.stacked} %}
+
+    {% elseif section.rows %}
+
+        <div class="card-block">
+            {% include "streams::form/partials/rows" with {"rows": section.rows} %}
+        </div>
+
+    {% endif %}
 
 </div>

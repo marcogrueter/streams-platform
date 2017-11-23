@@ -5,10 +5,9 @@ use Anomaly\Streams\Platform\Ui\Table\Component\Filter\Filter;
 /**
  * Class InputFilter
  *
- * @link    http://anomaly.is/streams-platform
- * @author  AnomalyLabs, Inc. <hello@anomaly.is>
- * @author  Ryan Thompson <ryan@anomaly.is>
- * @package Anomaly\Streams\Platform\Ui\Table\Component\Filter\Type
+ * @link    http://pyrocms.com/
+ * @author  PyroCMS, Inc. <support@pyrocms.com>
+ * @author  Ryan Thompson <ryan@pyrocms.com>
  */
 class InputFilter extends Filter
 {
@@ -33,7 +32,7 @@ class InputFilter extends Filter
             $this->getValue(),
             [
                 'class'       => 'form-control',
-                'placeholder' => trans($this->getPlaceholder() ?: $this->getSlug())
+                'placeholder' => trans($this->getPlaceholder() ?: $this->getSlug()),
             ]
         );
     }

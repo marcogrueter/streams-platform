@@ -5,16 +5,16 @@ use Anomaly\Streams\Platform\Assignment\Contract\AssignmentInterface;
 use Anomaly\Streams\Platform\Field\Contract\FieldInterface;
 use Anomaly\Streams\Platform\Model\EloquentModel;
 use Anomaly\Streams\Platform\Stream\Contract\StreamInterface;
+use Robbo\Presenter\PresentableInterface;
 
 /**
  * Class AssignmentModel
  *
- * @link    http://anomaly.is/streams-platform
- * @author  AnomalyLabs, Inc. <hello@anomaly.is>
- * @author  Ryan Thompson <ryan@anomaly.is>
- * @package Anomaly\Streams\Platform\Assignment
+ * @link    http://pyrocms.com/
+ * @author  PyroCMS, Inc. <support@pyrocms.com>
+ * @author  Ryan Thompson <ryan@pyrocms.com>
  */
-class AssignmentModel extends EloquentModel implements AssignmentInterface
+class AssignmentModel extends EloquentModel implements AssignmentInterface, PresentableInterface
 {
 
     /**
@@ -30,7 +30,7 @@ class AssignmentModel extends EloquentModel implements AssignmentInterface
      * @var array
      */
     protected $attributes = [
-        'config' => 'a:0:{}'
+        'config' => 'a:0:{}',
     ];
 
     /**
@@ -54,8 +54,9 @@ class AssignmentModel extends EloquentModel implements AssignmentInterface
      */
     protected $translatedAttributes = [
         'label',
+        'warning',
         'placeholder',
-        'instructions'
+        'instructions',
     ];
 
     /**
@@ -73,31 +74,21 @@ class AssignmentModel extends EloquentModel implements AssignmentInterface
     protected $table = 'streams_assignments';
 
     /**
-     * Boot the model.
-     */
-    protected static function boot()
-    {
-        self::observe(app(substr(__CLASS__, 0, -5) . 'Observer'));
-
-        parent::boot();
-    }
-
-    /**
      * Because the assignment record holds translatable data
      * we have a conflict. The assignment table has translations
      * but not all assignment are translatable. This helps avoid
      * the translatable conflict during specific procedures.
      *
      * @param  array $attributes
-     * @return static
+     * @return AssignmentModel|EloquentModel
      */
-    public static function create(array $attributes = [])
+    public function create(array $attributes = [])
     {
         $model = parent::create($attributes);
 
         $model->saveTranslations();
 
-        return;
+        return $model;
     }
 
     /**
@@ -127,17 +118,22 @@ class AssignmentModel extends EloquentModel implements AssignmentInterface
      */
     public function getFieldSlug()
     {
+        if (isset($this->cache['field_slug']) && $this->cache['field_slug']) {
+            return $this->cache['field_slug'];
+        }
+
         $field = $this->getField();
 
-        return $field->getSlug();
+        return $this->cache['field_slug'] = $field->getSlug();
     }
 
     /**
      * Get the assignment's field's type.
      *
-     * @return null|FieldType
+     * @param  bool $fresh
+     * @return FieldType|null
      */
-    public function getFieldType()
+    public function getFieldType($fresh = false)
     {
         $field = $this->getField();
 
@@ -145,16 +141,31 @@ class AssignmentModel extends EloquentModel implements AssignmentInterface
             return null;
         }
 
-        $type = $field->getType();
+        $type = $field->getType($fresh);
 
         if (!$type) {
             return null;
         }
 
+        $type->setField($field->getSlug());
         $type->mergeConfig($this->getConfig());
         $type->setRequired($this->isRequired());
 
         return $type;
+    }
+
+    /**
+     * Get the field type value. This helps
+     * avoid spinning up a type instance
+     * if you don't really need it.
+     *
+     * @return string
+     */
+    public function getFieldTypeValue()
+    {
+        $field = $this->getField();
+
+        return $field->getTypeValue();
     }
 
     /**
@@ -200,7 +211,15 @@ class AssignmentModel extends EloquentModel implements AssignmentInterface
      */
     public function getConfig()
     {
-        return $this->config;
+        if (isset($this->cache['config']) && $this->cache['config']) {
+            return $this->cache['config'];
+        }
+
+        if (is_array($this->attributes['config'])) {
+            return $this->cache['config'] = $this->attributes['config'];
+        }
+
+        return $this->cache['config'] = $this->attributes['config'] = $this->config;
     }
 
     /**
@@ -211,6 +230,16 @@ class AssignmentModel extends EloquentModel implements AssignmentInterface
     public function getLabel()
     {
         return $this->label;
+    }
+
+    /**
+     * Get the warning.
+     *
+     * @return string
+     */
+    public function getWarning()
+    {
+        return $this->warning;
     }
 
     /**
@@ -250,7 +279,11 @@ class AssignmentModel extends EloquentModel implements AssignmentInterface
      */
     public function getStreamSlug()
     {
-        return $this->stream->getSlug();
+        if ($stream = $this->getStream()) {
+            return $stream->getSlug();
+        }
+
+        return null;
     }
 
     /**
@@ -260,7 +293,11 @@ class AssignmentModel extends EloquentModel implements AssignmentInterface
      */
     public function getStreamPrefix()
     {
-        return $this->stream->getPrefix();
+        if ($stream = $this->getStream()) {
+            return $stream->getPrefix();
+        }
+
+        return null;
     }
 
     /**
@@ -270,7 +307,11 @@ class AssignmentModel extends EloquentModel implements AssignmentInterface
      */
     public function getField()
     {
-        return $this->field;
+        if (isset($this->cache['field']) && $this->cache['field']) {
+            return $this->cache['field'];
+        }
+
+        return $this->cache['field'] = $this->field;
     }
 
     /**
@@ -296,7 +337,7 @@ class AssignmentModel extends EloquentModel implements AssignmentInterface
      */
     public function isUnique()
     {
-        return $this->unique;
+        return $this->getAttributeFromArray('unique');
     }
 
     /**
@@ -306,7 +347,17 @@ class AssignmentModel extends EloquentModel implements AssignmentInterface
      */
     public function isRequired()
     {
-        return $this->required;
+        return $this->getAttributeFromArray('required');
+    }
+
+    /**
+     * Get the searchable flag.
+     *
+     * @return bool
+     */
+    public function isSearchable()
+    {
+        return $this->getAttributeFromArray('searchable');
     }
 
     /**
@@ -316,7 +367,13 @@ class AssignmentModel extends EloquentModel implements AssignmentInterface
      */
     public function isTranslatable()
     {
-        return $this->translatable;
+        $stream = $this->getStream();
+
+        if ($stream && !$stream->isTranslatable()) {
+            return false;
+        }
+
+        return $this->getAttributeFromArray('translatable');
     }
 
     /**
@@ -349,16 +406,30 @@ class AssignmentModel extends EloquentModel implements AssignmentInterface
      */
     public function getConfigAttribute($config)
     {
-        return (array)unserialize($config);
+        if (!is_array($config)) {
+            return (array)unserialize($config);
+        }
+
+        return $config;
     }
 
     /**
-     * @param array $items
+     * @param  array $items
      * @return AssignmentCollection
      */
-    public function newCollection(array $items = array())
+    public function newCollection(array $items = [])
     {
         return new AssignmentCollection($items);
+    }
+
+    /**
+     * Return a created presenter.
+     *
+     * @return AssignmentPresenter
+     */
+    public function getPresenter()
+    {
+        return new AssignmentPresenter($this);
     }
 
     /**

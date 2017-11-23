@@ -2,17 +2,15 @@
 
 use Anomaly\Streams\Platform\Assignment\AssignmentSchema;
 use Anomaly\Streams\Platform\Assignment\Contract\AssignmentInterface;
-use Illuminate\Contracts\Bus\SelfHandling;
 
 /**
  * Class DropAssignmentColumn
  *
- * @link    http://anomaly.is/streams-platform
- * @author  AnomalyLabs, Inc. <hello@anomaly.is>
- * @author  Ryan Thompson <ryan@anomaly.is>
- * @package Anomaly\Streams\Platform\Assignment\Command
+ * @link    http://pyrocms.com/
+ * @author  PyroCMS, Inc. <support@pyrocms.com>
+ * @author  Ryan Thompson <ryan@pyrocms.com>
  */
-class DropAssignmentColumn implements SelfHandling
+class DropAssignmentColumn
 {
 
     /**
@@ -42,7 +40,7 @@ class DropAssignmentColumn implements SelfHandling
         $stream = $this->assignment->getStream();
         $type   = $this->assignment->getFieldType();
 
-        if (!$type->getColumnType()) {
+        if (!$stream) {
             return;
         }
 

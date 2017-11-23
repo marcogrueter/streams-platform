@@ -3,10 +3,9 @@
 /**
  * Interface ViewInterface
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Ui\Table\Component\View\Contract
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
 interface ViewInterface
 {
@@ -21,7 +20,7 @@ interface ViewInterface
     /**
      * Set the attributes.
      *
-     * @param array $attributes
+     * @param  array $attributes
      * @return $this
      */
     public function setAttributes(array $attributes);
@@ -59,7 +58,7 @@ interface ViewInterface
     /**
      * Set the active flag.
      *
-     * @param bool $active
+     * @param  bool  $active
      * @return $this
      */
     public function setActive($active);
@@ -104,7 +103,7 @@ interface ViewInterface
     /**
      * Set the view text.
      *
-     * @param string $text
+     * @param  string $text
      * @return $this
      */
     public function setText($text);
@@ -130,6 +129,36 @@ interface ViewInterface
      * @return $this
      */
     public function setIcon($icon);
+
+    /**
+     * Get the filters.
+     *
+     * @return null|array
+     */
+    public function getFilters();
+
+    /**
+     * Set the filters.
+     *
+     * @param $filters
+     * @return $this
+     */
+    public function setFilters($filters);
+
+    /**
+     * Get the columns.
+     *
+     * @return null|array
+     */
+    public function getColumns();
+
+    /**
+     * Set the columns.
+     *
+     * @param $columns
+     * @return $this
+     */
+    public function setColumns($columns);
 
     /**
      * Get the buttons.
@@ -160,4 +189,19 @@ interface ViewInterface
      * @return $this
      */
     public function setActions($actions);
+
+    /**
+     * Get the options.
+     *
+     * @return null|array
+     */
+    public function getOptions();
+
+    /**
+     * Set the options.
+     *
+     * @param $options
+     * @return $this
+     */
+    public function setOptions($options);
 }

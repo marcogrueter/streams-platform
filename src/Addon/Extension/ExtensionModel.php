@@ -3,14 +3,14 @@
 use Anomaly\Streams\Platform\Addon\Extension\Contract\ExtensionInterface;
 use Anomaly\Streams\Platform\Model\EloquentCollection;
 use Anomaly\Streams\Platform\Model\EloquentModel;
+use Anomaly\Streams\Platform\Model\EloquentObserver;
 
 /**
  * Class ExtensionModel
  *
- * @link    http://anomaly.is/streams-platform
- * @author  AnomalyLabs, Inc. <hello@anomaly.is>
- * @author  Ryan Thompson <ryan@anomaly.is>
- * @package Anomaly\Streams\Platform\Addon\Extension
+ * @link    http://pyrocms.com/
+ * @author  PyroCMS, Inc. <support@pyrocms.com>
+ * @author  Ryan Thompson <ryan@pyrocms.com>
  */
 class ExtensionModel extends EloquentModel implements ExtensionInterface
 {
@@ -23,18 +23,21 @@ class ExtensionModel extends EloquentModel implements ExtensionInterface
     protected $table = 'addons_extensions';
 
     /**
-     * Cache minutes.
-     *
-     * @var int
-     */
-    protected $cacheMinutes = 99999;
-
-    /**
      * Disable timestamps for extensions.
      *
      * @var bool
      */
     public $timestamps = false;
+
+    /**
+     * Boot the model
+     */
+    protected static function boot()
+    {
+        self::observe(app(EloquentObserver::class));
+
+        parent::boot();
+    }
 
     /**
      * Find a extension by it's namespace or return a new
@@ -74,27 +77,27 @@ class ExtensionModel extends EloquentModel implements ExtensionInterface
     /**
      * Get all enabled extension namespaces.
      *
-     * @return array
+     * @return EloquentCollection
      */
     public function getEnabledNamespaces()
     {
-        return $this->where('enabled', true)->get()->lists('namespace');
+        return $this->where('enabled', true)->get()->pluck('namespace');
     }
 
     /**
      * Get all installed extension namespaces.
      *
-     * @return array
+     * @return EloquentCollection
      */
     public function getInstalledNamespaces()
     {
-        return $this->where('installed', true)->get()->lists('namespace');
+        return $this->where('installed', true)->get()->pluck('namespace');
     }
 
     /**
      * Return a new collection.
      *
-     * @param array $items
+     * @param  array $items
      * @return EloquentCollection
      */
     public function newCollection(array $items = [])

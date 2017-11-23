@@ -9,18 +9,16 @@ use Anomaly\Streams\Platform\Ui\Table\Component\Row\Command\BuildRows;
 use Anomaly\Streams\Platform\Ui\Table\Component\View\Command\BuildViews;
 use Anomaly\Streams\Platform\Ui\Table\Component\View\Command\SetActiveView;
 use Anomaly\Streams\Platform\Ui\Table\TableBuilder;
-use Illuminate\Contracts\Bus\SelfHandling;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 
 /**
  * Class BuildTable
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Ui\Table\Command
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
-class BuildTable implements SelfHandling
+class BuildTable
 {
 
     use DispatchesJobs;
@@ -47,21 +45,13 @@ class BuildTable implements SelfHandling
      */
     public function handle()
     {
-        /**
+        /*
          * Resolve and set the table model and stream.
          */
         $this->dispatch(new SetTableModel($this->builder));
         $this->dispatch(new SetTableStream($this->builder));
         $this->dispatch(new SetDefaultParameters($this->builder));
         $this->dispatch(new SetRepository($this->builder));
-
-        $this->dispatch(new SetTableOptions($this->builder));
-        $this->dispatch(new SetDefaultOptions($this->builder));
-
-        /**
-         * Before we go any further, authorize the request.
-         */
-        $this->dispatch(new AuthorizeTable($this->builder));
 
         /*
          * Build table views and mark active.
@@ -70,29 +60,41 @@ class BuildTable implements SelfHandling
         $this->dispatch(new SetActiveView($this->builder));
 
         /**
+         * Set the table options going forward.
+         */
+        $this->dispatch(new SetTableOptions($this->builder));
+        $this->dispatch(new SetDefaultOptions($this->builder));
+        $this->dispatch(new SaveTableState($this->builder));
+
+        /*
+         * Before we go any further, authorize the request.
+         */
+        $this->dispatch(new AuthorizeTable($this->builder));
+
+        /*
          * Build table filters and flag active.
          */
         $this->dispatch(new BuildFilters($this->builder));
         $this->dispatch(new SetActiveFilters($this->builder));
 
-        /**
+        /*
          * Build table actions and flag active.
          */
         $this->dispatch(new BuildActions($this->builder));
         $this->dispatch(new SetActiveAction($this->builder));
 
-        /**
+        /*
          * Build table headers.
          */
         $this->dispatch(new BuildHeaders($this->builder));
         $this->dispatch(new EagerLoadRelations($this->builder));
 
-        /**
+        /*
          * Get table entries.
          */
         $this->dispatch(new GetTableEntries($this->builder));
 
-        /**
+        /*
          * Lastly table rows.
          */
         $this->dispatch(new BuildRows($this->builder));

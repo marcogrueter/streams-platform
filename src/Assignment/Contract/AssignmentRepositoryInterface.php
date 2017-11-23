@@ -9,10 +9,9 @@ use Anomaly\Streams\Platform\Stream\Contract\StreamInterface;
 /**
  * Interface AssignmentRepositoryInterface
  *
- * @link    http://anomaly.is/streams-platform
- * @author  AnomalyLabs, Inc. <hello@anomaly.is>
- * @author  Ryan Thompson <ryan@anomaly.is>
- * @package Anomaly\Streams\Platform\Assignment\Contract
+ * @link    http://pyrocms.com/
+ * @author  PyroCMS, Inc. <support@pyrocms.com>
+ * @author  Ryan Thompson <ryan@pyrocms.com>
  */
 interface AssignmentRepositoryInterface extends EloquentRepositoryInterface
 {
@@ -20,8 +19,8 @@ interface AssignmentRepositoryInterface extends EloquentRepositoryInterface
     /**
      * Find an assignment by stream and field.
      *
-     * @param StreamInterface $stream
-     * @param FieldInterface  $field
+     * @param  StreamInterface                        $stream
+     * @param  FieldInterface                         $field
      * @return null|AssignmentInterface|EloquentModel
      */
     public function findByStreamAndField(StreamInterface $stream, FieldInterface $field);
@@ -29,7 +28,7 @@ interface AssignmentRepositoryInterface extends EloquentRepositoryInterface
     /**
      * Find all assignments by stream.
      *
-     * @param StreamInterface $stream
+     * @param  StreamInterface      $stream
      * @return AssignmentCollection
      */
     public function findByStream(StreamInterface $stream);

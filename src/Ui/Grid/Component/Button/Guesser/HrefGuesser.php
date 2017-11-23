@@ -8,10 +8,9 @@ use Illuminate\Routing\UrlGenerator;
 /**
  * Class HrefGuesser
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Ui\Grid\Component\Button\Guesser
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
 class HrefGuesser
 {
@@ -73,7 +72,7 @@ class HrefGuesser
             }
 
             // Determine the HREF based on the button type.
-            if ($type = array_get($button, 'button')) {
+            if ($type = array_get($button, 'segment', array_get($button, 'button'))) {
                 $button['attributes']['href'] = $section->getHref($type . '/{entry.id}');
             }
         }

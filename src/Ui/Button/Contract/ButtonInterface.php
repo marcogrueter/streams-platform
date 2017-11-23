@@ -3,10 +3,9 @@
 /**
  * Interface ButtonInterface
  *
- * @link    http://anomaly.is/streams-platform
- * @author  AnomalyLabs, Inc. <hello@anomaly.is>
- * @author  Ryan Thompson <ryan@anomaly.is>
- * @package Anomaly\Streams\Platform\Ui\Button\Contract
+ * @link    http://pyrocms.com/
+ * @author  PyroCMS, Inc. <support@pyrocms.com>
+ * @author  Ryan Thompson <ryan@pyrocms.com>
  */
 interface ButtonInterface
 {
@@ -14,7 +13,7 @@ interface ButtonInterface
     /**
      * Set the dropdown.
      *
-     * @param array $dropdown
+     * @param  array $dropdown
      * @return $this
      */
     public function setDropdown(array $dropdown);
@@ -27,6 +26,43 @@ interface ButtonInterface
     public function getDropdown();
 
     /**
+     * Return whether the button is a dropup or not.
+     *
+     * @return bool
+     */
+    public function isDropup();
+
+    /**
+     * Set the dropdown position.
+     *
+     * @param  array $position
+     * @return $this
+     */
+    public function setPosition($position);
+
+    /**
+     * Get the dropdown position.
+     *
+     * @return array
+     */
+    public function getPosition();
+
+    /**
+     * Set the parent.
+     *
+     * @param $parent
+     * @return $this
+     */
+    public function setParent($parent);
+
+    /**
+     * Get the parent.
+     *
+     * @return string|null
+     */
+    public function getParent();
+
+    /**
      * Return whether the button is a dropdown or not.
      *
      * @return bool
@@ -36,7 +72,7 @@ interface ButtonInterface
     /**
      * Set the attributes.
      *
-     * @param array $attributes
+     * @param  array $attributes
      * @return $this
      */
     public function setAttributes(array $attributes);
@@ -111,7 +147,7 @@ interface ButtonInterface
     /**
      * Set the button type.
      *
-     * @param string $type
+     * @param  string $type
      * @return $this
      */
     public function setType($type);
@@ -137,6 +173,21 @@ interface ButtonInterface
      * @return string
      */
     public function getSize();
+
+    /**
+     * Get the permission.
+     *
+     * @return null|string
+     */
+    public function getPermission();
+
+    /**
+     * Set the permission.
+     *
+     * @param $permission
+     * @return $this
+     */
+    public function setPermission($permission);
 
     /**
      * Set the URL.

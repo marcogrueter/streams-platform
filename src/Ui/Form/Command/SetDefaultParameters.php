@@ -2,18 +2,17 @@
 
 use Anomaly\Streams\Platform\Ui\Form\FormBuilder;
 use Anomaly\Streams\Platform\Ui\Form\FormHandler;
+use Anomaly\Streams\Platform\Ui\Form\FormRules;
 use Anomaly\Streams\Platform\Ui\Form\FormValidator;
-use Illuminate\Contracts\Bus\SelfHandling;
 
 /**
  * Class SetDefaultParameters
  *
- * @link    http://anomaly.is/streams-platform
- * @author  AnomalyLabs, Inc. <hello@anomaly.is>
- * @author  Ryan Thompson <ryan@anomaly.is>
- * @package Anomaly\Streams\Platform\Ui\Form\Command
+ * @link    http://pyrocms.com/
+ * @author  PyroCMS, Inc. <support@pyrocms.com>
+ * @author  Ryan Thompson <ryan@pyrocms.com>
  */
-class SetDefaultParameters implements SelfHandling
+class SetDefaultParameters
 {
 
     /**
@@ -23,7 +22,7 @@ class SetDefaultParameters implements SelfHandling
      */
     protected $skips = [
         'model',
-        'repository'
+        'repository',
     ];
 
     /**
@@ -33,7 +32,7 @@ class SetDefaultParameters implements SelfHandling
      */
     protected $defaults = [
         'handler'   => FormHandler::class,
-        'validator' => FormValidator::class
+        'validator' => FormValidator::class,
     ];
 
     /**
@@ -60,18 +59,23 @@ class SetDefaultParameters implements SelfHandling
      */
     public function handle()
     {
-        /**
+        /*
          * Set the form mode according
          * to the builder's entry.
          */
         if (!$this->builder->getFormMode()) {
-            $this->builder->setFormMode($this->builder->getEntry() ? 'edit' : 'create');
+            $this->builder->setFormMode(
+                ($this->builder->getFormEntryId() || $this->builder->getEntry()) ? 'edit' : 'create'
+            );
         }
 
-        /**
+        /*
          * Next we'll loop each property and look for a handler.
          */
         $reflection = new \ReflectionClass($this->builder);
+
+        // Stash this for later.
+        $builder = get_class($this->builder);
 
         /* @var \ReflectionProperty $property */
         foreach ($reflection->getProperties(\ReflectionProperty::IS_PROTECTED) as $property) {
@@ -80,14 +84,14 @@ class SetDefaultParameters implements SelfHandling
                 continue;
             }
 
-            /**
+            /*
              * If there is no getter then skip it.
              */
             if (!method_exists($this->builder, $method = 'get' . ucfirst($property->getName()))) {
                 continue;
             }
 
-            /**
+            /*
              * If the parameter already
              * has a value then skip it.
              */
@@ -95,16 +99,16 @@ class SetDefaultParameters implements SelfHandling
                 continue;
             }
 
-            /**
+            /*
              * Check if we can transform the
              * builder property into a handler.
              * If it exists, then go ahead and use it.
              */
-            $handler = str_replace('FormBuilder', 'Form' . ucfirst($property->getName()), get_class($this->builder));
+            $handler = str_replace('FormBuilder', 'Form' . ucfirst($property->getName()), $builder);
 
-            if (class_exists($handler)) {
+            if ($handler !== $builder && class_exists($handler)) {
 
-                /**
+                /*
                  * Make sure the handler is
                  * formatted properly.
                  */
@@ -112,12 +116,21 @@ class SetDefaultParameters implements SelfHandling
                     $handler .= '@handle';
                 }
 
+                /**
+                 * We have to make a special case
+                 * for form rules since we have
+                 * a service named the same.
+                 */
+                if ($property->getName() == 'rules' && $handler == FormRules::class . '@handle') {
+                    continue;
+                }
+
                 $this->builder->{'set' . ucfirst($property->getName())}($handler);
 
                 continue;
             }
 
-            /**
+            /*
              * If the handler does not exist and
              * we have a default handler, use it.
              */

@@ -1,5 +1,6 @@
 <?php namespace Anomaly\Streams\Platform\Ui\ControlPanel\Listener;
 
+use Anomaly\Streams\Platform\Addon\Module\ModuleCollection;
 use Anomaly\Streams\Platform\Ui\ControlPanel\ControlPanelBuilder;
 use Anomaly\Streams\Platform\View\ViewTemplate;
 use Illuminate\Foundation\Bus\DispatchesJobs;
@@ -8,10 +9,9 @@ use Illuminate\Http\Request;
 /**
  * Class LoadControlPanel
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Ui\ControlPanel\Listener
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
 class LoadControlPanel
 {
@@ -24,6 +24,13 @@ class LoadControlPanel
      * @var Request
      */
     protected $request;
+
+    /**
+     * The module collection.
+     *
+     * @var ModuleCollection
+     */
+    protected $modules;
 
     /**
      * The view template.
@@ -42,15 +49,21 @@ class LoadControlPanel
     /**
      * Create a new LoadControlPanel instance.
      *
-     * @param Request             $request
-     * @param ViewTemplate        $template
      * @param ControlPanelBuilder $controlPanel
+     * @param ViewTemplate        $template
+     * @param ModuleCollection    $modules
+     * @param Request             $request
      */
-    public function __construct(Request $request, ViewTemplate $template, ControlPanelBuilder $controlPanel)
-    {
-        $this->request      = $request;
-        $this->template     = $template;
+    public function __construct(
+        ControlPanelBuilder $controlPanel,
+        ViewTemplate $template,
+        ModuleCollection $modules,
+        Request $request
+    ) {
         $this->controlPanel = $controlPanel;
+        $this->template     = $template;
+        $this->modules      = $modules;
+        $this->request      = $request;
     }
 
     /**
@@ -58,7 +71,7 @@ class LoadControlPanel
      */
     public function handle()
     {
-        if (in_array($this->request->path(), ['admin/login', 'admin/logout'])) {
+        if (in_array($this->request->path(), ['admin/logout'])) {
             return;
         }
 

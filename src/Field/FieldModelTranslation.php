@@ -5,10 +5,9 @@ use Anomaly\Streams\Platform\Model\EloquentModel;
 /**
  * Class FieldModelTranslation
  *
- * @link    http://anomaly.is/streams-platform
- * @author  AnomalyLabs, Inc. <hello@anomaly.is>
- * @author  Ryan Thompson <ryan@anomaly.is>
- * @package Anomaly\Streams\Platform\Field
+ * @link    http://pyrocms.com/
+ * @author  PyroCMS, Inc. <support@pyrocms.com>
+ * @author  Ryan Thompson <ryan@pyrocms.com>
  */
 class FieldModelTranslation extends EloquentModel
 {
@@ -33,5 +32,4 @@ class FieldModelTranslation extends EloquentModel
      * @var string
      */
     protected $table = 'streams_fields_translations';
-
 }

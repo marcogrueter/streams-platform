@@ -29,7 +29,18 @@ return [
     |
     */
 
-    'enabled' => env('ENABLED_LOCALES', ['en']),
+    'enabled' => explode(',', env('ENABLED_LOCALES', 'en')),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Default
+    |--------------------------------------------------------------------------
+    |
+    | The default locale for CONTENT.
+    |
+    */
+
+    'default' => env('DEFAULT_LOCALE', env('LOCALE', 'en')),
 
     /*
     |--------------------------------------------------------------------------
@@ -42,82 +53,106 @@ return [
     */
 
     'supported' => [
-        'en' => [
+        'en'    => [
             'direction' => 'ltr'
         ],
-        'fa' => [
+        'fa'    => [
             'direction' => 'rtl'
         ],
-        'de' => [
+        'de'    => [
             'direction' => 'ltr'
         ],
-        'ar' => [
+        'ar'    => [
             'direction' => 'rtl'
         ],
-        'cs' => [
+        'cs'    => [
             'direction' => 'ltr'
         ],
-        'el' => [
+        'el'    => [
             'direction' => 'ltr'
         ],
-        'es' => [
+        'es'    => [
             'direction' => 'ltr'
         ],
-        'fr' => [
+        'et'    => [
             'direction' => 'ltr'
         ],
-        'it' => [
+        'fr'    => [
             'direction' => 'ltr'
         ],
-        'nl' => [
+        'fr-ca' => [
             'direction' => 'ltr'
         ],
-        'se' => [
+        'it'    => [
             'direction' => 'ltr'
         ],
-        'sl' => [
+        'nl'    => [
             'direction' => 'ltr'
         ],
-        'pl' => [
+        'sv'    => [
             'direction' => 'ltr'
         ],
-        'pt' => [
+        'sl'    => [
             'direction' => 'ltr'
         ],
-        'br' => [
+        'sme'   => [
             'direction' => 'ltr'
         ],
-        'ru' => [
+        'pl'    => [
             'direction' => 'ltr'
         ],
-        'cn' => [
+        'pt'    => [
             'direction' => 'ltr'
         ],
-        'tw' => [
+        'pt-br'    => [
             'direction' => 'ltr'
         ],
-        'he' => [
+        'br'    => [
+            'direction' => 'ltr'
+        ],
+        'ru'    => [
+            'direction' => 'ltr'
+        ],
+        'zh-cn' => [
+            'direction' => 'ltr'
+        ],
+        'zh-tw' => [
+            'direction' => 'ltr'
+        ],
+        'he'    => [
             'direction' => 'rtl'
         ],
-        'lt' => [
+        'lt'    => [
             'direction' => 'ltr'
         ],
-        'fi' => [
+        'fi'    => [
             'direction' => 'ltr'
         ],
-        'da' => [
+        'da'    => [
             'direction' => 'ltr'
         ],
-        'id' => [
+        'id'    => [
             'direction' => 'ltr'
         ],
-        'hu' => [
+        'hu'    => [
             'direction' => 'ltr'
         ],
-        'th' => [
+        'th'    => [
             'direction' => 'ltr'
         ],
-        'hi' => [
+        'tr'    => [
+            'direction' => 'ltr'
+        ],
+        'bn'    => [
+            'direction' => 'ltr'
+        ],
+        'sq'    => [
+            'direction' => 'ltr'
+        ],
+        'hi'    => [
+            'direction' => 'ltr'
+        ],
+        'vi'    => [
             'direction' => 'ltr'
         ]
     ]

@@ -1,18 +1,16 @@
 <?php namespace Anomaly\Streams\Platform\Ui\Form\Command;
 
 use Anomaly\Streams\Platform\Ui\Form\FormBuilder;
-use Illuminate\Contracts\Bus\SelfHandling;
 use Illuminate\Routing\ResponseFactory;
 
 /**
  * Class SetFormResponse
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Ui\Form\Command
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
-class SetFormResponse implements SelfHandling
+class SetFormResponse
 {
 
     /**
@@ -44,8 +42,8 @@ class SetFormResponse implements SelfHandling
 
         $this->builder->setFormResponse(
             $response->view(
-                $options->get('wrapper_view', $this->builder->isAjax() ? 'streams::ajax' : 'streams::blank'),
-                $data
+                $options->get('wrapper_view'),
+                $data->all()
             )
         );
     }

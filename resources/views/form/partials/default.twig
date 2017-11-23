@@ -1,9 +1,10 @@
-<div class="panel">
+<div class="card">
 
-    <div class="panel-body">
-        {% for field in form.fields %}
-            {{ field.render|raw }}
-        {% endfor %}
+    {% include "streams::form/partials/header" with {"section": section} %}
+
+    <div class="card-block">
+
+        {% include "streams::form/partials/fields" with {"fields": form.fields.base().pluck('field_name').all()} %}
+
     </div>
-
 </div>

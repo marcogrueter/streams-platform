@@ -1,19 +1,28 @@
 <?php namespace Anomaly\Streams\Platform\Application;
 
-use Illuminate\Foundation\Bus\DispatchesJobs;
-
 /**
  * Class Application
  *
- * @link    http://anomaly.is/streams-platform
- * @author  AnomalyLabs, Inc. <hello@anomaly.is>
- * @author  Ryan Thompson <ryan@anomaly.is>
- * @package Anomaly\Streams\Platform\Application
+ * @link    http://pyrocms.com/
+ * @author  PyroCMS, Inc. <support@pyrocms.com>
+ * @author  Ryan Thompson <ryan@pyrocms.com>
  */
 class Application
 {
 
-    use DispatchesJobs;
+    /**
+     * The application locale.
+     *
+     * @var string
+     */
+    protected $locale = null;
+
+    /**
+     * The enabled state of the application.
+     *
+     * @var bool
+     */
+    protected $enabled = null;
 
     /**
      * Keep installed status around.
@@ -62,8 +71,10 @@ class Application
      */
     public function setTablePrefix()
     {
-        app('db')->getSchemaBuilder()->getConnection()->setTablePrefix($this->getReference() . '_');
-        app('db')->getSchemaBuilder()->getConnection()->getSchemaGrammar()->setTablePrefix($this->getReference() . '_');
+        $connection = app('db')->getSchemaBuilder()->getConnection();
+        
+        $connection->setTablePrefix($this->tablePrefix());
+        $connection->getSchemaGrammar()->setTablePrefix($this->tablePrefix());
     }
 
     /**
@@ -92,7 +103,7 @@ class Application
     /**
      * Get the storage path for the application.
      *
-     * @param string $path
+     * @param  string $path
      * @return string
      */
     public function getStoragePath($path = '')
@@ -103,12 +114,23 @@ class Application
     /**
      * Get the public assets path for the application.
      *
-     * @param string $path
+     * @param  string $path
      * @return string
      */
     public function getAssetsPath($path = '')
     {
-        return public_path('assets/' . $this->getReference()) . ($path ? '/' . $path : $path);
+        return public_path('app/' . $this->getReference()) . ($path ? '/' . $path : $path);
+    }
+
+    /**
+     * Get the resources path for the application.
+     *
+     * @param  string $path
+     * @return string
+     */
+    public function getResourcesPath($path = '')
+    {
+        return base_path('resources/' . $this->getReference()) . ($path ? '/' . $path : $path);
     }
 
     /**
@@ -118,10 +140,6 @@ class Application
      */
     public function tablePrefix()
     {
-        if (is_null($this->reference)) {
-            $this->locate();
-        }
-
         return $this->reference . '_';
     }
 
@@ -133,23 +151,41 @@ class Application
      */
     public function locate()
     {
-        if (app('db')->getSchemaBuilder()->hasTable('applications')) {
+        if ($app = $this->applications->findByDomain(app('request')->root())) {
 
-            if ($app = $this->applications->findByDomain(
-                trim(str_replace(array('http://', 'https://'), '', app('request')->root()), '/')
-            )
-            ) {
+            $this->installed = true;
+            $this->locale    = $app->locale;
+            $this->enabled   = $app->enabled;
+            $this->reference = $app->reference;
 
-                $this->installed = true;
-                $this->reference = $app->reference;
-
-                return true;
-            }
-
-            return false;
+            return true;
         }
 
-        return true;
+        return false;
+    }
+
+    /**
+     * Get the resolved locale.
+     *
+     * @return string
+     */
+    public function getLocale()
+    {
+        return $this->locale;
+    }
+
+    /**
+     * Return if the application is enabled.
+     *
+     * @return bool
+     */
+    public function isEnabled()
+    {
+        if (is_null($this->enabled)) {
+            return true;
+        }
+
+        return $this->enabled;
     }
 
     /**

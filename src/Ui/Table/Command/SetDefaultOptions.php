@@ -1,19 +1,17 @@
 <?php namespace Anomaly\Streams\Platform\Ui\Table\Command;
 
-use Anomaly\Streams\Platform\Entry\EntryModel;
-use Anomaly\Streams\Platform\Model\EloquentModel;
+use Anomaly\Streams\Platform\Addon\Module\ModuleCollection;
 use Anomaly\Streams\Platform\Ui\Table\TableBuilder;
-use Illuminate\Contracts\Bus\SelfHandling;
+use Illuminate\Http\Request;
 
 /**
  * Class SetDefaultOptions
  *
- * @link    http://anomaly.is/streams-platform
- * @author  AnomalyLabs, Inc. <hello@anomaly.is>
- * @author  Ryan Thompson <ryan@anomaly.is>
- * @package Anomaly\Streams\Platform\Ui\Table\Command
+ * @link    http://pyrocms.com/
+ * @author  PyroCMS, Inc. <support@pyrocms.com>
+ * @author  Ryan Thompson <ryan@pyrocms.com>
  */
-class SetDefaultOptions implements SelfHandling
+class SetDefaultOptions
 {
 
     /**
@@ -35,43 +33,71 @@ class SetDefaultOptions implements SelfHandling
 
     /**
      * Handle the command.
+     *
+     * @param ModuleCollection $modules
+     * @param Request $request
      */
-    public function handle()
+    public function handle(ModuleCollection $modules, Request $request)
     {
         $table = $this->builder->getTable();
 
-        /**
-         * Set the default ordering options.
+        /*
+         * Set the default sortable option.
          */
-        if (!$table->getOption('order_by')) {
+        if ($table->getOption('sortable') === null) {
+            $stream = $table->getStream();
 
-            $model = $table->getModel();
-
-            if ($model instanceof EntryModel) {
-                if ($table->getOption('sortable') || $model->titleColumnIsTranslatable()) {
-                    $table->setOption('order_by', ['sort_order' => 'asc']);
-                } else {
-                    $table->setOption('order_by', [$model->getTitleName() => 'asc']);
-                }
-            } elseif ($model instanceof EloquentModel) {
-                $table->setOption('order_by', ['id' => 'asc']);
+            if ($stream && $stream->isSortable()) {
+                $table->setOption('sortable', true);
             }
         }
-        
-        /**
+
+        /*
+         * Sortable tables have no pages.
+         */
+        if ($table->getOption('sortable') === true) {
+            $table->setOption('limit', $table->getOption('limit', 99999));
+        }
+
+        /*
          * Set the default breadcrumb.
          */
         if ($table->getOption('breadcrumb') === null && $title = $table->getOption('title')) {
             $table->setOption('breadcrumb', $title);
         }
 
-        /**
+        /*
          * If the table ordering is currently being overridden
          * then set the values from the request on the builder
          * last so it actually has an effect.
          */
         if ($orderBy = $this->builder->getRequestValue('order_by')) {
             $table->setOption('order_by', [$orderBy => $this->builder->getRequestValue('sort', 'asc')]);
+        }
+
+        /*
+         * If the table limit is currently being overridden
+         * then set the values from the request on the builder
+         * last so it actually has an effect. Otherwise default.
+         */
+        if ($table->getOption('limit') === null) {
+            $table->setOption(
+                'limit',
+                $this->builder->getRequestValue('limit', config('streams::system.per_page', 15))
+            );
+        }
+
+        /*
+         * If the permission is not set then
+         * try and automate it.
+         */
+        if (
+            $table->getOption('permission') === null &&
+            $request->segment(1) == 'admin' &&
+            ($module = $modules->active()) &&
+            ($stream = $this->builder->getTableStream())
+        ) {
+            $table->setOption('permission', $module->getNamespace($stream->getSlug() . '.read'));
         }
     }
 }

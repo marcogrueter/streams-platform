@@ -1,23 +1,26 @@
 <?php namespace Anomaly\Streams\Platform\Model;
 
 use Anomaly\Streams\Platform\Collection\CacheCollection;
+use Anomaly\Streams\Platform\Model\Traits\Translatable;
+use Anomaly\Streams\Platform\Traits\Hookable;
 use Illuminate\Contracts\Support\Arrayable;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Bus\DispatchesJobs;
+use Robbo\Presenter\PresentableInterface;
 
 /**
  * Class EloquentModel
  *
- * @link    http://anomaly.is/streams-platform
- * @author  AnomalyLabs, Inc. <hello@anomaly.is>
- * @author  Ryan Thompson <ryan@anomaly.is>
- * @package Anomaly\Streams\Platform\Model
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
-class EloquentModel extends Model implements Arrayable
+class EloquentModel extends Model implements Arrayable, PresentableInterface
 {
 
+    use Hookable;
+    use Translatable;
     use DispatchesJobs;
 
     /**
@@ -28,18 +31,18 @@ class EloquentModel extends Model implements Arrayable
     public $timestamps = false;
 
     /**
-     * Translatable attributes.
+     * Searchable attributes.
      *
      * @var array
      */
-    protected $translatedAttributes = [];
+    protected $searchableAttributes = [];
 
     /**
      * The number of minutes to cache query results.
      *
-     * @var null
+     * @var null|false|int
      */
-    protected $cacheMinutes = false;
+    protected $ttl = false;
 
     /**
      * The attributes that are
@@ -66,18 +69,22 @@ class EloquentModel extends Model implements Arrayable
         'updatingMultiple',
         'updatedMultiple',
         'deletingMultiple',
-        'deletedMultiple'
+        'deletedMultiple',
     ];
 
     /**
-     * Boot the model.
+     * The cascading delete-able relations.
+     *
+     * @var array
      */
-    protected static function boot()
-    {
-        self::observe(app(substr(__CLASS__, 0, -5) . 'Observer'));
+    protected $cascades = [];
 
-        parent::boot();
-    }
+    /**
+     * Runtime cache.
+     *
+     * @var array
+     */
+    protected $cache = [];
 
     /**
      * Get the ID.
@@ -100,6 +107,29 @@ class EloquentModel extends Model implements Arrayable
     }
 
     /**
+     * Cache a value in the
+     * model's cache collection.
+     *
+     * @param $key
+     * @param $ttl
+     * @param $value
+     * @return mixed
+     */
+    public function cache($key, $ttl, $value)
+    {
+        (new CacheCollection())
+            ->make([$key])
+            ->setKey($this->getCacheCollectionKey())
+            ->index();
+
+        return app('cache')->remember(
+            $key,
+            $ttl ?: $this->getTtl(),
+            $value
+        );
+    }
+
+    /**
      * Fire a model event.
      *
      * @param $event
@@ -111,12 +141,31 @@ class EloquentModel extends Model implements Arrayable
     }
 
     /**
+     * Return the entry presenter.
+     *
+     * This is against standards but required
+     * by the presentable interface.
+     *
+     * @return EloquentPresenter
+     */
+    public function getPresenter()
+    {
+        $presenter = substr(get_class($this), 0, -5) . 'Presenter';
+
+        if (class_exists($presenter)) {
+            return app()->make($presenter, ['object' => $this]);
+        }
+
+        return new EloquentPresenter($this);
+    }
+
+    /**
      * Return a new collection class with our models.
      *
      * @param  array $items
      * @return Collection
      */
-    public function newCollection(array $items = array())
+    public function newCollection(array $items = [])
     {
         $collection = substr(get_class($this), 0, -5) . 'Collection';
 
@@ -128,49 +177,26 @@ class EloquentModel extends Model implements Arrayable
     }
 
     /**
-     * Return the translatable flag.
+     * Set the ttl.
      *
-     * @return bool
-     */
-    public function isTranslatable()
-    {
-        return isset($this->translationModel);
-    }
-
-    /**
-     * Set the translatable flag.
-     *
-     * @param $translatable
+     * @param  $ttl
      * @return $this
      */
-    public function setTranslatable($translatable)
+    public function setTtl($ttl)
     {
-        $this->translatable = $translatable;
+        $this->ttl = $ttl;
 
         return $this;
     }
 
     /**
-     * Set the cache minutes.
-     *
-     * @param  $cacheMinutes
-     * @return $this
-     */
-    public function setCacheMinutes($cacheMinutes)
-    {
-        $this->cacheMinutes = $cacheMinutes;
-
-        return $this;
-    }
-
-    /**
-     * Get the cache minutes.
+     * Get the ttl.
      *
      * @return int|mixed
      */
-    public function getCacheMinutes()
+    public function getTtl()
     {
-        return $this->cacheMinutes;
+        return $this->ttl;
     }
 
     /**
@@ -214,6 +240,27 @@ class EloquentModel extends Model implements Arrayable
     }
 
     /**
+     * Return if the model is restorable or not.
+     *
+     * @return bool
+     */
+    public function isRestorable()
+    {
+        return true;
+    }
+
+    /**
+     * Return whether the model is being
+     * force deleted or not.
+     *
+     * @return bool
+     */
+    public function isForceDeleting()
+    {
+        return isset($this->forceDeleting) && $this->forceDeleting === true;
+    }
+
+    /**
      * Flush the model's cache.
      *
      * @return $this
@@ -222,134 +269,65 @@ class EloquentModel extends Model implements Arrayable
     {
         (new CacheCollection())->setKey($this->getCacheCollectionKey())->flush();
 
+        $this->flushRuntimeCache();
+
         return $this;
     }
 
     /**
-     * Get a new query builder for the model's table.
+     * Flush the runtime cache.
      *
+     * @return $this
+     */
+    public function flushRuntimeCache()
+    {
+        EloquentQueryBuilder::dropRuntimeCache($this->getCacheCollectionKey());
+
+        $this->cache = [];
+
+        return $this;
+    }
+
+    /**
+     * Create a new Eloquent query builder for the model.
+     *
+     * @param  \Illuminate\Database\Query\Builder $query
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function newQuery()
+    public function newEloquentBuilder($query)
     {
-        $builder = new EloquentQueryBuilder($this->newBaseQueryBuilder());
+        $builder = substr(get_class($this), 0, -5) . 'QueryBuilder';
 
-        // Once we have the query builders, we will set the model instances so the
-        // builder can easily access any information it may need from the model
-        // while it is constructing and executing various queries against it.
-        $builder->setModel($this)->with($this->with);
+        if (class_exists($builder)) {
+            return new $builder($query);
+        }
 
-        return $this->applyGlobalScopes($builder);
-    }
-
-    /*
-     * Alias for getTranslation()
-     */
-    public function translate($locale = null, $withFallback = false)
-    {
-        return $this->getTranslation($locale, $withFallback);
-    }
-
-    /*
-     * Alias for getTranslation()
-     */
-    public function translateOrDefault($locale)
-    {
-        return $this->getTranslation($locale, true) ?: $this;
-    }
-
-    /*
-     * Alias for getTranslationOrNew()
-     */
-    public function translateOrNew($locale)
-    {
-        return $this->getTranslationOrNew($locale);
+        return new EloquentQueryBuilder($query);
     }
 
     /**
-     * Get related translations.
+     * Return searchable attributes.
      *
-     * @return EloquentCollection
+     * @return array
      */
-    public function getTranslations()
+    public function getSearchableAttributes()
     {
-        foreach ($translations = $this->translations()->get() as $translation) {
-            $translation->setRelation('parent', $this);
-        }
-
-        return $translations;
+        return $this->searchableAttributes;
     }
 
     /**
-     * @param null      $locale
-     * @param bool|null $withFallback
-     * @return Model|null
+     * Get an attribute.
+     *
+     * @param string $key
+     * @return mixed|null
      */
-    public function getTranslation($locale = null, $withFallback = false)
-    {
-        $locale = $locale ?: config('app.fallback_locale');
-
-        if ($translation = $this->getTranslationByLocaleKey($locale)) {
-            return $translation;
-        } elseif ($withFallback
-            && config('app.fallback_locale')
-            && $this->getTranslationByLocaleKey(config('app.fallback_locale'))
-        ) {
-            return $this->getTranslationByLocaleKey(config('app.fallback_locale'));
-        }
-
-        return null;
-    }
-
-    public function hasTranslation($locale = null)
-    {
-        $locale = $locale ?: config('app.fallback_locale');
-
-        foreach ($this->translations as $translation) {
-
-            $translation->setRelation('parent', $this);
-
-            if ($translation->getAttribute($this->getLocaleKey()) == $locale) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    public function getTranslationModel()
-    {
-        return $this->translationModel;
-    }
-
-    public function getTranslationModelNameDefault()
-    {
-        return get_class($this) . 'Translation';
-    }
-
-    public function getRelationKey()
-    {
-        return $this->translationForeignKey ?: $this->getForeignKey();
-    }
-
-    public function getLocaleKey()
-    {
-        return $this->localeKey ?: 'locale';
-    }
-
-    public function translations()
-    {
-        return $this->hasMany($this->getTranslationModel(), $this->getRelationKey());
-    }
-
     public function getAttribute($key)
     {
         if ($this->isTranslatedAttribute($key)) {
-            if ($this->getTranslation() === null) {
+
+            if (($translation = $this->getTranslation()) === null) {
                 return null;
             }
-
-            $translation = $this->getTranslation();
 
             $translation->setRelation('parent', $this);
 
@@ -359,6 +337,13 @@ class EloquentModel extends Model implements Arrayable
         return parent::getAttribute($key);
     }
 
+    /**
+     * Set an attribute.
+     *
+     * @param  string $key
+     * @param  mixed $value
+     * @return $this
+     */
     public function setAttribute($key, $value)
     {
         if (in_array($key, $this->translatedAttributes)) {
@@ -366,6 +351,8 @@ class EloquentModel extends Model implements Arrayable
         } else {
             parent::setAttribute($key, $value);
         }
+
+        return $this;
     }
 
     /**
@@ -375,17 +362,16 @@ class EloquentModel extends Model implements Arrayable
      * accommodate translations. First sa
      * then save translations is translatable.
      *
-     * @param array $options
+     * @param  array $options
      * @return bool
      */
-    public function save(array $options = array())
+    public function save(array $options = [])
     {
-        if (!$this->getTranslationModel()) {
+        if (!$this->getTranslationModelName()) {
             return $this->saveModel($options);
         }
 
         if ($this->exists) {
-
             if (count($this->getDirty()) > 0) {
 
                 // If $this->exists and dirty, $this->saveModel() has to return true. If not,
@@ -422,7 +408,7 @@ class EloquentModel extends Model implements Arrayable
      * @param  array $options
      * @return bool
      */
-    public function saveModel(array $options = array())
+    public function saveModel(array $options = [])
     {
         $query = $this->newQueryWithoutScopes();
 
@@ -455,41 +441,11 @@ class EloquentModel extends Model implements Arrayable
     }
 
     /**
-     * Save translations to the database.
+     * Fill the model attributes.
      *
-     * @return bool
+     * @param array $attributes
+     * @return $this
      */
-    protected function saveTranslations()
-    {
-        $saved = true;
-
-        foreach ($this->translations as $translation) {
-
-            $translation->setRelation('parent', $this);
-
-            /* @var EloquentModel $translation */
-            if ($saved && $this->isTranslationDirty($translation)) {
-
-                $translation->setAttribute($this->getRelationKey(), $this->getKey());
-
-                $saved = $translation->save();
-            }
-        }
-
-        $this->finishSave([]);
-
-        return $saved;
-    }
-
-    protected function getTranslationOrNew($locale)
-    {
-        if (($translation = $this->getTranslation($locale, false)) === null) {
-            $translation = $this->getNewTranslation($locale);
-        }
-
-        return $translation;
-    }
-
     public function fill(array $attributes)
     {
         foreach ($attributes as $key => $values) {
@@ -506,73 +462,16 @@ class EloquentModel extends Model implements Arrayable
         return parent::fill($attributes);
     }
 
-    private function getTranslationByLocaleKey($key)
+    /**
+     * Return if the attribute
+     * is searchable or not.
+     *
+     * @param $key
+     * @return bool
+     */
+    public function isSearchableAttribute($key)
     {
-        foreach ($this->translations as $translation) {
-
-            $translation->setRelation('parent', $this);
-
-            if ($translation->getAttribute($this->getLocaleKey()) == $key) {
-                return $translation;
-            }
-        }
-
-        return null;
-    }
-
-    public function isTranslatedAttribute($key)
-    {
-        return in_array($key, $this->translatedAttributes);
-    }
-
-    protected function isTranslationAttribute($key)
-    {
-        return in_array($key, $this->translatedAttributes);
-    }
-
-    protected function isKeyALocale($key)
-    {
-        return config('streams::locales.supported.' . $key) !== null;
-    }
-
-    protected function isTranslationDirty(Model $translation)
-    {
-        $dirtyAttributes = $translation->getDirty();
-        unset($dirtyAttributes[$this->getLocaleKey()]);
-
-        return count($dirtyAttributes) > 0;
-    }
-
-    public function getNewTranslation($locale)
-    {
-        $modelName = $this->getTranslationModel();
-
-        /* @var EloquentModel $translation */
-        $translation = new $modelName;
-
-        $translation->setRelation('parent', $this);
-
-        $translation->setAttribute($this->getLocaleKey(), $locale);
-        $translation->setAttribute($this->getRelationKey(), $this->getKey());
-
-        $this->translations->add($translation);
-
-        return $translation;
-    }
-
-    public function scopeTranslatedIn(Builder $query, $locale)
-    {
-        return $query->whereHas(
-            'translations',
-            function (Builder $q) use ($locale) {
-                $q->where($this->getLocaleKey(), '=', $locale);
-            }
-        );
-    }
-
-    public function scopeTranslated(Builder $query)
-    {
-        return $query->has('translations');
+        return in_array($key, $this->searchableAttributes);
     }
 
     /**
@@ -583,12 +482,56 @@ class EloquentModel extends Model implements Arrayable
     public function getUnguardedAttributes()
     {
         foreach ($attributes = $this->getAttributes() as $attribute => $value) {
-            $attributes[$attribute] = $this->{$attribute};
+            $attributes[$attribute] = $value;
         }
 
-        return array_filter(array_diff_key($attributes, array_flip($this->getGuarded())));
+        return array_diff_key($attributes, array_flip($this->getGuarded()));
     }
 
+    /**
+     * Get the default locale.
+     *
+     * @return string
+     */
+    protected function getDefaultLocale()
+    {
+        if (isset($this->cache['default_locale'])) {
+            return $this->cache['default_locale'];
+        }
+
+        return $this->cache['default_locale'] = config('streams::locales.default');
+    }
+
+    /**
+     * Get the fallback locale.
+     *
+     * @return string
+     */
+    protected function getFallbackLocale()
+    {
+        if (isset($this->cache['fallback_locale'])) {
+            return $this->cache['fallback_locale'];
+        }
+
+        return $this->cache['fallback_locale'] = config('app.fallback_locale');
+    }
+
+    /**
+     * This is to keep consistency with the
+     * entry interface above us.
+     *
+     * @return string
+     */
+    public function getTableName()
+    {
+        return $this->getTable();
+    }
+
+    /**
+     * Return the model as an array.
+     *
+     * @return array
+     */
     public function toArray()
     {
         $attributes = $this->attributesToArray();
@@ -602,15 +545,97 @@ class EloquentModel extends Model implements Arrayable
         return $attributes;
     }
 
+    /**
+     * Return the routable array information.
+     *
+     * @return array
+     */
+    public function toRoutableArray()
+    {
+        return $this->toArray();
+    }
+
+    /**
+     * We protect things a little
+     * differently so open er up.
+     *
+     * @return bool
+     */
     private function alwaysFillable()
     {
         return false;
     }
 
     /**
-     * Check if an attribute exists.
+     * Determine if the given attribute exists.
+     * Make sure to skip where there could be an
+     * issue with relational "looking" properties.
+     *
+     * @param  mixed $offset
+     * @return bool
+     */
+    public function offsetExists($offset)
+    {
+        return !method_exists($this, $offset) && !is_null($this->$offset);
+    }
+
+    /**
+     * Get the criteria class.
+     *
+     * @return string
+     */
+    public function getCriteriaName()
+    {
+        $criteria = substr(get_class($this), 0, -5) . 'Criteria';
+
+        return class_exists($criteria) ? $criteria : EloquentCriteria::class;
+    }
+
+    /**
+     * Get the cascading actions.
+     *
+     * @return array
+     */
+    public function getCascades()
+    {
+        return $this->cascades;
+    }
+
+    /**
+     * Check hooks for the missing key.
      *
      * @param string $key
+     * @return mixed
+     */
+    public function __get($key)
+    {
+        if ($this->hasHook($hook = 'get_' . $key)) {
+            return $this->call($hook, []);
+        }
+
+        return parent::__get($key);
+    }
+
+    /**
+     * Check hooks for the missing method.
+     *
+     * @param string $method
+     * @param array $parameters
+     * @return mixed
+     */
+    public function __call($method, $parameters)
+    {
+        if ($this->hasHook($hook = snake_case($method))) {
+            return $this->call($hook, $parameters);
+        }
+
+        return parent::__call($method, $parameters);
+    }
+
+    /**
+     * Check if an attribute exists.
+     *
+     * @param  string $key
      * @return bool
      */
     public function __isset($key)
@@ -623,8 +648,19 @@ class EloquentModel extends Model implements Arrayable
      *
      * @return string
      */
-    function __toString()
+    public function __toString()
     {
         return json_encode($this->toArray());
+    }
+
+    /**
+     * Remove volatile cache from
+     * objects before serialization.
+     *
+     * @return array
+     */
+    public function __sleep()
+    {
+        return array_diff(array_keys(get_object_vars($this)), ['cache']);
     }
 }

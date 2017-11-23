@@ -1,57 +1,52 @@
 {
     "name": "anomaly/streams-platform",
-    "description": "Streams platform core library.",
+    "description": "A powerful, inclusive, modular PHP application engine built lovingly for Laravel.",
     "authors": [
         {
-            "name": "AnomalyLabs",
-            "email": "projects@anomaly.is"
+            "name": "Ryan Thompson",
+            "email": "ryan@pyrocms.com"
         }
     ],
     "require": {
-        "laravel/framework": "5.1.*",
-        "laravel/envoy": "1.0.*",
-        "laravelcollective/html": "5.1.*",
+        "laravel/framework": "5.5.*",
+        "laravel/scout": "3.0.*",
         "doctrine/dbal": "2.5.*",
-        "intervention/image": "2.1.*",
-        "twig/twig": "1.18.*",
-        "rcrowe/twigbridge": "0.7.*",
-        "barryvdh/laravel-debugbar": "2.0.*",
-        "coffeescript/coffeescript": "1.3.1",
-        "michelf/php-markdown": "1.4.1",
-        "aptoma/twig-markdown": "1.1.*",
-        "guzzlehttp/guzzle": "6.0.*",
-        "guzzlehttp/psr7": "1.1.*",
-        "guzzlehttp/promises": "1.0.*",
-        "kriswallsmith/assetic": "1.2.*",
-        "leafo/scssphp": "0.1.0 ",
-        "lmammino/jsmin4assetic": "1.0.*",
+        "intervention/image": "2.4.*",
+        "laravelcollective/html": "5.5.*",
+        "twig/twig": "~2.0",
+        "barryvdh/laravel-debugbar": "2.4.*",
+        "coffeescript/coffeescript": "1.3.*",
+        "erusev/parsedown": "1.6.*",
+        "erusev/parsedown-extra": "0.7.*",
+        "kriswallsmith/assetic": "1.4.*",
+        "leafo/scssphp": "0.6.*",
         "natxet/CssMin": "3.0.*",
         "oyejorge/less.php": "1.7.*",
         "ptachoire/cssembed": "1.0.*",
-        "phpseclib/phpseclib": "0.3.*",
         "robclancy/presenter": "1.3.*",
-        "mobiledetect/mobiledetectlib": "2.8.*",
         "nicmart/string-template": "0.1.*",
-        "barryvdh/laravel-httpcache": "0.2.*",
-        "phive/twig-extensions-deferred": "0.3.*"
-    },
-    "require-dev": {
-        "phpspec/phpspec": "~2.0",
-        "benconstable/phpspec-laravel": "~1.0",
-        "henrikbjorn/phpspec-code-coverage": "~0.2"
+        "phive/twig-extensions-deferred": "2.0.*",
+        "teamtnt/laravel-scout-tntsearch-driver": "3.0.*",
+        "symfony/yaml": "3.3.*",
+        "jenssegers/agent": "2.5.*",
+        "asm89/twig-cache-extension": "1.3.*",
+        "misd/linkify": "1.1.*",
+        "symfony/class-loader": "3.3.*",
+        "websemantics/lcss2php": "1.0.*",
+        "ezyang/htmlpurifier": "~4.0",
+        "fzaninotto/faker": "~1.4",
+        "nochso/html-compress-twig": "~2.0"
     },
     "autoload": {
         "psr-4": {
             "Anomaly\\Streams\\Platform\\": "src/"
-        }
+        },
+        "files": [
+            "src/Support/_helpers.php"
+        ]
     },
     "config": {
         "bin-dir": "bin"
     },
-    "license": "MIT",
-    "extra": {
-        "branch-alias": {
-            "dev-master": "1.0.x-dev"
-        }
-    }
+    "license": "MIT"
 }

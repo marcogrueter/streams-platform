@@ -2,17 +2,15 @@
 
 use Anomaly\Streams\Platform\Addon\FieldType\FieldType;
 use Anomaly\Streams\Platform\Ui\Form\FormBuilder;
-use Illuminate\Contracts\Bus\SelfHandling;
 
 /**
  * Class RepopulateFields
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Ui\Form\Command
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
-class RepopulateFields implements SelfHandling
+class RepopulateFields
 {
 
     /**
@@ -39,7 +37,7 @@ class RepopulateFields implements SelfHandling
     {
         /* @var FieldType $field */
         foreach ($this->builder->getFormFields() as $field) {
-            $field->setValue($field->getPostValue());
+            $field->setValue($field->getRepopulateValue());
         }
     }
 }

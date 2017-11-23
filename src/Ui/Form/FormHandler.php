@@ -1,16 +1,13 @@
 <?php namespace Anomaly\Streams\Platform\Ui\Form;
 
-use Illuminate\Contracts\Bus\SelfHandling;
-
 /**
  * Class FormHandler
  *
- * @link    http://anomaly.is/streams-platform
- * @author  AnomalyLabs, Inc. <hello@anomaly.is>
- * @author  Ryan Thompson <ryan@anomaly.is>
- * @package Anomaly\Streams\Platform\Ui\Form
+ * @link    http://pyrocms.com/
+ * @author  PyroCMS, Inc. <support@pyrocms.com>
+ * @author  Ryan Thompson <ryan@pyrocms.com>
  */
-class FormHandler implements SelfHandling
+class FormHandler
 {
 
     /**

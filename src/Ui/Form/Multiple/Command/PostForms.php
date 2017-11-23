@@ -2,17 +2,16 @@
 
 use Anomaly\Streams\Platform\Ui\Form\FormBuilder;
 use Anomaly\Streams\Platform\Ui\Form\Multiple\MultipleFormBuilder;
-use Illuminate\Contracts\Bus\SelfHandling;
+use Illuminate\Http\Request;
 
 /**
  * Class PostForms
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Ui\Form\Multiple\Command
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
-class PostForms implements SelfHandling
+class PostForms
 {
 
     /**
@@ -34,11 +33,21 @@ class PostForms implements SelfHandling
 
     /**
      * Handle the command.
+     *
+     * @param Request $request
      */
-    public function handle()
+    public function handle(Request $request)
     {
+        if (!$request->isMethod('post')) {
+            return;
+        }
+
+        $this->builder->fire('posting_forms', ['builder' => $this->builder]);
+
         /* @var FormBuilder $builder */
-        foreach ($this->builder->getForms() as $builder) {
+        foreach ($forms = $this->builder->getForms() as $slug => $builder) {
+            $this->builder->fire('posting_' . $slug, compact('builder', 'forms'));
+
             $builder->post();
         }
     }

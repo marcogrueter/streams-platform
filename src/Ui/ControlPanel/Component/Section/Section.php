@@ -5,10 +5,9 @@ use Anomaly\Streams\Platform\Ui\ControlPanel\Component\Section\Contract\SectionI
 /**
  * Class Section
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Ui\ControlPanel\Component\Section
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
 class Section implements SectionInterface
 {
@@ -28,25 +27,74 @@ class Section implements SectionInterface
     protected $icon = null;
 
     /**
-     * The section text.
+     * The section title.
      *
      * @var null|string
      */
-    protected $text = null;
+    protected $title = null;
 
     /**
-     * The section class.
+     * The section label.
+     *
+     * @var null|string
+     */
+    protected $label = null;
+
+    /**
+     * The class.
      *
      * @var null|string
      */
     protected $class = null;
 
     /**
-     * The section's active flag.
+     * The active flag.
      *
      * @var bool
      */
     protected $active = false;
+
+    /**
+     * The path matcher.
+     *
+     * @var null|string
+     */
+    protected $matcher = null;
+
+    /**
+     * The section permalink.
+     *
+     * @var null|string
+     */
+    protected $permalink = null;
+
+    /**
+     * The section description.
+     *
+     * @var null|string
+     */
+    protected $description = null;
+
+    /**
+     * The highlighted flag.
+     *
+     * @var bool
+     */
+    protected $highlighted = false;
+
+    /**
+     * The section context.
+     *
+     * @var string
+     */
+    protected $context = 'danger';
+
+    /**
+     * The section parent.
+     *
+     * @var null|string
+     */
+    protected $parent = null;
 
     /**
      * Section buttons. These are only to
@@ -76,6 +124,13 @@ class Section implements SectionInterface
      * @var null|string
      */
     protected $breadcrumb = null;
+
+    /**
+     * If the section will be hidden from the Control Panel.
+     *
+     * @var bool
+     */
+    protected $hidden = false;
 
     /**
      * Get the slug.
@@ -124,23 +179,46 @@ class Section implements SectionInterface
     }
 
     /**
-     * Get the text.
+     * Get the title.
      *
      * @return string
      */
-    public function getText()
+    public function getTitle()
     {
-        return $this->text;
+        return $this->title;
     }
 
     /**
-     * Set the text.
+     * Set the title.
      *
-     * @param string $text
+     * @param string $title
      */
-    public function setText($text)
+    public function setTitle($title)
     {
-        $this->text = $text;
+        $this->title = $title;
+    }
+
+    /**
+     * Get the label.
+     *
+     * @return string
+     */
+    public function getLabel()
+    {
+        return $this->label;
+    }
+
+    /**
+     * Set the label.
+     *
+     * @param  string $label
+     * @return $this
+     */
+    public function setLabel($label)
+    {
+        $this->label = $label;
+
+        return $this;
     }
 
     /**
@@ -184,6 +262,157 @@ class Section implements SectionInterface
     public function setActive($active)
     {
         $this->active = $active;
+
+        return $this;
+    }
+
+    /**
+     * Get the matcher.
+     *
+     * @return null|string
+     */
+    public function getMatcher()
+    {
+        return $this->matcher;
+    }
+
+    /**
+     * Set the matcher.
+     *
+     * @param $matcher
+     * @return $this
+     */
+    public function setMatcher($matcher)
+    {
+        $this->matcher = $matcher;
+
+        return $this;
+    }
+
+    /**
+     * Get the permalink.
+     *
+     * @return null|string
+     */
+    public function getPermalink()
+    {
+        return $this->permalink;
+    }
+
+    /**
+     * Set the permalink.
+     *
+     * @param $permalink
+     * @return $this
+     */
+    public function setPermalink($permalink)
+    {
+        $this->permalink = $permalink;
+
+        return $this;
+    }
+
+    /**
+     * Get the description.
+     *
+     * @return null|string
+     */
+    public function getDescription()
+    {
+        return $this->description;
+    }
+
+    /**
+     * Set the description.
+     *
+     * @param $description
+     * @return $this
+     */
+    public function setDescription($description)
+    {
+        $this->description = $description;
+
+        return $this;
+    }
+
+    /**
+     * Get the highlighted flag.
+     *
+     * @return boolean
+     */
+    public function isHighlighted()
+    {
+        return $this->highlighted;
+    }
+
+    /**
+     * Set the highlighted flag.
+     *
+     * @param  boolean $active
+     * @return $this
+     */
+    public function setHighlighted($highlighted)
+    {
+        $this->highlighted = $highlighted;
+
+        return $this;
+    }
+
+    /**
+     * Get the context.
+     *
+     * @return boolean
+     */
+    public function getContext()
+    {
+        return $this->context;
+    }
+
+    /**
+     * Set the context flag.
+     *
+     * @param  boolean $active
+     * @return $this
+     */
+    public function setContext($context)
+    {
+        $this->context = $context;
+
+        return $this;
+    }
+
+    /**
+     * Get the parent.
+     *
+     * @return null|string
+     */
+    public function getParent()
+    {
+        return $this->parent;
+    }
+
+    /**
+     * Return if the section is
+     * a sub-section or not.
+     *
+     * @return bool
+     */
+    public function isSubSection()
+    {
+        return (bool)$this->getParent();
+    }
+
+    /**
+     * Set the parent.
+     *
+     * @param $parent
+     * @return $this
+     */
+    public function setParent($parent)
+    {
+        $this->parent = $parent;
+
+        return $this;
     }
 
     /**
@@ -273,12 +502,57 @@ class Section implements SectionInterface
     }
 
     /**
+     * Get the hidden flag.
+     *
+     * @return bool
+     */
+    public function isHidden()
+    {
+        return $this->hidden;
+    }
+
+    /**
+     * Set the hidden flag.
+     *
+     * @param $hidden
+     * @return $this
+     */
+    public function setHidden($hidden)
+    {
+        $this->hidden = $hidden;
+
+        return $this;
+    }
+
+    /**
      * Get the HREF attribute.
      *
+     * @param  null $path
      * @return string
      */
     public function getHref($path = null)
     {
-        return array_get($this->attributes, 'href') . ($path ? '/' . $path : $path);
+        return ($this->getPermalink() ?: array_get($this->attributes, 'href')) . ($path ? '/' . $path : $path);
+    }
+
+    /**
+     * Return the child sections.
+     *
+     * @return SectionCollection
+     */
+    public function getChildren()
+    {
+        return app(SectionCollection::class)->children($this->getSlug());
+    }
+
+    /**
+     * Return whether the section
+     * has children or not.
+     *
+     * @return bool
+     */
+    public function hasChildren()
+    {
+        return !$this->getChildren()->isEmpty();
     }
 }

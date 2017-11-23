@@ -5,10 +5,9 @@ use Anomaly\Streams\Platform\Addon\FieldType\FieldType;
 /**
  * Class FormAttributes
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Ui\Form
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
 class FormAttributes
 {
@@ -16,7 +15,7 @@ class FormAttributes
     /**
      * Make custom validation messages.
      *
-     * @param FormBuilder $builder
+     * @param  FormBuilder $builder
      * @return array
      */
     public function make(FormBuilder $builder)
@@ -25,7 +24,6 @@ class FormAttributes
 
         /* @var FieldType $field */
         foreach ($builder->getEnabledFormFields() as $field) {
-
             $label = $field->getLabel();
 
             if (str_contains($label, '::')) {
@@ -36,7 +34,7 @@ class FormAttributes
                 $label .= ' (' . $locale . ')';
             }
 
-            $attributes[$field->getInputName()] = $label;
+            $attributes[$field->getInputName()] = '"' . $label . '"';
         }
 
         return $attributes;

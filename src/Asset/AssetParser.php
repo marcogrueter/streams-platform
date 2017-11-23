@@ -6,10 +6,9 @@ use Illuminate\View\Factory;
 /**
  * Class AssetParser
  *
- * @link          http://anomaly.is/streams-platform
- * @author        AnomalyLabs, Inc. <hello@anomaly.is>
- * @author        Ryan Thompson <ryan@anomaly.is>
- * @package       Anomaly\Streams\Platform\Asset
+ * @link   http://pyrocms.com/
+ * @author PyroCMS, Inc. <support@pyrocms.com>
+ * @author Ryan Thompson <ryan@pyrocms.com>
  */
 class AssetParser
 {
@@ -54,6 +53,6 @@ class AssetParser
 
         $this->files->put(storage_path('framework/views/asset/' . (($filename = md5($content)) . '.twig')), $content);
 
-        return $this->views->make('base_path::storage/framework/views/asset/' . $filename)->render();
+        return $this->views->make('root::storage/framework/views/asset/' . $filename)->render();
     }
 }
